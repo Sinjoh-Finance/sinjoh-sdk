@@ -1,0 +1,42 @@
+# @sinjoh/abis
+
+Generated, viem-typed ABIs for the Sinjoh contracts on Robinhood Chain. Use this package when
+you need the canonical callable surface without importing the higher-level SDK.
+
+## Install
+
+```sh
+npm install @sinjoh/abis viem
+```
+
+## Use an ABI
+
+```ts
+import { sinjohFeeRouterAbi } from "@sinjoh/abis";
+import type { Address, PublicClient } from "viem";
+
+export function readRouterSubject(client: PublicClient, router: Address) {
+  return client.readContract({
+    address: router,
+    abi: sinjohFeeRouterAbi,
+    functionName: "subject"
+  });
+}
+```
+
+Every ABI export is a TypeScript `as const` value, so viem infers function names, arguments,
+and return types. Contract names use lower camel case followed by `Abi`, such as
+`sinjohRaffleRewardsAbi` and `sinjohPonsV2AdapterAbi`.
+
+## Provenance
+
+`abiSourceCommit` records the repository commit used to generate the package.
+`abiContractCounts` records the number of contracts harvested from each Foundry package.
+Generation includes only compilation targets under each package's `src/` directory; tests,
+scripts, mocks, copied interfaces, and vendored libraries are excluded.
+
+Do not edit generated files. From the repository's `sinjoh-sdk` directory, build the Foundry
+packages and run `npm run generate`. CI fails when committed ABIs drift from build output.
+
+See the [SDK workspace documentation](https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk)
+for the package map and release status.

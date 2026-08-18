@@ -2,7 +2,19 @@
   "name": "sinjoh-sdk",
   "version": "0.0.1",
   "private": true,
+  "description": "TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood Chain.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DSB-117/Sinjoh.git",
+    "directory": "sinjoh-sdk"
+  },
+  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/DSB-117/Sinjoh/issues"
+  },
   "type": "module",
+  "packageManager": "npm@10.9.8",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -14,7 +26,8 @@
     "fixtures": "node tools/sync-fixtures.mjs",
     "build": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run build -w @sinjoh/agent",
     "typecheck": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run typecheck --workspaces",
-    "test": "npm test --workspaces"
+    "test": "npm test --workspaces",
+    "pack:check": "npm run build && npm pack --dry-run --workspaces"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

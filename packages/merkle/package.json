@@ -3,6 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "description": "Deterministic Merkle-sum trees for Sinjoh airdrop epochs and raffle ticket intervals, pinned to the Solidity reference fixtures.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DSB-117/Sinjoh.git",
+    "directory": "sinjoh-sdk/packages/merkle"
+  },
+  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/DSB-117/Sinjoh/issues"
+  },
+  "keywords": ["sinjoh", "ethereum", "merkle-tree", "raffle", "airdrop"],
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -20,10 +31,14 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
   "peerDependencies": {
     "viem": ">=2.55.10 <3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

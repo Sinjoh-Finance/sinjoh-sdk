@@ -15,13 +15,20 @@ on:
       - "mainnet-deployments.json"
       - ".github/workflows/sinjoh-sdk.yml"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: sinjoh-sdk-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sdk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
 
@@ -42,6 +49,13 @@ jobs:
           npm run build
           npm test
 
+      - name: Verify publishable package contents
+        working-directory: sinjoh-sdk
+        run: |
+          for package in packages/abis packages/deployments packages/merkle packages/sdk packages/agent; do
+            (cd "$package" && npm pack --dry-run)
+          done
+
       # The keeper consumes @sinjoh/merkle via a file: dependency; its suite is the
       # continuous proof that the shared implementation matches production behavior.
       - name: Keeper on the shared packages
@@ -57,14 +71,14 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
 
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
 
       - name: Build all Foundry packages
         run: |

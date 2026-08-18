@@ -8,7 +8,8 @@ calls are simulated and submitted by whatever actually holds a signer.
 
 ```sh
 # defaults to the public Robinhood mainnet RPC and the packaged manifest
-SINJOH_RPC_URL=https://rpc.mainnet.chain.robinhood.com npx sinjoh-mcp
+SINJOH_RPC_URL=https://rpc.mainnet.chain.robinhood.com \
+  npx --yes --package @sinjoh/agent sinjoh-mcp
 ```
 
 Register in an MCP client (e.g. Claude Code):
@@ -18,12 +19,19 @@ Register in an MCP client (e.g. Claude Code):
   "mcpServers": {
     "sinjoh": {
       "command": "npx",
-      "args": ["sinjoh-mcp"],
+      "args": ["--yes", "--package", "@sinjoh/agent", "sinjoh-mcp"],
       "env": { "SINJOH_RPC_URL": "https://rpc.mainnet.chain.robinhood.com" }
     }
   }
 }
 ```
+
+Node.js 22 or newer is required. `SINJOH_CHAIN_ID` defaults to mainnet (`4663`). Testnet
+(`46630`) requires a caller-supplied deployment manifest and is therefore available through the
+library API, not the standalone CLI's packaged defaults.
+
+Before acting on any manifest address, call `sinjoh_verify_manifest` and require
+`allVerified: true`. A failed or missing runtime hash is a hard stop.
 
 ## Tools
 

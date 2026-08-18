@@ -3,6 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "description": "Typed Sinjoh deployment manifests for Robinhood Chain, generated from the canonical mainnet-deployments.json, with a runtime code-hash verifier.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DSB-117/Sinjoh.git",
+    "directory": "sinjoh-sdk/packages/deployments"
+  },
+  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/DSB-117/Sinjoh/issues"
+  },
+  "keywords": ["sinjoh", "ethereum", "deployments", "viem", "robinhood-chain"],
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -20,10 +31,14 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
   "peerDependencies": {
     "viem": ">=2.55.10 <3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -3,6 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DSB-117/Sinjoh.git",
+    "directory": "sinjoh-sdk/packages/abis"
+  },
+  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/DSB-117/Sinjoh/issues"
+  },
+  "keywords": ["sinjoh", "ethereum", "abi", "viem", "robinhood-chain"],
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -20,7 +31,11 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
