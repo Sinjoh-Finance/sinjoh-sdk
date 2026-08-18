@@ -11,15 +11,19 @@ lifecycle, the router work planner, the Pons v2 activation checklist, and
 the step-typed Pons v2 launch flow (`planPonsV2Launch`, ported from the
 production fork rehearsal's ordering), plus a CI workflow enforcing
 generated-source drift checks and the keeper's shared-package suite.
-Remaining for Phase 3: launch flows for the gated launchpad families
-(Flap, pools.trade, letscash) and the mainnet-fork rehearsal replayed
+Flap and letscash flows are landed (`planFlapLaunch`,
+`planLetsCashIntegration`), each ported from its production fork
+rehearsal; pools.trade deliberately waits for a rehearsal of its own in
+`sinjoh-integration` before a flow ships. Remaining for Phase 3: that
+pools.trade rehearsal + flow, and the mainnet-fork rehearsals replayed
 through the SDK — fork tests need RPC egress the development sandbox does
 not have, so they must run in an environment with `RH_RPC_URL` access.
 Phase 4's core is landed: `@sinjoh/agent` (the `sinjoh-mcp` stdio MCP
 server over the read/plan/preflight/validate/prepare surface, tested over
 an in-memory transport), the `llms.txt` protocol digest, and an example
-script; generated reference docs remain. Publishing remains gated on the
-license and npm-scope decisions.
+script; generated reference docs remain. Fixture regeneration is one
+command (`npm run fixtures` in `sinjoh-sdk/`). Publishing remains gated
+on the license and npm-scope decisions.
 
 ## Purpose
 

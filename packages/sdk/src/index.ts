@@ -71,3 +71,14 @@ export {
   type PonsV2LaunchPlan, type PonsV2LaunchPlanInput, type PonsV2LaunchStep,
   type PonsV2LaunchTokenInput
 } from "./launch/ponsv2.js";
+
+export {
+  planFlapLaunch, predictUniswapV2Pair, raffleExclusionsForFlapLaunch,
+  type FlapLaunchPlan, type FlapLaunchPlanInput, type FlapLaunchStep, type FlapTokenParams
+} from "./launch/flap.js";
+
+export {
+  letscashActivate, planLetsCashIntegration, raffleBind, raffleExclusionsForLetsCashLaunch,
+  type LetsCashIntegrationPlan, type LetsCashIntegrationPlanInput,
+  type LetsCashIntegrationStep
+} from "./launch/letscash.js";
