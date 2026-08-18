@@ -121,11 +121,11 @@ the Foundry packages, matching the repo's package-independence rule):
 | `@sinjoh/abis` | Complete generated ABIs + event definitions + custom error definitions for every Sinjoh contract and the verified third-party surfaces (Pons v1/v2, Flap, pools.trade, letscash.fun, Uniswap v3/v4 subset). Generated from Foundry `out/` at a pinned source commit; `as const` typed for viem inference. No runtime code. |
 | `@sinjoh/deployments` | Typed chain manifests (mainnet `4663`, testnet `46630`): addresses, deployment blocks, runtime code hashes, dependency addresses, route-profile registry, schema version. Generated from `mainnet-deployments.json` after that file gains a JSON schema. Includes the `verifyManifest(client)` code-hash checker. |
 | `@sinjoh/sdk` (core) | viem-based clients and pure helpers: config codecs, prediction, launch orchestration, lifecycle actions, read layer, guard preflights, error decoding, work planner. Depends on the two packages above and `viem` only. |
-| `@sinjoh/trees` | The deterministic Merkle-sum implementations promoted out of the keeper: airdrop tree (`sinjoh-keeper/src/airdrop/merkle.ts`), raffle ticket tree (`src/raffle/tree.ts`), and proof verification, pinned to the existing golden fixtures. Optional home for the ECVRF verifier-side helpers (never the prover key). |
+| `@sinjoh/merkle` | The deterministic Merkle-sum implementations promoted out of the keeper: airdrop tree (`sinjoh-keeper/src/airdrop/merkle.ts`), raffle ticket tree (`src/raffle/tree.ts`), and proof verification, pinned to the existing golden fixtures. Optional home for the ECVRF verifier-side helpers (never the prover key). |
 | `@sinjoh/agent` (later phase) | Agent-facing surface on top of core: an MCP server exposing read/plan/simulate tools, plus prompt-ready protocol documentation (`llms.txt`-style) generated from the SDK's own types and the SPEC files. |
 
 The keeper migrates to consume `@sinjoh/abis`, `@sinjoh/deployments`, and
-`@sinjoh/trees` so there is exactly one implementation of each encoding, with
+`@sinjoh/merkle` so there is exactly one implementation of each encoding, with
 the keeper's production usage acting as a continuous integration test of the
 SDK.
 
@@ -201,13 +201,13 @@ explicit review gate before the next begins.
 Gate: generated ABIs and validated manifests exist for every deployed
 contract in `currentInfrastructure`, byte-derived from the pinned commit.
 
-### Phase 1 — `@sinjoh/abis`, `@sinjoh/deployments`, `@sinjoh/trees`
+### Phase 1 — `@sinjoh/abis`, `@sinjoh/deployments`, `@sinjoh/merkle`
 
 1. Scaffold the `sinjoh-sdk/` workspace (strict TS, ESM, Node ≥ 22, viem
    peer dependency).
 2. Generate the two artifact packages from Phase 0 outputs; add the
    code-hash manifest verifier.
-3. Promote the keeper's tree/Merkle modules into `@sinjoh/trees` and repoint
+3. Promote the keeper's tree/Merkle modules into `@sinjoh/merkle` and repoint
    the keeper to it.
 4. Port all existing golden fixtures as the packages' test suites.
 

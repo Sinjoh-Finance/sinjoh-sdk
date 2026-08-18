@@ -13,7 +13,7 @@ decisions in the plan are made. Nothing here is publishable yet.
 |---|---|
 | [`@sinjoh/abis`](./packages/abis) | Generated, viem-typed ABIs for every Sinjoh contract, harvested from Foundry build output at a pinned source commit. |
 | [`@sinjoh/deployments`](./packages/deployments) | Typed chain manifests generated from `mainnet-deployments.json`, plus the runtime code-hash manifest verifier. |
-| [`@sinjoh/trees`](./packages/trees) | The deterministic Merkle-sum trees (airdrop epochs, raffle ticket intervals) and the winning-index derivation, pinned to the Solidity-generated golden fixtures. |
+| [`@sinjoh/merkle`](./packages/merkle) | The deterministic Merkle-sum trees (airdrop epochs, raffle ticket intervals) and the winning-index derivation, pinned to the Solidity-generated golden fixtures. |
 
 ## Regenerating
 

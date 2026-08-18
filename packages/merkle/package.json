@@ -1,5 +1,5 @@
 {
-  "name": "@sinjoh/trees",
+  "name": "@sinjoh/merkle",
   "version": "0.0.1",
   "private": true,
   "description": "Deterministic Merkle-sum trees for Sinjoh airdrop epochs and raffle ticket intervals, pinned to the Solidity reference fixtures.",
