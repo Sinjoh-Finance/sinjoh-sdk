@@ -1,6 +1,6 @@
 import type { Address, Hex } from "viem";
 import type {
-  AirdropSinkConfig, LiquiditySinkConfig, RaffleConfig, RouterConfig
+  AirdropSinkConfig, FlapTokenParams, LiquiditySinkConfig, RaffleConfig, RouterConfig
 } from "@sinjoh/sdk";
 
 /**
@@ -53,6 +53,15 @@ export function liquiditySinkConfigFromWire(wire: Json): LiquiditySinkConfig {
   config.minNotionalPerMint = big(config.minNotionalPerMint, "minNotionalPerMint");
   config.maxNotionalPerMint = big(config.maxNotionalPerMint, "maxNotionalPerMint");
   return config;
+}
+
+export function flapTokenParamsFromWire(wire: Json): Omit<FlapTokenParams, "salt"> {
+  const params = structuredClone(wire) as unknown as Omit<FlapTokenParams, "salt">;
+  params.quoteAmt = big(params.quoteAmt, "quoteAmt");
+  params.taxDuration = big(params.taxDuration, "taxDuration");
+  params.antiFarmerDuration = big(params.antiFarmerDuration, "antiFarmerDuration");
+  params.minimumShareBalance = big(params.minimumShareBalance, "minimumShareBalance");
+  return params;
 }
 
 /**

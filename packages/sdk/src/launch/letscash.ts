@@ -1,11 +1,12 @@
-import { getAddress, type Abi, type Address, type Hex, type PublicClient } from "viem";
-import {
-  sinjohFeeRouterFactoryAbi, sinjohLetsCashAdapterAbi, sinjohLetsCashAdapterFactoryAbi,
-  sinjohRaffleRewardsAbi, sinjohRaffleRewardsFactoryAbi
-} from "@sinjoh/abis";
+import { type Abi, type Address, type Hex, type PublicClient } from "viem";
+import { sinjohLetsCashAdapterAbi, sinjohRaffleRewardsAbi } from "@sinjoh/abis";
 import type { PreparedCall } from "../actions.js";
-import { encodeRouterConfig, type RouterConfig } from "../codecs/router.js";
-import { raffleConfigHash, type RaffleConfig } from "../codecs/raffle.js";
+import type { RouterConfig } from "../codecs/router.js";
+import type { RaffleConfig } from "../codecs/raffle.js";
+import {
+  planAdapterDeploy, planRaffleDeploy, planRouterDeploy, predictAdapterAndRouter,
+  sortedUniqueAddresses
+} from "./shared.js";
 
 /**
  * The letscash.fun integration flow, in the order the production fork rehearsal
@@ -28,10 +29,9 @@ export function raffleExclusionsForLetsCashLaunch(args: {
   adapter: Address; router: Address; letscashFactory: Address; poolManager: Address;
   hook: Address;
 }): Address[] {
-  const unique = [...new Set([
+  return sortedUniqueAddresses([
     args.adapter, args.router, args.letscashFactory, args.poolManager, args.hook
-  ].map((value) => getAddress(value)))];
-  return unique.sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1));
+  ]);
 }
 
 /** Binds a launched letscash token and pool to the adapter's router, once. */
@@ -42,6 +42,15 @@ export function letscashActivate(
     address: adapter, abi: sinjohLetsCashAdapterAbi as Abi, functionName: "activate",
     args: [subject, poolId, configId],
     description: "Activate the adapter for the launched subject and pool; binds the router"
+  };
+}
+
+/** Binds a raffle to its launched subject, once, from the raffle creator. */
+export function raffleBind(raffle: Address, subject: Address): PreparedCall {
+  return {
+    address: raffle, abi: sinjohRaffleRewardsAbi as Abi, functionName: "bind",
+    args: [subject],
+    description: "Bind the raffle to the launched subject"
   };
 }
 
@@ -81,16 +90,7 @@ export interface LetsCashIntegrationPlan {
 export async function planLetsCashIntegration(
   client: PublicClient, input: LetsCashIntegrationPlanInput
 ): Promise<LetsCashIntegrationPlan> {
-  const [adapter, router] = await Promise.all([
-    client.readContract({
-      address: input.adapterFactory, abi: sinjohLetsCashAdapterFactoryAbi,
-      functionName: "predictAddress", args: [input.creator, input.adapterSalt]
-    }),
-    client.readContract({
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi,
-      functionName: "predictLaunchpadAddress", args: [input.creator, input.routerSalt]
-    })
-  ]);
+  const { adapter, router } = await predictAdapterAndRouter(client, input);
 
   const steps: LetsCashIntegrationStep[] = [];
   let raffle: Address | undefined;
@@ -102,49 +102,27 @@ export async function planLetsCashIntegration(
       poolManager: input.letscash.poolManager,
       hook: input.letscash.hook
     });
-    const raffleConfig = input.raffle.config(exclusions);
-    raffle = await client.readContract({
-      address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi,
-      functionName: "predictRaffle",
-      args: [input.creator, input.raffle.salt, raffleConfigHash(raffleConfig)]
+    const planned = await planRaffleDeploy(client, {
+      factory: input.raffle.factory, salt: input.raffle.salt, creator: input.creator,
+      config: input.raffle.config(exclusions)
     });
-    steps.push({
-      id: "deploy-raffle",
-      call: {
-        address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi as Abi,
-        functionName: "deployRaffle", args: [input.raffle.salt, raffleConfig],
-        description: "Deploy the raffle around the letscash protocol-holder exclusions"
-      },
-      verify: `deployed address equals ${raffle}; every exclusion isExcluded`
-    });
+    raffle = planned.raffle;
+    steps.push({ id: "deploy-raffle", ...planned.step });
   }
 
-  const routerConfig = input.routerConfig({
-    adapter, ...(raffle === undefined ? {} : { raffle })
+  const routerDeploy = planRouterDeploy({
+    routerFactory: input.routerFactory, creator: input.creator, salt: input.routerSalt,
+    config: input.routerConfig({ adapter, ...(raffle === undefined ? {} : { raffle }) }),
+    adapter, router
   });
-  if (routerConfig.launchpadAdapter.toLowerCase() !== adapter.toLowerCase()) {
-    throw new Error("routerConfig must set launchpadAdapter to the predicted adapter");
-  }
-  const routerConfigBytes = encodeRouterConfig(routerConfig);
-  steps.push({
-    id: "deploy-router",
-    call: {
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi as Abi,
-      functionName: "deployForLaunchpad",
-      args: [input.creator, input.routerSalt, routerConfig],
-      description: "Deploy the unbound router naming the predicted adapter"
-    },
-    verify: `deployed address equals ${router}`
-  });
+  steps.push({ id: "deploy-router", ...routerDeploy.step });
 
   steps.push({
     id: "deploy-adapter",
-    call: {
-      address: input.adapterFactory, abi: sinjohLetsCashAdapterFactoryAbi as Abi,
-      functionName: "deploy", args: [input.creator, router, input.adapterSalt],
-      description: "Deploy the adapter wired to the router"
-    },
-    verify: `deployed address equals ${adapter}`
+    ...planAdapterDeploy({
+      adapterFactory: input.adapterFactory, creator: input.creator, salt: input.adapterSalt,
+      adapter, router
+    })
   });
 
   const followUps = [
@@ -160,17 +138,8 @@ export async function planLetsCashIntegration(
 
   return {
     predicted: { adapter, router, ...(raffle === undefined ? {} : { raffle }) },
-    routerConfigBytes,
+    routerConfigBytes: routerDeploy.routerConfigBytes,
     steps,
     followUps
-  };
-}
-
-/** Re-exported here so a letscash flow has its post-launch binder next to activate. */
-export function raffleBind(raffle: Address, subject: Address): PreparedCall {
-  return {
-    address: raffle, abi: sinjohRaffleRewardsAbi as Abi, functionName: "bind",
-    args: [subject],
-    description: "Bind the raffle to the launched subject"
   };
 }

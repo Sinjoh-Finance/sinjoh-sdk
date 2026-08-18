@@ -1,15 +1,15 @@
 import type { Abi, Address, Hex, PublicClient } from "viem";
-import {
-  sinjohFeeRouterFactoryAbi, sinjohPonsV2AdapterAbi, sinjohPonsV2AdapterFactoryAbi,
-  sinjohRaffleRewardsAbi, sinjohRaffleRewardsFactoryAbi
-} from "@sinjoh/abis";
+import { sinjohPonsV2AdapterAbi, sinjohRaffleRewardsAbi } from "@sinjoh/abis";
 import type { PreparedCall } from "../actions.js";
-import { encodeRouterConfig, type RouterConfig } from "../codecs/router.js";
-import { raffleConfigHash, type RaffleConfig } from "../codecs/raffle.js";
+import type { RouterConfig } from "../codecs/router.js";
+import type { RaffleConfig } from "../codecs/raffle.js";
 import {
   ponsV2FactoryPredictionAbi, predictLaunchAddresses, raffleExclusionsForLaunch, ZERO_ADDRESS,
   type PonsV2Socials
 } from "../predict/ponsv2.js";
+import {
+  planAdapterDeploy, planRaffleDeploy, planRouterDeploy, predictAdapterAndRouter
+} from "./shared.js";
 
 /**
  * The Pons v2 launch flow, in the exact order the production fork rehearsal
@@ -99,16 +99,7 @@ export async function planPonsV2Launch(
   client: PublicClient, input: PonsV2LaunchPlanInput
 ): Promise<PonsV2LaunchPlan> {
   // 1-2. Both clone addresses ignore their configuration.
-  const [adapter, router] = await Promise.all([
-    client.readContract({
-      address: input.adapterFactory, abi: sinjohPonsV2AdapterFactoryAbi,
-      functionName: "predictAddress", args: [input.creator, input.adapterSalt]
-    }),
-    client.readContract({
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi,
-      functionName: "predictLaunchpadAddress", args: [input.creator, input.routerSalt]
-    })
-  ]);
+  const { adapter, router } = await predictAdapterAndRouter(client, input);
 
   // Pin the factory's live terms into the launch so moved terms revert.
   const [expectedEconomics, launchFee] = await Promise.all([
@@ -149,51 +140,31 @@ export async function planPonsV2Launch(
     const exclusions = await raffleExclusionsForLaunch(client, {
       factory: input.ponsFactory, curve, extra: [adapter]
     });
-    const raffleConfig = input.raffle.config(exclusions);
-    raffle = await client.readContract({
-      address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi,
-      functionName: "predictRaffle",
-      args: [input.creator, input.raffle.salt, raffleConfigHash(raffleConfig)]
+    const planned = await planRaffleDeploy(client, {
+      factory: input.raffle.factory, salt: input.raffle.salt, creator: input.creator,
+      config: input.raffle.config(exclusions),
+      verifyExtra: `isExcluded(${curve}) is true`
     });
-    steps.push({
-      id: "deploy-raffle",
-      call: {
-        address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi as Abi,
-        functionName: "deployRaffle", args: [input.raffle.salt, raffleConfig],
-        description: "Deploy the raffle around the predicted curve's exclusion list"
-      },
-      verify: `deployed address equals ${raffle} and isExcluded(${curve}) is true`
-    });
+    raffle = planned.raffle;
+    steps.push({ id: "deploy-raffle", ...planned.step });
   }
 
   // 5. Router names the adapter and (optionally) the raffle sink.
-  const routerConfig = input.routerConfig({
-    adapter, ...(raffle === undefined ? {} : { raffle })
+  const routerDeploy = planRouterDeploy({
+    routerFactory: input.routerFactory, creator: input.creator, salt: input.routerSalt,
+    config: input.routerConfig({ adapter, ...(raffle === undefined ? {} : { raffle }) }),
+    adapter, router
   });
-  if (routerConfig.launchpadAdapter.toLowerCase() !== adapter.toLowerCase()) {
-    throw new Error("routerConfig must set launchpadAdapter to the predicted adapter");
-  }
-  const routerConfigBytes = encodeRouterConfig(routerConfig);
-  steps.push({
-    id: "deploy-router",
-    call: {
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi as Abi,
-      functionName: "deployForLaunchpad",
-      args: [input.creator, input.routerSalt, routerConfig],
-      description: "Deploy the unbound router naming the predicted adapter"
-    },
-    verify: `deployed address equals ${router}`
-  });
+  const routerConfigBytes = routerDeploy.routerConfigBytes;
+  steps.push({ id: "deploy-router", ...routerDeploy.step });
 
   // 6. The factory wires the adapter to the router.
   steps.push({
     id: "deploy-adapter",
-    call: {
-      address: input.adapterFactory, abi: sinjohPonsV2AdapterFactoryAbi as Abi,
-      functionName: "deploy", args: [input.creator, router, input.adapterSalt],
-      description: "Deploy the adapter wired to the router"
-    },
-    verify: `deployed address equals ${adapter}`
+    ...planAdapterDeploy({
+      adapterFactory: input.adapterFactory, creator: input.creator, salt: input.adapterSalt,
+      adapter, router
+    })
   });
 
   // 7. Launch through the adapter; it binds the router in the same transaction.

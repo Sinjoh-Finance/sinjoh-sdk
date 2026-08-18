@@ -12,8 +12,8 @@
   "scripts": {
     "generate": "node tools/harvest-abis.mjs && node tools/gen-deployments.mjs",
     "fixtures": "node tools/sync-fixtures.mjs",
-    "build": "npm run build --workspaces",
-    "typecheck": "npm run typecheck --workspaces",
+    "build": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run build -w @sinjoh/agent",
+    "typecheck": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run typecheck --workspaces",
     "test": "npm test --workspaces"
   },
   "devDependencies": {

@@ -37,6 +37,8 @@ Register in an MCP client (e.g. Claude Code):
 | `sinjoh_check_activation` | Launch wiring checklist incl. EIP-1167 clone verification |
 | `sinjoh_validate_config` | Offline validation + canonical encoding + configHash for router/raffle/sink configs |
 | `sinjoh_plan_ponsv2_launch` | The full predict/deploy/bind launch ordering as prepared calls with readbacks |
+| `sinjoh_plan_flap_launch` | The Flap launch ordering, with the vanity token salt verified against the deployed implementation |
+| `sinjoh_plan_letscash_integration` | The Sinjoh side of a letscash integration, with post-launch activate/bind follow-ups |
 | `sinjoh_decode_error` | Revert data to named error plus operator guidance |
 
 `llms.txt` in this package is the protocol digest an agent should load alongside the tools.

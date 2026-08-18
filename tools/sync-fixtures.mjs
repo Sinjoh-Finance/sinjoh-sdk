@@ -11,6 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..");
 
 const GENERATORS = [
+  { package: "sinjoh-randomness", match: "GenerateFixtures" },
   { package: "sinjoh-raffle-rewards", match: "GenerateFixtures" },
   { package: "sinjoh-fee-router", match: "GeneratePonsV2Fixtures" },
   { package: "sinjoh-fee-router", match: "GenerateRouterConfigFixture" },
@@ -18,21 +19,34 @@ const GENERATORS = [
   { package: "sinjoh-liquidity-manager", match: "GenerateSinkConfigFixture" }
 ];
 
+// Every package that pins a copy of a regenerated fixture gets a fresh copy — including
+// the keeper, whose own `npm run fixtures` covers only the ecvrf/tree subset. Refreshing
+// a source without every consumer leaves a twin testing against a stale expectation.
 const COPIES = [
   ["sinjoh-raffle-rewards/test/fixtures/ticket-tree.json",
-    "packages/merkle/test/fixtures/ticket-tree.json"],
+    "sinjoh-sdk/packages/merkle/test/fixtures/ticket-tree.json"],
   ["sinjoh-raffle-rewards/test/fixtures/slot-indices.json",
-    "packages/merkle/test/fixtures/slot-indices.json"],
+    "sinjoh-sdk/packages/merkle/test/fixtures/slot-indices.json"],
   ["sinjoh-raffle-rewards/test/fixtures/config-hash.json",
-    "packages/sdk/test/fixtures/config-hash.json"],
+    "sinjoh-sdk/packages/sdk/test/fixtures/config-hash.json"],
   ["sinjoh-fee-router/test/fixtures/ponsv2-prediction.json",
-    "packages/sdk/test/fixtures/ponsv2-prediction.json"],
+    "sinjoh-sdk/packages/sdk/test/fixtures/ponsv2-prediction.json"],
   ["sinjoh-fee-router/test/fixtures/router-config.json",
-    "packages/sdk/test/fixtures/router-config.json"],
+    "sinjoh-sdk/packages/sdk/test/fixtures/router-config.json"],
   ["sinjoh-airdrop-distributor/test/fixtures/airdrop-sink-config.json",
-    "packages/sdk/test/fixtures/airdrop-sink-config.json"],
+    "sinjoh-sdk/packages/sdk/test/fixtures/airdrop-sink-config.json"],
   ["sinjoh-liquidity-manager/test/fixtures/liquidity-sink-config.json",
-    "packages/sdk/test/fixtures/liquidity-sink-config.json"]
+    "sinjoh-sdk/packages/sdk/test/fixtures/liquidity-sink-config.json"],
+  ["sinjoh-randomness/test/fixtures/ecvrf-proofs.json",
+    "sinjoh-keeper/test/fixtures/ecvrf-proofs.json"],
+  ["sinjoh-raffle-rewards/test/fixtures/ticket-tree.json",
+    "sinjoh-keeper/test/fixtures/ticket-tree.json"],
+  ["sinjoh-raffle-rewards/test/fixtures/slot-indices.json",
+    "sinjoh-keeper/test/fixtures/slot-indices.json"],
+  ["sinjoh-raffle-rewards/test/fixtures/config-hash.json",
+    "sinjoh-keeper/test/fixtures/config-hash.json"],
+  ["sinjoh-fee-router/test/fixtures/ponsv2-prediction.json",
+    "sinjoh-keeper/test/fixtures/ponsv2-prediction.json"]
 ];
 
 for (const generator of GENERATORS) {
@@ -43,8 +57,8 @@ for (const generator of GENERATORS) {
 }
 
 for (const [source, destination] of COPIES) {
-  mkdirSync(dirname(join(here, "..", destination)), { recursive: true });
-  copyFileSync(join(repoRoot, source), join(here, "..", destination));
-  console.log(`copied ${source} -> sinjoh-sdk/${destination}`);
+  mkdirSync(dirname(join(repoRoot, destination)), { recursive: true });
+  copyFileSync(join(repoRoot, source), join(repoRoot, destination));
+  console.log(`copied ${source} -> ${destination}`);
 }
 console.log("fixtures synchronized; run npm test to confirm parity");

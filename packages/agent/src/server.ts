@@ -5,14 +5,14 @@ import { allVerified, verifyManifest, type ChainManifest } from "@sinjoh/deploym
 import {
   airdropSinkConfigHash, checkPonsV2Activation, decodeSinjohError,
   encodeAirdropSinkConfig, encodeLiquiditySinkConfig, encodeRaffleConfig, encodeRouterConfig,
-  liquiditySinkConfigHash, planPonsV2Launch, planRouterWork, preflightMinimumOutput,
-  raffleConfigHash, readRouterSnapshot, routerConfigHash,
-  validateAirdropSinkConfig, validateLiquiditySinkConfig, validateRaffleConfig,
-  validateRouterConfig, type CodeReadClient
+  liquiditySinkConfigHash, planFlapLaunch, planLetsCashIntegration, planPonsV2Launch,
+  planRouterWork, preflightMinimumOutput, raffleConfigHash, readRouterSnapshot,
+  routerConfigHash, validateAirdropSinkConfig, validateLiquiditySinkConfig,
+  validateRaffleConfig, validateRouterConfig, type CodeReadClient
 } from "@sinjoh/sdk";
 import {
-  airdropSinkConfigFromWire, liquiditySinkConfigFromWire, raffleConfigFromWire,
-  resolvePlaceholders, routerConfigFromWire
+  airdropSinkConfigFromWire, flapTokenParamsFromWire, liquiditySinkConfigFromWire,
+  raffleConfigFromWire, resolvePlaceholders, routerConfigFromWire
 } from "./configs.js";
 import { errorResult, textResult } from "./serialize.js";
 
@@ -253,6 +253,127 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
         },
         ...(args.developerBuy === undefined
           ? {} : { developerBuy: BigInt(args.developerBuy) }),
+        routerConfig: (predicted) => resolvePlaceholders(routerTemplate, predicted),
+        ...(args.raffle === undefined ? {} : {
+          raffle: {
+            factory: args.raffle.factory as Address,
+            salt: args.raffle.salt as Hex,
+            config: (exclusions: Address[]) => ({
+              ...raffleConfigFromWire(args.raffle!.config),
+              exclusions
+            })
+          }
+        })
+      });
+      return textResult(plan);
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_plan_flap_launch", {
+    description: "Plan a complete Flap launch in the production rehearsal's order. The "
+      + "vanity token salt is verified against the deployed adapter implementation's own "
+      + "CREATE2 derivation before anything immutable is planned. routerConfig may use "
+      + "\"$ADAPTER\"/\"$RAFFLE\" placeholders; raffle.config omits exclusions (computed "
+      + "from the predicted V2 pair). Bigint fields are decimal strings. Nothing submits.",
+    inputSchema: {
+      creator: address,
+      adapterFactory: address, adapterImplementation: address, routerFactory: address,
+      adapterSalt: hex, routerSalt: hex,
+      tokenSalt: hex, tokenPredictedAddress: address,
+      tokenParams: z.record(z.string(), z.unknown())
+        .describe("NewTokenV6Params without salt; bigints as decimal strings"),
+      reviewedPortalConfigHash: hex,
+      expectedFlapFeeRate: z.number().int(),
+      minDeveloperBuyOut: z.string().regex(/^\d+$/).optional(),
+      launchValue: z.string().regex(/^\d+$/).optional(),
+      flap: z.object({
+        portal: address, v2Factory: address, v2PairInitCodeHash: hex, weth: address,
+        liquidityManager: address, buybackAdapter: address
+      }),
+      routerConfig: z.record(z.string(), z.unknown()),
+      raffle: z.object({
+        factory: address, salt: hex, config: z.record(z.string(), z.unknown())
+      }).optional()
+    }
+  }, async (args) => {
+    try {
+      const routerTemplate = routerConfigFromWire(args.routerConfig);
+      const plan = await planFlapLaunch(client, {
+        creator: args.creator as Address,
+        adapterFactory: args.adapterFactory as Address,
+        adapterImplementation: args.adapterImplementation as Address,
+        routerFactory: args.routerFactory as Address,
+        adapterSalt: args.adapterSalt as Hex,
+        routerSalt: args.routerSalt as Hex,
+        token: {
+          salt: args.tokenSalt as Hex,
+          predictedAddress: args.tokenPredictedAddress as Address,
+          params: flapTokenParamsFromWire(args.tokenParams)
+        },
+        reviewedPortalConfigHash: args.reviewedPortalConfigHash as Hex,
+        expectedFlapFeeRate: args.expectedFlapFeeRate,
+        ...(args.minDeveloperBuyOut === undefined
+          ? {} : { minDeveloperBuyOut: BigInt(args.minDeveloperBuyOut) }),
+        ...(args.launchValue === undefined ? {} : { launchValue: BigInt(args.launchValue) }),
+        flap: {
+          portal: args.flap.portal as Address,
+          v2Factory: args.flap.v2Factory as Address,
+          v2PairInitCodeHash: args.flap.v2PairInitCodeHash as Hex,
+          weth: args.flap.weth as Address,
+          liquidityManager: args.flap.liquidityManager as Address,
+          buybackAdapter: args.flap.buybackAdapter as Address
+        },
+        routerConfig: (predicted) => resolvePlaceholders(routerTemplate, predicted),
+        ...(args.raffle === undefined ? {} : {
+          raffle: {
+            factory: args.raffle.factory as Address,
+            salt: args.raffle.salt as Hex,
+            config: (exclusions: Address[]) => ({
+              ...raffleConfigFromWire(args.raffle!.config),
+              exclusions
+            })
+          }
+        })
+      });
+      return textResult(plan);
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_plan_letscash_integration", {
+    description: "Plan the Sinjoh side of a letscash.fun integration: predict adapter and "
+      + "router, deploy the raffle/router/adapter. The token launches on the UPSTREAM "
+      + "letscash factory afterwards (adapter as 100% fee recipient), then activate/bind — "
+      + "returned as explicit followUps because their arguments exist only post-launch. "
+      + "routerConfig may use \"$ADAPTER\"/\"$RAFFLE\" placeholders; raffle.config omits "
+      + "exclusions. Nothing submits.",
+    inputSchema: {
+      creator: address,
+      adapterFactory: address, routerFactory: address,
+      adapterSalt: hex, routerSalt: hex,
+      letscash: z.object({ factory: address, poolManager: address, hook: address }),
+      routerConfig: z.record(z.string(), z.unknown()),
+      raffle: z.object({
+        factory: address, salt: hex, config: z.record(z.string(), z.unknown())
+      }).optional()
+    }
+  }, async (args) => {
+    try {
+      const routerTemplate = routerConfigFromWire(args.routerConfig);
+      const plan = await planLetsCashIntegration(client, {
+        creator: args.creator as Address,
+        adapterFactory: args.adapterFactory as Address,
+        routerFactory: args.routerFactory as Address,
+        adapterSalt: args.adapterSalt as Hex,
+        routerSalt: args.routerSalt as Hex,
+        letscash: {
+          factory: args.letscash.factory as Address,
+          poolManager: args.letscash.poolManager as Address,
+          hook: args.letscash.hook as Address
+        },
         routerConfig: (predicted) => resolvePlaceholders(routerTemplate, predicted),
         ...(args.raffle === undefined ? {} : {
           raffle: {

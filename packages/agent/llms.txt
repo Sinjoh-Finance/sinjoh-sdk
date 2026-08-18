@@ -39,8 +39,12 @@ which anyone may forward to its governance-selected processor.
 5. `sinjoh_check_activation` — the launch wiring checklist; show active only when all pass.
 6. `sinjoh_validate_config` — validate + canonically encode router/raffle/sink configs
    offline; the returned configHash is the on-chain identity.
-7. `sinjoh_plan_ponsv2_launch` — the full circular predict/deploy/bind ordering resolved into
-   ordered prepared calls with expected readbacks.
+7. `sinjoh_plan_ponsv2_launch`, `sinjoh_plan_flap_launch`,
+   `sinjoh_plan_letscash_integration` — each launchpad family's circular
+   predict/deploy/bind ordering resolved into ordered prepared calls with expected
+   readbacks. letscash launches on its upstream factory, so its plan ends in explicit
+   follow-ups. pools.trade has no flow yet: its fork rehearsal does not exist, and this SDK
+   does not ship orderings that have not been rehearsed.
 8. `sinjoh_decode_error` — turn revert data into a named error plus operator guidance.
 
 The tools never sign or submit. Prepared calls are data: simulate them (`simulateContract`),

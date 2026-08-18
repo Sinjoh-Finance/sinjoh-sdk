@@ -75,6 +75,7 @@ test("exposes the full read/plan/validate tool surface", async () => {
   const names = tools.map((tool) => tool.name).sort();
   assert.deepEqual(names, [
     "sinjoh_check_activation", "sinjoh_decode_error", "sinjoh_manifest",
+    "sinjoh_plan_flap_launch", "sinjoh_plan_letscash_integration",
     "sinjoh_plan_ponsv2_launch", "sinjoh_plan_router_work", "sinjoh_preflight_guard",
     "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest"
   ]);

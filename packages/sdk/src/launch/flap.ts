@@ -1,13 +1,14 @@
 import {
   encodePacked, getAddress, keccak256, type Abi, type Address, type Hex, type PublicClient
 } from "viem";
-import {
-  sinjohFeeRouterFactoryAbi, sinjohFlapAdapterAbi, sinjohFlapAdapterFactoryAbi,
-  sinjohRaffleRewardsAbi, sinjohRaffleRewardsFactoryAbi
-} from "@sinjoh/abis";
+import { sinjohFlapAdapterAbi, sinjohRaffleRewardsAbi } from "@sinjoh/abis";
 import type { PreparedCall } from "../actions.js";
-import { encodeRouterConfig, type RouterConfig } from "../codecs/router.js";
-import { raffleConfigHash, type RaffleConfig } from "../codecs/raffle.js";
+import type { RouterConfig } from "../codecs/router.js";
+import type { RaffleConfig } from "../codecs/raffle.js";
+import {
+  planAdapterDeploy, planRaffleDeploy, planRouterDeploy, predictAdapterAndRouter,
+  sortedUniqueAddresses
+} from "./shared.js";
 
 /**
  * The Flap launch flow, in the exact order the production fork rehearsal
@@ -16,6 +17,12 @@ import { raffleConfigHash, type RaffleConfig } from "../codecs/raffle.js";
  * against the Portal's CREATE2 domain) -> deploy raffle around the predicted V2 pair ->
  * deploy router -> deploy adapter -> launch through the adapter (binds atomically) ->
  * bind raffle.
+ *
+ * The token prediction is verified at plan time: `predictSubject` reads only the adapter's
+ * immutables (`taxTokenImplementation`, `portal`), so calling it on the deployed adapter
+ * IMPLEMENTATION returns exactly what every clone will report — a stale or mismatched vanity
+ * salt fails the plan before an immutable raffle can be deployed around the wrong V2 pair.
+ * The adapter's launch additionally reverts on-chain if the launched token differs.
  *
  * Two Flap-specific safety pins carry into the launch call itself: the reviewed Portal
  * configuration hash and the expected Flap fee rate — the adapter reverts if either drifted
@@ -77,16 +84,17 @@ export function raffleExclusionsForFlapLaunch(args: {
   portal: Address; predictedPair: Address; liquidityManager: Address;
   buybackAdapter: Address; adapterFactory: Address; adapter: Address;
 }): Address[] {
-  const unique = [...new Set([
+  return sortedUniqueAddresses([
     args.portal, args.predictedPair, args.liquidityManager, args.buybackAdapter,
     args.adapterFactory, args.adapter
-  ].map((value) => getAddress(value)))];
-  return unique.sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1));
+  ]);
 }
 
 export interface FlapLaunchPlanInput {
   creator: Address;
   adapterFactory: Address;
+  /** The adapter implementation from the manifest; verifies the token prediction. */
+  adapterImplementation: Address;
   routerFactory: Address;
   adapterSalt: Hex;
   routerSalt: Hex;
@@ -134,18 +142,21 @@ export interface FlapLaunchPlan {
 export async function planFlapLaunch(
   client: PublicClient, input: FlapLaunchPlanInput
 ): Promise<FlapLaunchPlan> {
-  const [adapter, router] = await Promise.all([
-    client.readContract({
-      address: input.adapterFactory, abi: sinjohFlapAdapterFactoryAbi,
-      functionName: "predictAddress", args: [input.creator, input.adapterSalt]
-    }),
-    client.readContract({
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi,
-      functionName: "predictLaunchpadAddress", args: [input.creator, input.routerSalt]
-    })
-  ]);
+  const { adapter, router } = await predictAdapterAndRouter(client, input);
 
+  // Verified against the deployed implementation's own CREATE2 derivation before anything
+  // immutable is planned around it.
   const token = input.token.predictedAddress;
+  const derivedToken = await client.readContract({
+    address: input.adapterImplementation, abi: sinjohFlapAdapterAbi,
+    functionName: "predictSubject", args: [input.token.salt]
+  });
+  if (derivedToken.toLowerCase() !== token.toLowerCase()) {
+    throw new Error(
+      `token prediction mismatch: salt derives ${derivedToken}, caller expected ${token}`
+    );
+  }
+
   const v2Pair = predictUniswapV2Pair({
     factory: input.flap.v2Factory,
     initCodeHash: input.flap.v2PairInitCodeHash,
@@ -165,50 +176,29 @@ export async function planFlapLaunch(
       adapterFactory: input.adapterFactory,
       adapter
     });
-    const raffleConfig = input.raffle.config(exclusions);
-    raffle = await client.readContract({
-      address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi,
-      functionName: "predictRaffle",
-      args: [input.creator, input.raffle.salt, raffleConfigHash(raffleConfig)]
+    const planned = await planRaffleDeploy(client, {
+      factory: input.raffle.factory, salt: input.raffle.salt, creator: input.creator,
+      config: input.raffle.config(exclusions),
+      verifyExtra: `isExcluded holds for the Portal and ${v2Pair}`
     });
-    steps.push({
-      id: "deploy-raffle",
-      call: {
-        address: input.raffle.factory, abi: sinjohRaffleRewardsFactoryAbi as Abi,
-        functionName: "deployRaffle", args: [input.raffle.salt, raffleConfig],
-        description: "Deploy the raffle around the Portal and predicted V2 pair exclusions"
-      },
-      verify: `deployed address equals ${raffle}; isExcluded holds for the Portal and ${v2Pair}`
-    });
+    raffle = planned.raffle;
+    steps.push({ id: "deploy-raffle", ...planned.step });
   }
 
-  const routerConfig = input.routerConfig({
-    adapter, ...(raffle === undefined ? {} : { raffle })
+  const routerDeploy = planRouterDeploy({
+    routerFactory: input.routerFactory, creator: input.creator, salt: input.routerSalt,
+    config: input.routerConfig({ adapter, ...(raffle === undefined ? {} : { raffle }) }),
+    adapter, router
   });
-  if (routerConfig.launchpadAdapter.toLowerCase() !== adapter.toLowerCase()) {
-    throw new Error("routerConfig must set launchpadAdapter to the predicted adapter");
-  }
-  const routerConfigBytes = encodeRouterConfig(routerConfig);
-  steps.push({
-    id: "deploy-router",
-    call: {
-      address: input.routerFactory, abi: sinjohFeeRouterFactoryAbi as Abi,
-      functionName: "deployForLaunchpad",
-      args: [input.creator, input.routerSalt, routerConfig],
-      description: "Deploy the unbound router naming the predicted adapter"
-    },
-    verify: `deployed address equals ${router}`
-  });
+  steps.push({ id: "deploy-router", ...routerDeploy.step });
 
   steps.push({
     id: "deploy-adapter",
-    call: {
-      address: input.adapterFactory, abi: sinjohFlapAdapterFactoryAbi as Abi,
-      functionName: "deploy", args: [input.creator, router, input.adapterSalt],
-      description: "Deploy the adapter wired to the router"
-    },
-    verify: `deployed address equals ${adapter}; adapter.predictSubject(tokenSalt) equals `
-      + `${token}; adapter.portalConfigHash() equals the reviewed hash`
+    ...planAdapterDeploy({
+      adapterFactory: input.adapterFactory, creator: input.creator, salt: input.adapterSalt,
+      adapter, router,
+      verifyExtra: `adapter.portalConfigHash() equals the reviewed hash`
+    })
   });
 
   steps.push({
@@ -242,7 +232,7 @@ export async function planFlapLaunch(
 
   return {
     predicted: { adapter, router, token, v2Pair, ...(raffle === undefined ? {} : { raffle }) },
-    routerConfigBytes,
+    routerConfigBytes: routerDeploy.routerConfigBytes,
     steps
   };
 }

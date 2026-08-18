@@ -23,11 +23,15 @@ const WETH = "0x00000000000000000000000000000000000000e1" as Address;
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 const SALT = `0x${"01".repeat(32)}` as Hex;
 
-function stubClient(): PublicClient {
+const ADAPTER_IMPL = "0x00000000000000000000000000000000000000a2" as Address;
+
+function stubClient(overrides: Record<string, unknown> = {}): PublicClient {
   const reads: Record<string, unknown> = {
     [`${ADAPTER_FACTORY}:predictAddress`]: ADAPTER,
     [`${ROUTER_FACTORY}:predictLaunchpadAddress`]: ROUTER,
-    [`${RAFFLE_FACTORY}:predictRaffle`]: RAFFLE
+    [`${RAFFLE_FACTORY}:predictRaffle`]: RAFFLE,
+    [`${ADAPTER_IMPL}:predictSubject`]: TOKEN,
+    ...overrides
   };
   return {
     readContract: async (args: { address: Address; functionName: string }) => {
@@ -88,6 +92,7 @@ test("predictUniswapV2Pair reproduces the canonical mainnet USDC/WETH pair", () 
 const FLAP_INPUT: FlapLaunchPlanInput = {
   creator: CREATOR,
   adapterFactory: ADAPTER_FACTORY,
+  adapterImplementation: ADAPTER_IMPL,
   routerFactory: ROUTER_FACTORY,
   adapterSalt: SALT,
   routerSalt: SALT,
@@ -204,6 +209,58 @@ test("planLetsCashIntegration stops at the adapter and hands off follow-ups", as
     });
     assert.ok(data.length > 10, step.id);
   }
+});
+
+test("a stale vanity salt fails the plan before anything immutable is planned", async () => {
+  await assert.rejects(
+    planFlapLaunch(stubClient({
+      [`${ADAPTER_IMPL}:predictSubject`]: "0x00000000000000000000000000000000000000ff"
+    }), FLAP_INPUT),
+    /token prediction mismatch/
+  );
+});
+
+test("a flap router config that drops the adapter is rejected before any deploy", async () => {
+  await assert.rejects(
+    planFlapLaunch(stubClient(), {
+      ...FLAP_INPUT,
+      routerConfig: (predicted) => ({ ...routerConfig(predicted), launchpadAdapter: CREATOR })
+    }),
+    /launchpadAdapter/
+  );
+});
+
+test("omitting the raffle drops flap raffle steps but keeps the ordering", async () => {
+  const input: FlapLaunchPlanInput = {
+    ...FLAP_INPUT,
+    routerConfig: (predicted) => routerConfig({ adapter: predicted.adapter })
+  };
+  delete (input as { raffle?: unknown }).raffle;
+  const plan = await planFlapLaunch(stubClient(), input);
+  assert.deepEqual(
+    plan.steps.map((step) => step.id),
+    ["deploy-router", "deploy-adapter", "launch"]
+  );
+  assert.equal(plan.predicted.raffle, undefined);
+});
+
+test("omitting the raffle collapses letscash to two steps and two follow-ups", async () => {
+  const plan = await planLetsCashIntegration(stubClient(), {
+    creator: CREATOR,
+    adapterFactory: ADAPTER_FACTORY,
+    routerFactory: ROUTER_FACTORY,
+    adapterSalt: SALT,
+    routerSalt: SALT,
+    letscash: {
+      factory: "0x0000000000000000000000000000000000000f05",
+      poolManager: "0x0000000000000000000000000000000000000f06",
+      hook: "0x0000000000000000000000000000000000000f07"
+    },
+    routerConfig: (predicted) => routerConfig({ adapter: predicted.adapter })
+  });
+  assert.deepEqual(plan.steps.map((step) => step.id), ["deploy-router", "deploy-adapter"]);
+  assert.equal(plan.followUps.length, 2);
+  assert.equal(plan.predicted.raffle, undefined);
 });
 
 test("post-launch builders encode against their ABIs", () => {
