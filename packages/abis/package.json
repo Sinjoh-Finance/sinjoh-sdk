@@ -1,0 +1,26 @@
+{
+  "name": "@sinjoh/abis",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist/src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  }
+}

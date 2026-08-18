@@ -1,0 +1,29 @@
+{
+  "name": "@sinjoh/trees",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Deterministic Merkle-sum trees for Sinjoh airdrop epochs and raffle ticket intervals, pinned to the Solidity reference fixtures.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist/src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "peerDependencies": {
+    "viem": ">=2.55.10 <3"
+  }
+}
