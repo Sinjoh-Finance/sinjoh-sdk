@@ -32,16 +32,28 @@ export async function verifyManifest(
   for (const key of selected) {
     const entry: DeploymentEntry | undefined = manifest.contracts[key];
     if (!entry) throw new Error(`manifest has no entry for ${key}`);
-    if (!entry.runtimeCodeHash) continue;
-    const code = await client.getCode({ address: entry.address });
-    const actual = code && code !== "0x" ? keccak256(code) : null;
-    results.push({
-      key,
-      address: entry.address,
-      expected: entry.runtimeCodeHash,
-      actual,
-      ok: actual !== null && actual.toLowerCase() === entry.runtimeCodeHash.toLowerCase()
-    });
+    const verifyAddress = async (resultKey: string, address: Address, expected: Hex) => {
+      const code = await client.getCode({ address });
+      const actual = code && code !== "0x" ? keccak256(code) : null;
+      results.push({
+        key: resultKey,
+        address,
+        expected,
+        actual,
+        ok: actual !== null && actual.toLowerCase() === expected.toLowerCase()
+      });
+    };
+    if (entry.runtimeCodeHash) {
+      await verifyAddress(key, entry.address, entry.runtimeCodeHash);
+    }
+    if (entry.implementationRuntimeCodeHash && !entry.implementation) {
+      throw new Error(`${key} has an implementation hash but no implementation address`);
+    }
+    if (entry.implementation && entry.implementationRuntimeCodeHash) {
+      await verifyAddress(
+        `${key}.implementation`, entry.implementation, entry.implementationRuntimeCodeHash
+      );
+    }
   }
   return results;
 }

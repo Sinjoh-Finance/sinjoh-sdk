@@ -3,9 +3,9 @@
 // Regenerate with: forge build (per package), then npm run generate (from sinjoh-sdk/).
 
 /** The monorepo commit the shipped ABIs were compiled from. */
-export const abiSourceCommit = "52cb84a16cce8253f1a9cd9d7e97f34964a6d411";
+export const abiSourceCommit = "70604e45407460883e2d9930c7617dce83bdaf62";
 export const abiContractCounts = {
-  "sinjoh-fee-router": 3,
+  "sinjoh-fee-router": 4,
   "sinjoh-revenue-collector": 1,
   "sinjoh-airdrop-distributor": 1,
   "sinjoh-liquidity-manager": 13,

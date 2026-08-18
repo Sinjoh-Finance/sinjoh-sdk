@@ -33,22 +33,10 @@ if (plan.actions.length === 0) {
 }
 for (const action of plan.actions) {
   console.log(`- [${action.state}] ${action.kind} ${action.amount} of ${action.asset}`);
-  if (action.needsGuardPreflight && action.kind === "process-bucket") {
-    const bucket = plan.router.buckets.find((candidate) =>
-      candidate.conversions.some((conversion) =>
-        conversion.resolvedInput.toLowerCase() === action.asset.toLowerCase()));
-    const guard = bucket?.conversions[0]?.priceGuard;
-    if (guard !== undefined) {
-      const floor = await preflightMinimumOutput(sinjoh.public, {
-        guard,
-        subject: plan.router.subject,
-        assetIn: action.asset,
-        assetOut: bucket!.resolvedOutput,
-        amountIn: action.amount
-      });
-      console.log(`  guard: ${JSON.stringify(floor, (_, v) =>
-        typeof v === "bigint" ? v.toString() : v)}`);
-    }
+  if (action.guardPreflight !== undefined) {
+    const floor = await preflightMinimumOutput(sinjoh.public, action.guardPreflight);
+    console.log(`  guard: ${JSON.stringify(floor, (_, v) =>
+      typeof v === "bigint" ? v.toString() : v)}`);
   }
 }
 console.log("\nSimulate each prepared call before signing; this script submits nothing.");

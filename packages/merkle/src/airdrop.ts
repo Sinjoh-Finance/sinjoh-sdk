@@ -71,6 +71,13 @@ export function buildAirdropTree(
   const entries = [...entitlements].sort(([a], [b]) =>
     a.toLowerCase().localeCompare(b.toLowerCase()));
   if (entries.length === 0) throw new Error("cannot build an empty tree");
+  let previous = "";
+  for (const [holder, amount] of entries) {
+    const canonical = holder.toLowerCase();
+    if (canonical === previous) throw new Error("holders must be unique ignoring case");
+    if (amount <= 0n) throw new Error(`entitlement for ${holder} must be positive`);
+    previous = canonical;
+  }
   const proofs: AirdropProofElement[][] = entries.map(() => []);
   const leaves: AirdropLeaf[] = entries.map(([holder, amount]) => ({
     holder,
@@ -111,9 +118,10 @@ export function buildAirdropTree(
 }
 
 export function verifyAirdropProof(
-  leaf: AirdropLeaf, rootHash: Hex, rootSum: bigint
+  params: AirdropTreeParams, leaf: AirdropLeaf, rootHash: Hex, rootSum: bigint
 ): boolean {
-  let hash = leaf.hash;
+  let hash = airdropLeafHash(params, leaf.holder, leaf.cumulativeAmount);
+  if (hash !== leaf.hash) return false;
   let sum = leaf.cumulativeAmount;
   for (const element of leaf.proof) {
     hash = element.siblingIsLeft

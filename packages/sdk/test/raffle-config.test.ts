@@ -66,3 +66,30 @@ test("unsorted exclusions and unknown bases are rejected locally", () => {
     () => encodeRaffleConfig({ ...FIXTURE_CONFIG, basis: 2 }), /invalid raffle config/
   );
 });
+
+test("local validation mirrors the raffle initializer's hard limits", () => {
+  assert.match(
+    validateRaffleConfig({ ...FIXTURE_CONFIG, tokensPerTicket: 0n }).join("; "),
+    /tokensPerTicket/
+  );
+  assert.match(
+    validateRaffleConfig({ ...FIXTURE_CONFIG, recipientTaxBps: 3_000, recycleTaxBps: 2_001 })
+      .join("; "),
+    /at most 5,000/
+  );
+  assert.match(
+    validateRaffleConfig({ ...FIXTURE_CONFIG, winnersPerRound: 17 }).join("; "),
+    /winnersPerRound/
+  );
+  assert.match(
+    validateRaffleConfig({ ...FIXTURE_CONFIG, basis: 0, weightWindowBlocks: 1 }).join("; "),
+    /SNAPSHOT basis/
+  );
+  assert.match(
+    validateRaffleConfig({
+      ...FIXTURE_CONFIG,
+      stockRewards: [{ ...FIXTURE_CONFIG.stockRewards[0]!, asset: FIXTURE_CONFIG.prizeAsset }]
+    }).join("; "),
+    /differ from prizeAsset/
+  );
+});

@@ -18,6 +18,16 @@ export type GuardPreflight =
     guidance?: string }
   | { status: "reverted"; errorName?: string; guidance?: string };
 
+export interface GuardPreflightInput {
+  guard: Address;
+  subject: Address;
+  assetIn: Address;
+  assetOut: Address;
+  amountIn: bigint;
+  routeHash?: Hex;
+  guardData?: Hex;
+}
+
 const STATUS_BY_ERROR: Record<string, "oracle-not-ready" | "price-moved" | "interval-locked"> = {
   OracleNotReady: "oracle-not-ready",
   ExcessivePriceDeviation: "price-moved",
@@ -46,15 +56,9 @@ function classify(error: unknown): GuardPreflight {
  * Asks a guard for the immutable minimum output of a swap. `callerMinOut` may be set above
  * the returned value at execution time, never below — the guard re-checks on-chain.
  */
-export async function preflightMinimumOutput(client: ReadClient, args: {
-  guard: Address;
-  subject: Address;
-  assetIn: Address;
-  assetOut: Address;
-  amountIn: bigint;
-  routeHash?: Hex;
-  guardData?: Hex;
-}): Promise<GuardPreflight> {
+export async function preflightMinimumOutput(
+  client: ReadClient, args: GuardPreflightInput
+): Promise<GuardPreflight> {
   try {
     const [minOut, validUntil] = await client.readContract({
       address: args.guard,

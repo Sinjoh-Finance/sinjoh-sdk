@@ -124,4 +124,15 @@ test("liquidity sink limits are enforced locally", () => {
     validateLiquiditySinkConfig({ ...LIQUIDITY_CONFIG, feeMode: FeeMode.CREATOR }).join("; "),
     /feeRecipient must be nonzero/
   );
+  assert.match(
+    validateLiquiditySinkConfig({ ...LIQUIDITY_CONFIG, tickSpacing: 0 }).join("; "),
+    /v4 requires positive tickSpacing/
+  );
+  assert.match(
+    validateLiquiditySinkConfig({
+      ...LIQUIDITY_CONFIG,
+      swapAdapter: "0x0000000000000000000000000000000000000000"
+    }).join("; "),
+    /swapAdapter must be nonzero/
+  );
 });

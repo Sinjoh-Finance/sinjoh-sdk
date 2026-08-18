@@ -72,7 +72,7 @@ function raffleConfig(exclusions: Address[]): RaffleConfig {
     protocolFeeRecipient: CREATOR, taxRecipient: CREATOR,
     tokensPerTicket: 10n ** 22n, maxTicketsPerHolder: 0n, minPrize: 1n, maxPrize: 0n,
     prizeBps: 500, recipientTaxBps: 0, recycleTaxBps: 0, minConfirmations: 1,
-    winnersPerRound: 1, minRoundInterval: 3_600, weightWindowBlocks: 900,
+    winnersPerRound: 1, minRoundInterval: 3_600, weightWindowBlocks: 0,
     randomnessTimeout: 7_200, claimWindow: 604_800, basis: 0,
     exclusions, stockRewards: []
   };
@@ -101,12 +101,12 @@ const FLAP_INPUT: FlapLaunchPlanInput = {
     predictedAddress: TOKEN,
     params: {
       name: "Rehearsal", symbol: "RHRSL", meta: "", dexThresh: 0,
-      migratorType: 0, quoteToken: ZERO, quoteAmt: 0n, beneficiary: CREATOR,
+      migratorType: 1, quoteToken: ZERO, quoteAmt: 0n,
       permitData: "0x", extensionID: `0x${"00".repeat(32)}`, extensionData: "0x",
-      dexId: 0, lpFeeProfile: 0, buyTaxRate: 0, sellTaxRate: 0,
-      taxDuration: 0n, antiFarmerDuration: 0n, mktBps: 0, deflationBps: 0,
+      dexId: 0, lpFeeProfile: 0, buyTaxRate: 100, sellTaxRate: 100,
+      taxDuration: 0n, antiFarmerDuration: 0n, mktBps: 10_000, deflationBps: 0,
       dividendBps: 0, lpBps: 0, minimumShareBalance: 0n, dividendToken: ZERO,
-      commissionReceiver: ZERO, tokenVersion: 6
+      tokenVersion: 6
     }
   },
   reviewedPortalConfigHash: `0x${"ab".repeat(32)}`,
@@ -143,6 +143,10 @@ test("planFlapLaunch follows the rehearsal ordering and encodes every step", asy
   assert.ok(launch);
   assert.equal(launch.call.args[1], FLAP_INPUT.reviewedPortalConfigHash, "config hash pinned");
   assert.equal(launch.call.args[2], 300, "fee rate pinned");
+  assert.equal(launch.call.value, 0n, "native launch value is derived from quoteAmt");
+  const params = launch.call.args[0] as { beneficiary: Address; commissionReceiver: Address };
+  assert.equal(params.beneficiary, ADAPTER);
+  assert.equal(params.commissionReceiver, ADAPTER);
 });
 
 test("flap raffle exclusions include the six protocol holders, sorted", async () => {
@@ -217,6 +221,32 @@ test("a stale vanity salt fails the plan before anything immutable is planned", 
       [`${ADAPTER_IMPL}:predictSubject`]: "0x00000000000000000000000000000000000000ff"
     }), FLAP_INPUT),
     /token prediction mismatch/
+  );
+});
+
+test("a Flap developer buy derives native value from quoteAmt", async () => {
+  const quoteAmt = 123n;
+  const plan = await planFlapLaunch(stubClient(), {
+    ...FLAP_INPUT,
+    token: {
+      ...FLAP_INPUT.token,
+      params: { ...FLAP_INPUT.token.params, quoteAmt }
+    },
+    minDeveloperBuyOut: 1n
+  });
+  assert.equal(plan.steps.find((step) => step.id === "launch")!.call.value, quoteAmt);
+});
+
+test("invalid Flap policy fails before an immutable raffle is planned", async () => {
+  await assert.rejects(
+    planFlapLaunch(stubClient(), {
+      ...FLAP_INPUT,
+      token: {
+        ...FLAP_INPUT.token,
+        params: { ...FLAP_INPUT.token.params, migratorType: 0 }
+      }
+    }),
+    /migratorType must be 1/
   );
 });
 

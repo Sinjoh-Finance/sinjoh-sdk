@@ -1,10 +1,11 @@
 import { sinjohFeeRouterAbi } from "@sinjoh/abis";
-import type { Address } from "viem";
+import { keccak256, type Address } from "viem";
 import {
   routerFundSink, routerProcessBucket, routerSendProtocolFee, routerSendWallet, routerSync,
   type PreparedCall
 } from "./actions.js";
 import type { ReadClient } from "./client.js";
+import type { GuardPreflightInput } from "./guards.js";
 import { readRouterSnapshot, type RouterSnapshot } from "./reads.js";
 
 /**
@@ -29,6 +30,8 @@ export interface PlannedAction {
   asset: Address;
   amount: bigint;
   needsGuardPreflight: boolean;
+  /** Exact immutable guard query to run before replacing the call's placeholder floor. */
+  guardPreflight?: GuardPreflightInput;
   call: PreparedCall;
 }
 
@@ -52,13 +55,36 @@ export async function planRouterWork(
     });
     if (unaccounted === 0n) continue;
     const isWeth = asset.toLowerCase() === router.weth.toLowerCase();
+    const normalization = router.normalizations.find(
+      (entry) => entry.asset.toLowerCase() === asset.toLowerCase()
+    );
+    if (!isWeth && normalization === undefined) {
+      throw new Error(`missing normalization metadata for intake asset ${asset}`);
+    }
+    const amount = !isWeth && normalization!.maxAmountInPerCall > 0n
+      && unaccounted > normalization!.maxAmountInPerCall
+      ? normalization!.maxAmountInPerCall
+      : unaccounted;
     actions.push({
       kind: "sync",
       state: "Unaccounted router balance",
       asset,
-      amount: unaccounted,
+      amount,
       needsGuardPreflight: !isWeth,
-      call: isWeth ? routerSync(routerAddress, asset) : routerSync(routerAddress, asset, 0n)
+      ...(isWeth ? {} : {
+        guardPreflight: {
+          guard: normalization!.priceGuard,
+          subject: asset,
+          assetIn: asset,
+          assetOut: router.weth,
+          amountIn: amount,
+          routeHash: keccak256(normalization!.routeData),
+          guardData: "0x" as const
+        }
+      }),
+      // One is a structural placeholder because the guarded overload rejects zero. The
+      // immutable guard still enforces its own floor; replace this with the preflight floor.
+      call: isWeth ? routerSync(routerAddress, asset) : routerSync(routerAddress, asset, 1n)
     });
   }
 
@@ -83,6 +109,19 @@ export async function planRouterWork(
         amount: tranche,
         needsGuardPreflight: conversion.priceGuard
           !== "0x0000000000000000000000000000000000000000",
+        ...(conversion.priceGuard === "0x0000000000000000000000000000000000000000"
+          ? {}
+          : {
+              guardPreflight: {
+                guard: conversion.priceGuard,
+                subject: bucket.resolvedOutput,
+                assetIn: conversion.resolvedInput,
+                assetOut: bucket.resolvedOutput,
+                amountIn: tranche,
+                routeHash: keccak256(conversion.routeData),
+                guardData: "0x" as const
+              }
+            }),
         call: routerProcessBucket(routerAddress, {
           bucketId: bucket.bucketId,
           inputAsset: conversion.resolvedInput,

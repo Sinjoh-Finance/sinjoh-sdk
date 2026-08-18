@@ -117,26 +117,55 @@ const CONFIG_COMPONENTS = [
 ] as const;
 
 const ZERO = "0x0000000000000000000000000000000000000000";
+const BURN = "0x000000000000000000000000000000000000dead";
 const MAX_BYTES = 1_024;
 const MAX_ENCODED = 16_384;
+const UINT16_MAX = 65_535;
+const UINT128_MAX = (1n << 128n) - 1n;
 
 function byteLength(data: Hex): number {
   return (data.length - 2) / 2;
 }
 
+function sameAddress(left: Address, right: string): boolean {
+  return left.toLowerCase() === right;
+}
+
+function checkUint(value: number, max: number, label: string, issues: string[]): void {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    issues.push(`${label} must be an integer from 0 to ${max}`);
+  }
+}
+
+function checkUint128(value: bigint, label: string, issues: string[]): void {
+  if (value < 0n || value > UINT128_MAX) issues.push(`${label} must fit uint128`);
+}
+
 function checkAssetRef(ref: AssetRef, label: string, issues: string[]): void {
   if (ref.kind === AssetKind.FIXED_ERC20) {
-    if (ref.token === ZERO) issues.push(`${label}: FIXED_ERC20 requires a token address`);
+    if (sameAddress(ref.token, ZERO)) {
+      issues.push(`${label}: FIXED_ERC20 requires a token address`);
+    }
   } else if (ref.kind === AssetKind.NATIVE || ref.kind === AssetKind.SUBJECT) {
-    if (ref.token !== ZERO) issues.push(`${label}: kind ${ref.kind} requires a zero token`);
+    if (!sameAddress(ref.token, ZERO)) issues.push(`${label}: kind ${ref.kind} requires a zero token`);
   } else {
     issues.push(`${label}: unknown asset kind ${ref.kind}`);
   }
 }
 
+function assetKey(ref: AssetRef): string {
+  return `${ref.kind}:${ref.token.toLowerCase()}`;
+}
+
 /** The router's documented hard limits, checked locally before any RPC call. */
 export function validateRouterConfig(config: RouterConfig): string[] {
   const issues: string[] = [];
+
+  if (sameAddress(config.creator, ZERO)) issues.push("creator must be nonzero");
+  if (sameAddress(config.protocolFeeRecipient, ZERO)) {
+    issues.push("protocolFeeRecipient must be nonzero");
+  }
+  if (sameAddress(config.weth, ZERO)) issues.push("weth must be nonzero");
 
   if (config.normalizations.length > 8) {
     issues.push(`at most 8 normalizations, got ${config.normalizations.length}`);
@@ -145,11 +174,28 @@ export function validateRouterConfig(config: RouterConfig): string[] {
   for (const [i, normalization] of config.normalizations.entries()) {
     const label = `normalizations[${i}]`;
     checkAssetRef(normalization.asset, `${label}.asset`, issues);
-    const key = `${normalization.asset.kind}:${normalization.asset.token.toLowerCase()}`;
+    const key = assetKey(normalization.asset);
     if (seenAssets.has(key)) issues.push(`${label}: duplicate intake asset`);
     seenAssets.add(key);
+    if (normalization.asset.kind === AssetKind.NATIVE) {
+      issues.push(`${label}.asset cannot be NATIVE`);
+    }
+    if (normalization.asset.kind === AssetKind.FIXED_ERC20
+      && normalization.asset.token.toLowerCase() === config.weth.toLowerCase()) {
+      issues.push(`${label}.asset cannot duplicate WETH`);
+    }
+    if (sameAddress(normalization.route.adapter, ZERO)) {
+      issues.push(`${label}.route.adapter must be nonzero`);
+    }
+    if (sameAddress(normalization.priceGuard, ZERO)) {
+      issues.push(`${label}.priceGuard must be nonzero`);
+    }
     if (byteLength(normalization.route.routeData) > MAX_BYTES) {
       issues.push(`${label}.route.routeData exceeds ${MAX_BYTES} bytes`);
+    }
+    checkUint128(normalization.maxAmountInPerCall, `${label}.maxAmountInPerCall`, issues);
+    if (normalization.maxAmountInPerCall === 0n) {
+      issues.push(`${label}.maxAmountInPerCall must be greater than zero`);
     }
   }
 
@@ -157,24 +203,62 @@ export function validateRouterConfig(config: RouterConfig): string[] {
     issues.push(`buckets must number 1 to 8, got ${config.buckets.length}`);
   }
   let bucketBps = 0;
+  const seenOutputs = new Set<string>();
   for (const [i, bucket] of config.buckets.entries()) {
     const label = `buckets[${i}]`;
+    checkUint(bucket.bps, UINT16_MAX, `${label}.bps`, issues);
     bucketBps += bucket.bps;
     checkAssetRef(bucket.output, `${label}.output`, issues);
+    const outputKey = assetKey(bucket.output);
+    if (seenOutputs.has(outputKey)) issues.push(`${label}: duplicate bucket output`);
+    seenOutputs.add(outputKey);
+
+    const identity = bucket.output.kind === AssetKind.FIXED_ERC20
+      && bucket.output.token.toLowerCase() === config.weth.toLowerCase();
+    const exactNative = bucket.output.kind === AssetKind.NATIVE;
+    if (identity) {
+      if (!sameAddress(bucket.route.adapter, ZERO) || bucket.route.routeData !== "0x") {
+        issues.push(`${label}: WETH output requires an empty identity route`);
+      }
+    } else if (sameAddress(bucket.route.adapter, ZERO)) {
+      issues.push(`${label}.route.adapter must be nonzero for a converted output`);
+    }
+    if (identity || exactNative) {
+      if (!sameAddress(bucket.priceGuard, ZERO)) {
+        issues.push(`${label}.priceGuard must be zero for WETH or native output`);
+      }
+    } else if (sameAddress(bucket.priceGuard, ZERO)) {
+      issues.push(`${label}.priceGuard must be nonzero for an ERC-20 conversion`);
+    }
     if (byteLength(bucket.route.routeData) > MAX_BYTES) {
       issues.push(`${label}.route.routeData exceeds ${MAX_BYTES} bytes`);
+    }
+    checkUint128(bucket.maxAmountInPerCall, `${label}.maxAmountInPerCall`, issues);
+    if (bucket.maxAmountInPerCall === 0n) {
+      issues.push(`${label}.maxAmountInPerCall must be greater than zero`);
     }
     if (bucket.allocations.length < 1 || bucket.allocations.length > 16) {
       issues.push(`${label} allocations must number 1 to 16, got ${bucket.allocations.length}`);
     }
     let allocationBps = 0;
     for (const [j, allocation] of bucket.allocations.entries()) {
+      const allocationLabel = `${label}.allocations[${j}]`;
+      checkUint(allocation.bps, UINT16_MAX, `${allocationLabel}.bps`, issues);
       allocationBps += allocation.bps;
       if (byteLength(allocation.sinkConfig) > MAX_BYTES) {
-        issues.push(`${label}.allocations[${j}].sinkConfig exceeds ${MAX_BYTES} bytes`);
+        issues.push(`${allocationLabel}.sinkConfig exceeds ${MAX_BYTES} bytes`);
       }
       if (!allocation.isSink && allocation.sinkConfig !== "0x") {
-        issues.push(`${label}.allocations[${j}]: non-sink allocation carries sinkConfig`);
+        issues.push(`${allocationLabel}: non-sink allocation carries sinkConfig`);
+      }
+      if (sameAddress(allocation.destination, ZERO)) {
+        issues.push(`${allocationLabel}.destination must be nonzero`);
+      }
+      if (allocation.isSink && allocation.creatorMayRepoint) {
+        issues.push(`${allocationLabel}: sink allocations cannot be repointed`);
+      }
+      if (exactNative && sameAddress(allocation.destination, BURN)) {
+        issues.push(`${allocationLabel}: native output cannot be sent to the burn address`);
       }
     }
     if (bucket.allocations.length > 0 && allocationBps !== 10_000) {

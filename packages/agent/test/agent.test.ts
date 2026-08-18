@@ -11,7 +11,7 @@ const SUBJECT = "0x00000000000000000000000000000000000000e2" as Address;
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
 /** A quiet single-bucket router, keyed the same way as the SDK planner tests. */
-function stubChain(): PublicClient {
+function stubChain(onRead?: (args: { functionName: string; args?: readonly unknown[] }) => void): PublicClient {
   const routes: Record<string, unknown> = {
     "creator": ZERO,
     "protocolFeeRecipient": ZERO,
@@ -32,6 +32,8 @@ function stubChain(): PublicClient {
   };
   return {
     readContract: async (args: { functionName: string; args?: readonly unknown[] }) => {
+      onRead?.(args);
+      if (args.functionName === "minimumOutput") return [12n, 1234];
       const key = args.args === undefined || args.args.length === 0
         ? args.functionName
         : `${args.functionName}:${JSON.stringify(args.args, (_, v) =>
@@ -42,17 +44,19 @@ function stubChain(): PublicClient {
   } as unknown as PublicClient;
 }
 
-async function connectedClient(): Promise<Client> {
+async function connectedClient(
+  onRead?: (args: { functionName: string; args?: readonly unknown[] }) => void
+): Promise<Client> {
   const server = createSinjohAgentServer({
-    client: stubChain(),
+    client: stubChain(onRead),
     manifest: {
+      chainId: 4663,
       contracts: {
         raffleFactory: {
           address: "0xD030064fB83d14C97c22A6B63bF376552eBA7112" as Address
         }
       }
-    },
-    chainId: 4663
+    }
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "0.0.1" });
@@ -108,6 +112,29 @@ test("plan_router_work serializes amounts as decimal strings", async () => {
   assert.equal(plan.actions[0].kind, "sync");
   assert.equal(plan.actions[0].amount, "41", "bigint crossed the wire as a decimal string");
   assert.equal(plan.router.subject, SUBJECT);
+  await client.close();
+});
+
+test("preflight_guard forwards the route hash and guard data", async () => {
+  let minimumOutputArgs: readonly unknown[] | undefined;
+  const client = await connectedClient((args) => {
+    if (args.functionName === "minimumOutput") minimumOutputArgs = args.args;
+  });
+  const routeHash = `0x${"ab".repeat(32)}`;
+  const result = JSON.parse(text(await client.callTool({
+    name: "sinjoh_preflight_guard",
+    arguments: {
+      guard: ZERO,
+      subject: SUBJECT,
+      assetIn: SUBJECT,
+      assetOut: WETH,
+      amountIn: "99",
+      routeHash,
+      guardData: "0x1234"
+    }
+  })));
+  assert.deepEqual(result, { status: "ok", minOut: "12", validUntil: 1234 });
+  assert.deepEqual(minimumOutputArgs, [SUBJECT, SUBJECT, WETH, 99n, routeHash, "0x1234"]);
   await client.close();
 });
 

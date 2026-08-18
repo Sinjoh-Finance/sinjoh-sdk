@@ -10,7 +10,7 @@ export type ReadClient = Pick<PublicClient, "readContract">;
 export interface SinjohClient {
   chainId: number;
   public: PublicClient;
-  manifest: Pick<ChainManifest, "contracts">;
+  manifest: Pick<ChainManifest, "chainId" | "contracts">;
   /** Compares recorded runtime code hashes against the live chain; run before trusting reads. */
   verify(keys?: readonly string[]): Promise<VerificationResult[]>;
 }
@@ -21,7 +21,7 @@ export interface CreateSinjohClientOptions {
   rpcUrl?: string;
   chainId?: 4663 | 46630;
   /** Defaults to the packaged mainnet manifest; supply your own of the same schema to pin. */
-  manifest?: Pick<ChainManifest, "contracts">;
+  manifest?: Pick<ChainManifest, "chainId" | "contracts">;
 }
 
 /**
@@ -29,7 +29,17 @@ export interface CreateSinjohClientOptions {
  * `verify()` (and check every result) before acting on the addresses it names.
  */
 export function createSinjohClient(options: CreateSinjohClientOptions = {}): SinjohClient {
-  const chainId = options.chainId ?? 4663;
+  const clientChainId = options.publicClient?.chain?.id;
+  if (options.chainId !== undefined && clientChainId !== undefined
+    && options.chainId !== clientChainId) {
+    throw new Error(
+      `chainId ${options.chainId} does not match publicClient chain ${clientChainId}`
+    );
+  }
+  const chainId = options.chainId ?? clientChainId ?? 4663;
+  if (chainId !== 4663 && chainId !== 46630) {
+    throw new Error(`unsupported chainId ${chainId}; expected 4663 or 46630`);
+  }
   const chain = chainId === 4663 ? robinhoodMainnet : robinhoodTestnet;
   const publicClient = options.publicClient ?? createPublicClient({
     chain,
@@ -39,6 +49,9 @@ export function createSinjohClient(options: CreateSinjohClientOptions = {}): Sin
     ?? (chainId === 4663
       ? mainnet
       : (() => { throw new Error("no packaged testnet manifest; supply one explicitly"); })());
+  if (manifest.chainId !== chainId) {
+    throw new Error(`manifest chain ${manifest.chainId} does not match client chain ${chainId}`);
+  }
   return {
     chainId,
     public: publicClient,

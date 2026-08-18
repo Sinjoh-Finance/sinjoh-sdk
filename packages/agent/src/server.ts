@@ -24,12 +24,12 @@ import { errorResult, textResult } from "./serialize.js";
 
 export interface SinjohAgentContext {
   client: PublicClient;
-  manifest: Pick<ChainManifest, "contracts">;
-  chainId: number;
+  manifest: Pick<ChainManifest, "chainId" | "contracts">;
 }
 
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/).describe("20-byte hex address");
 const hex = z.string().regex(/^0x[0-9a-fA-F]*$/).describe("hex bytes");
+const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/).describe("32-byte hex value");
 
 export function createSinjohAgentServer(context: SinjohAgentContext): McpServer {
   const server = new McpServer({ name: "sinjoh", version: "0.0.1" });
@@ -42,7 +42,7 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
     inputSchema: { key: z.string().optional().describe("manifest key, e.g. raffleFactory") }
   }, async ({ key }) => {
     if (key === undefined) {
-      return textResult({ chainId: context.chainId, keys: Object.keys(manifest.contracts) });
+      return textResult({ chainId: manifest.chainId, keys: Object.keys(manifest.contracts) });
     }
     const entry = manifest.contracts[key];
     return entry === undefined
@@ -95,10 +95,13 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
   server.registerTool("sinjoh_preflight_guard", {
     description: "Ask an immutable price guard for a swap's minimum output. Returns ok with "
       + "the floor, or an explicit oracle-not-ready / price-moved / interval-locked state "
-      + "with operator guidance. Callers may raise the floor at execution, never lower it.",
+      + "with operator guidance. Forward routeHash and signed guardData from the work plan. "
+      + "Callers may raise the floor at execution, never lower it.",
     inputSchema: {
       guard: address, subject: address, assetIn: address, assetOut: address,
-      amountIn: z.string().regex(/^\d+$/).describe("raw input amount as a decimal string")
+      amountIn: z.string().regex(/^\d+$/).describe("raw input amount as a decimal string"),
+      routeHash: bytes32.optional(),
+      guardData: hex.optional().describe("guard-specific bytes, including any required signature")
     }
   }, async (args) => {
     try {
@@ -107,7 +110,9 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
         subject: args.subject as Address,
         assetIn: args.assetIn as Address,
         assetOut: args.assetOut as Address,
-        amountIn: BigInt(args.amountIn)
+        amountIn: BigInt(args.amountIn),
+        ...(args.routeHash === undefined ? {} : { routeHash: args.routeHash as Hex }),
+        ...(args.guardData === undefined ? {} : { guardData: args.guardData as Hex })
       }));
     } catch (error) {
       return errorResult(error);
@@ -209,7 +214,7 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
       adapterFactory: address, routerFactory: address, ponsFactory: address,
       launchConfigId: z.string().regex(/^\d+$/),
       pairToken: address,
-      adapterSalt: hex, routerSalt: hex,
+      adapterSalt: bytes32, routerSalt: bytes32,
       token: z.object({
         name: z.string(), symbol: z.string(), logo: z.string(), description: z.string(),
         socials: z.object({
@@ -217,12 +222,12 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
           website: z.string(), farcaster: z.string()
         }),
         creatorFeeRecipient: address.optional(),
-        creatorTaxBps: z.number().int(), buybackEnabled: z.boolean(), salt: hex
+        creatorTaxBps: z.number().int(), buybackEnabled: z.boolean(), salt: bytes32
       }),
       developerBuy: z.string().regex(/^\d+$/).optional(),
       routerConfig: z.record(z.string(), z.unknown()),
       raffle: z.object({
-        factory: address, salt: hex,
+        factory: address, salt: bytes32,
         config: z.record(z.string(), z.unknown())
           .describe("RaffleConfig without exclusions; bigints as decimal strings")
       }).optional()
@@ -280,21 +285,20 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
     inputSchema: {
       creator: address,
       adapterFactory: address, adapterImplementation: address, routerFactory: address,
-      adapterSalt: hex, routerSalt: hex,
-      tokenSalt: hex, tokenPredictedAddress: address,
+      adapterSalt: bytes32, routerSalt: bytes32,
+      tokenSalt: bytes32, tokenPredictedAddress: address,
       tokenParams: z.record(z.string(), z.unknown())
         .describe("NewTokenV6Params without salt; bigints as decimal strings"),
-      reviewedPortalConfigHash: hex,
+      reviewedPortalConfigHash: bytes32,
       expectedFlapFeeRate: z.number().int(),
       minDeveloperBuyOut: z.string().regex(/^\d+$/).optional(),
-      launchValue: z.string().regex(/^\d+$/).optional(),
       flap: z.object({
-        portal: address, v2Factory: address, v2PairInitCodeHash: hex, weth: address,
+        portal: address, v2Factory: address, v2PairInitCodeHash: bytes32, weth: address,
         liquidityManager: address, buybackAdapter: address
       }),
       routerConfig: z.record(z.string(), z.unknown()),
       raffle: z.object({
-        factory: address, salt: hex, config: z.record(z.string(), z.unknown())
+        factory: address, salt: bytes32, config: z.record(z.string(), z.unknown())
       }).optional()
     }
   }, async (args) => {
@@ -316,7 +320,6 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
         expectedFlapFeeRate: args.expectedFlapFeeRate,
         ...(args.minDeveloperBuyOut === undefined
           ? {} : { minDeveloperBuyOut: BigInt(args.minDeveloperBuyOut) }),
-        ...(args.launchValue === undefined ? {} : { launchValue: BigInt(args.launchValue) }),
         flap: {
           portal: args.flap.portal as Address,
           v2Factory: args.flap.v2Factory as Address,
@@ -353,11 +356,11 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
     inputSchema: {
       creator: address,
       adapterFactory: address, routerFactory: address,
-      adapterSalt: hex, routerSalt: hex,
+      adapterSalt: bytes32, routerSalt: bytes32,
       letscash: z.object({ factory: address, poolManager: address, hook: address }),
       routerConfig: z.record(z.string(), z.unknown()),
       raffle: z.object({
-        factory: address, salt: hex, config: z.record(z.string(), z.unknown())
+        factory: address, salt: bytes32, config: z.record(z.string(), z.unknown())
       }).optional()
     }
   }, async (args) => {

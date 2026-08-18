@@ -28,6 +28,14 @@ export interface RouterAllocation {
   creatorMayRepoint: boolean;
 }
 
+export interface RouterNormalization {
+  asset: Address;
+  adapter: Address;
+  priceGuard: Address;
+  routeData: Hex;
+  maxAmountInPerCall: bigint;
+}
+
 export interface RouterConversion {
   bucketId: number;
   conversionId: number;
@@ -50,6 +58,7 @@ export interface RouterBucket {
 export interface RouterSnapshot extends RouterIdentity {
   address: Address;
   intakeAssets: Address[];
+  normalizations: RouterNormalization[];
   buckets: RouterBucket[];
 }
 
@@ -96,6 +105,14 @@ export async function readRouterSnapshot(
     intakeAssets.push(resolved);
   }
 
+  const normalizations: RouterNormalization[] = [];
+  for (const asset of intakeAssets) {
+    if (asset.toLowerCase() === identity.weth.toLowerCase()) continue;
+    const [adapter, priceGuard, routeData, maxAmountInPerCall] =
+      await client.readContract({ ...at, functionName: "normalizationInfo", args: [asset] });
+    normalizations.push({ asset, adapter, priceGuard, routeData, maxAmountInPerCall });
+  }
+
   const bucketCount = await client.readContract({ ...at, functionName: "bucketCount" });
   const buckets: RouterBucket[] = [];
   for (let bucketId = 0; bucketId < Number(bucketCount); bucketId++) {
@@ -128,5 +145,5 @@ export async function readRouterSnapshot(
     buckets.push({ bucketId, resolvedOutput, bps, conversions, allocations });
   }
 
-  return { ...identity, address, intakeAssets, buckets };
+  return { ...identity, address, intakeAssets, normalizations, buckets };
 }

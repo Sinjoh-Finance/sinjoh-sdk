@@ -59,6 +59,40 @@ export interface FlapTokenParams {
   tokenVersion: number;
 }
 
+/** Caller-selected Flap fields. Adapter-owned recipients and the salt are injected by the plan. */
+export type FlapTokenInputParams = Omit<
+  FlapTokenParams, "salt" | "beneficiary" | "commissionReceiver"
+>;
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ZERO_BYTES32 = `0x${"00".repeat(32)}`;
+
+function validateFlapTokenInput(params: FlapTokenInputParams): string[] {
+  const issues: string[] = [];
+  if (params.tokenVersion !== 6) issues.push("tokenVersion must be 6 (TOKEN_TAXED_V3)");
+  if (params.migratorType !== 1) issues.push("migratorType must be 1 (V2_MIGRATOR)");
+  if (params.quoteToken.toLowerCase() !== ZERO_ADDRESS) {
+    issues.push("quoteToken must be native (zero address)");
+  }
+  if (params.dexId !== 0) issues.push("dexId must be 0 (DEX0)");
+  if (params.lpFeeProfile !== 0) issues.push("lpFeeProfile must be 0 (STANDARD)");
+  if (params.buyTaxRate === 0 && params.sellTaxRate === 0) {
+    issues.push("buyTaxRate and sellTaxRate cannot both be zero");
+  }
+  if (params.mktBps !== 10_000) issues.push("mktBps must be 10,000");
+  if (params.deflationBps !== 0 || params.dividendBps !== 0 || params.lpBps !== 0) {
+    issues.push("deflationBps, dividendBps, and lpBps must all be zero");
+  }
+  if (params.minimumShareBalance !== 0n) issues.push("minimumShareBalance must be zero");
+  if (params.dividendToken.toLowerCase() !== ZERO_ADDRESS) {
+    issues.push("dividendToken must be zero");
+  }
+  if (params.permitData !== "0x") issues.push("permitData must be empty");
+  if (params.extensionID.toLowerCase() !== ZERO_BYTES32) issues.push("extensionID must be zero");
+  if (params.extensionData !== "0x") issues.push("extensionData must be empty");
+  return issues;
+}
+
 /** Canonical Uniswap-V2 `pairFor`: the pool that will hold post-graduation liquidity. */
 export function predictUniswapV2Pair(args: {
   factory: Address; initCodeHash: Hex; tokenA: Address; tokenB: Address;
@@ -99,12 +133,11 @@ export interface FlapLaunchPlanInput {
   adapterSalt: Hex;
   routerSalt: Hex;
   /** Vanity salt pre-mined against the live Portal's CREATE2 domain, and its result. */
-  token: { salt: Hex; predictedAddress: Address; params: Omit<FlapTokenParams, "salt"> };
+  token: { salt: Hex; predictedAddress: Address; params: FlapTokenInputParams };
   /** Reviewed upstream state pinned into the launch; the adapter reverts on drift. */
   reviewedPortalConfigHash: Hex;
   expectedFlapFeeRate: number;
   minDeveloperBuyOut?: bigint;
-  launchValue?: bigint;
   flap: {
     portal: Address;
     v2Factory: Address;
@@ -143,6 +176,14 @@ export async function planFlapLaunch(
   client: PublicClient, input: FlapLaunchPlanInput
 ): Promise<FlapLaunchPlan> {
   const { adapter, router } = await predictAdapterAndRouter(client, input);
+
+  const tokenIssues = validateFlapTokenInput(input.token.params);
+  if (input.token.params.quoteAmt > 0n && (input.minDeveloperBuyOut ?? 0n) === 0n) {
+    tokenIssues.push("minDeveloperBuyOut must be nonzero when quoteAmt is nonzero");
+  }
+  if (tokenIssues.length > 0) {
+    throw new Error(`invalid Flap launch params: ${tokenIssues.join("; ")}`);
+  }
 
   // Verified against the deployed implementation's own CREATE2 derivation before anything
   // immutable is planned around it.
@@ -206,12 +247,17 @@ export async function planFlapLaunch(
     call: {
       address: adapter, abi: sinjohFlapAdapterAbi as Abi, functionName: "launch",
       args: [
-        { ...input.token.params, salt: input.token.salt },
+        {
+          ...input.token.params,
+          salt: input.token.salt,
+          beneficiary: adapter,
+          commissionReceiver: adapter
+        },
         input.reviewedPortalConfigHash,
         input.expectedFlapFeeRate,
         input.minDeveloperBuyOut ?? 0n
       ],
-      ...(input.launchValue === undefined ? {} : { value: input.launchValue }),
+      value: input.token.params.quoteAmt,
       description: "Launch through the adapter with the reviewed Portal config and fee rate "
         + "pinned; the adapter binds the router atomically"
     },

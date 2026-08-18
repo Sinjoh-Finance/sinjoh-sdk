@@ -21,6 +21,23 @@ export interface RaffleStockReward {
 }
 
 export const TicketBasis = { SNAPSHOT: 0, MIN_BALANCE: 1 } as const;
+const ZERO = "0x0000000000000000000000000000000000000000";
+const UINT8_MAX = 255;
+const UINT16_MAX = 65_535;
+const UINT32_MAX = 4_294_967_295;
+const UINT128_MAX = (1n << 128n) - 1n;
+const MAX_PAYOUT_TAX_BPS = 5_000;
+const MAX_WINNERS_PER_ROUND = 16;
+const MAX_EXCLUSIONS = 32;
+const MAX_STOCK_REWARDS = 16;
+const MAX_ROUTE_DATA_LENGTH = 1_024;
+const MIN_ROUND_INTERVAL = 600;
+const MAX_ROUND_INTERVAL = 604_800;
+const MAX_WEIGHT_WINDOW_BLOCKS = 1_000_000;
+const MIN_RANDOMNESS_TIMEOUT = 900;
+const MAX_RANDOMNESS_TIMEOUT = 86_400;
+const MIN_CLAIM_WINDOW = 3_600;
+const MAX_CLAIM_WINDOW = 2_592_000;
 
 export interface RaffleConfig {
   creator: Address;
@@ -85,20 +102,130 @@ const CONFIG_COMPONENTS = [
   }
 ] as const;
 
+function isZero(address: Address): boolean {
+  return address.toLowerCase() === ZERO;
+}
+
+function byteLength(data: Hex): number {
+  return (data.length - 2) / 2;
+}
+
+function checkUint(value: number, max: number, label: string, issues: string[]): void {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    issues.push(`${label} must be an integer from 0 to ${max}`);
+  }
+}
+
+function checkUint128(value: bigint, label: string, issues: string[]): void {
+  if (value < 0n || value > UINT128_MAX) issues.push(`${label} must fit uint128`);
+}
+
 /** Local-first validation; the raffle enforces the same rules on-chain. */
 export function validateRaffleConfig(config: RaffleConfig): string[] {
   const issues: string[] = [];
-  let previous = -1n;
+
+  if (isZero(config.creator)) issues.push("creator must be nonzero");
+  if (isZero(config.attestor)) issues.push("attestor must be nonzero");
+  if (isZero(config.randomness)) issues.push("randomness must be nonzero");
+  if (isZero(config.protocolFeeRecipient)) issues.push("protocolFeeRecipient must be nonzero");
+  if (config.recipientTaxBps !== 0 && isZero(config.taxRecipient)) {
+    issues.push("taxRecipient must be nonzero when recipientTaxBps is nonzero");
+  }
+
+  for (const [label, value] of [
+    ["tokensPerTicket", config.tokensPerTicket],
+    ["maxTicketsPerHolder", config.maxTicketsPerHolder],
+    ["minPrize", config.minPrize],
+    ["maxPrize", config.maxPrize]
+  ] as const) checkUint128(value, label, issues);
+  if (config.tokensPerTicket === 0n) issues.push("tokensPerTicket must be greater than zero");
+  if (config.minPrize === 0n) issues.push("minPrize must be greater than zero");
+  if (config.maxPrize !== 0n && config.maxPrize < config.minPrize) {
+    issues.push("maxPrize must be zero or at least minPrize");
+  }
+
+  for (const [label, value, max] of [
+    ["prizeBps", config.prizeBps, UINT16_MAX],
+    ["recipientTaxBps", config.recipientTaxBps, UINT16_MAX],
+    ["recycleTaxBps", config.recycleTaxBps, UINT16_MAX],
+    ["minConfirmations", config.minConfirmations, UINT16_MAX],
+    ["winnersPerRound", config.winnersPerRound, UINT8_MAX],
+    ["minRoundInterval", config.minRoundInterval, UINT32_MAX],
+    ["weightWindowBlocks", config.weightWindowBlocks, UINT32_MAX],
+    ["randomnessTimeout", config.randomnessTimeout, UINT32_MAX],
+    ["claimWindow", config.claimWindow, UINT32_MAX]
+  ] as const) checkUint(value, max, label, issues);
+  if (config.prizeBps < 1 || config.prizeBps > 10_000) {
+    issues.push(`prizeBps must be 1 to 10,000, got ${config.prizeBps}`);
+  }
+  if (config.recipientTaxBps + config.recycleTaxBps > MAX_PAYOUT_TAX_BPS) {
+    issues.push("recipientTaxBps + recycleTaxBps must be at most 5,000");
+  }
+  if (config.winnersPerRound < 1 || config.winnersPerRound > MAX_WINNERS_PER_ROUND) {
+    issues.push(`winnersPerRound must be 1 to ${MAX_WINNERS_PER_ROUND}`);
+  }
+  if (config.minRoundInterval < MIN_ROUND_INTERVAL
+    || config.minRoundInterval > MAX_ROUND_INTERVAL) {
+    issues.push(`minRoundInterval must be ${MIN_ROUND_INTERVAL} to ${MAX_ROUND_INTERVAL}`);
+  }
+  if (config.minConfirmations < 1 || config.minConfirmations > 255) {
+    issues.push("minConfirmations must be 1 to 255");
+  }
+  if (config.randomnessTimeout < MIN_RANDOMNESS_TIMEOUT
+    || config.randomnessTimeout > MAX_RANDOMNESS_TIMEOUT) {
+    issues.push(`randomnessTimeout must be ${MIN_RANDOMNESS_TIMEOUT} to ${MAX_RANDOMNESS_TIMEOUT}`);
+  }
+  if (config.claimWindow < MIN_CLAIM_WINDOW || config.claimWindow > MAX_CLAIM_WINDOW) {
+    issues.push(`claimWindow must be ${MIN_CLAIM_WINDOW} to ${MAX_CLAIM_WINDOW}`);
+  }
+
+  if (config.exclusions.length > MAX_EXCLUSIONS) {
+    issues.push(`at most ${MAX_EXCLUSIONS} exclusions, got ${config.exclusions.length}`);
+  }
+  let previous = 0n;
   for (const exclusion of config.exclusions) {
     const numeric = BigInt(exclusion);
-    if (numeric <= previous) {
-      issues.push("exclusions must be sorted ascending by numeric address value and unique");
+    if (numeric === 0n || numeric <= previous) {
+      issues.push("exclusions must be nonzero, sorted ascending by numeric value, and unique");
       break;
     }
     previous = numeric;
   }
   if (config.basis !== TicketBasis.SNAPSHOT && config.basis !== TicketBasis.MIN_BALANCE) {
     issues.push(`basis must be 0 (SNAPSHOT) or 1 (MIN_BALANCE), got ${config.basis}`);
+  } else if (config.basis === TicketBasis.SNAPSHOT && config.weightWindowBlocks !== 0) {
+    issues.push("SNAPSHOT basis requires weightWindowBlocks to be zero");
+  } else if (config.basis === TicketBasis.MIN_BALANCE
+    && (config.weightWindowBlocks < 1
+      || config.weightWindowBlocks > MAX_WEIGHT_WINDOW_BLOCKS)) {
+    issues.push(`MIN_BALANCE basis requires weightWindowBlocks from 1 to ${MAX_WEIGHT_WINDOW_BLOCKS}`);
+  }
+
+  if (config.stockRewards.length > MAX_STOCK_REWARDS) {
+    issues.push(`at most ${MAX_STOCK_REWARDS} stock rewards, got ${config.stockRewards.length}`);
+  }
+  if (config.stockRewards.length > 0 && isZero(config.prizeAsset)) {
+    issues.push("stock rewards require a nonzero prizeAsset");
+  }
+  previous = 0n;
+  for (const [i, reward] of config.stockRewards.entries()) {
+    const label = `stockRewards[${i}]`;
+    const asset = BigInt(reward.asset);
+    if (asset === 0n || asset <= previous) {
+      issues.push(`${label}.asset must be nonzero, sorted ascending, and unique`);
+    }
+    if (reward.asset.toLowerCase() === config.prizeAsset.toLowerCase()) {
+      issues.push(`${label}.asset must differ from prizeAsset`);
+    }
+    if (isZero(reward.swapAdapter)) issues.push(`${label}.swapAdapter must be nonzero`);
+    if (isZero(reward.priceGuard)) issues.push(`${label}.priceGuard must be nonzero`);
+    if (byteLength(reward.routeData) > MAX_ROUTE_DATA_LENGTH) {
+      issues.push(`${label}.routeData exceeds ${MAX_ROUTE_DATA_LENGTH} bytes`);
+    }
+    if (byteLength(reward.guardData) > MAX_ROUTE_DATA_LENGTH) {
+      issues.push(`${label}.guardData exceeds ${MAX_ROUTE_DATA_LENGTH} bytes`);
+    }
+    previous = asset;
   }
   return issues;
 }

@@ -25,6 +25,13 @@ script; generated reference docs remain. Fixture regeneration is one
 command (`npm run fixtures` in `sinjoh-sdk/`). Publishing remains gated
 on the license and npm-scope decisions.
 
+The 2026-08-18 hardening pass also closes the principal trust-boundary gaps:
+local config validation mirrors initializer limits, launch planners reject
+known-reverting parameter combinations, router plans carry contract-capped
+amounts and exact guard-preflight inputs, clients enforce chain/manifest
+identity, implementation hashes are verified, and Merkle proof verification
+recomputes domain-bound leaf preimages.
+
 ## Purpose
 
 Plan the design and delivery of an official Sinjoh SDK for the immutable Sinjoh

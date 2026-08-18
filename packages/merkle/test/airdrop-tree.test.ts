@@ -31,7 +31,7 @@ test("root sum equals the summed entitlements and every proof verifies", () => {
   assert.equal(tree.rootSum, total);
   assert.equal(tree.leaves.length, HOLDERS.length);
   for (const leaf of tree.leaves) {
-    assert.ok(verifyAirdropProof(leaf, tree.rootHash, tree.rootSum), leaf.holder);
+    assert.ok(verifyAirdropProof(params, leaf, tree.rootHash, tree.rootSum), leaf.holder);
   }
 });
 
@@ -48,7 +48,7 @@ test("leaf order is canonical regardless of input order", () => {
 test("odd leaf counts promote the unpaired node instead of padding", () => {
   const three = buildAirdropTree(params, entitlements(HOLDERS.slice(0, 3)));
   const lastLeaf = three.leaves[2]!;
-  assert.ok(verifyAirdropProof(lastLeaf, three.rootHash, three.rootSum));
+  assert.ok(verifyAirdropProof(params, lastLeaf, three.rootHash, three.rootSum));
   assert.ok(
     lastLeaf.proof.length < three.leaves[0]!.proof.length + 2,
     "promoted node should not gain padding siblings"
@@ -66,9 +66,9 @@ test("a tampered amount or foreign root fails verification", () => {
   const tree = buildAirdropTree(params, entitlements(HOLDERS));
   const tampered = structuredClone(tree.leaves[0]!);
   tampered.cumulativeAmount += 1n;
-  assert.equal(verifyAirdropProof(tampered, tree.rootHash, tree.rootSum), false);
+  assert.equal(verifyAirdropProof(params, tampered, tree.rootHash, tree.rootSum), false);
   assert.equal(
-    verifyAirdropProof(tree.leaves[0]!, tree.rootHash, tree.rootSum + 1n), false
+    verifyAirdropProof(params, tree.leaves[0]!, tree.rootHash, tree.rootSum + 1n), false
   );
 });
 
@@ -86,4 +86,18 @@ test("leaf hashing is domain-bound to distributor, account, epoch, and snapshot"
 
 test("rejects an empty entitlement set", () => {
   assert.throws(() => buildAirdropTree(params, new Map()), /empty tree/);
+});
+
+test("rejects duplicate-case holders and nonpositive entitlements", () => {
+  const holder = HOLDERS[0]![0];
+  assert.throws(() => buildAirdropTree(params, entitlements([
+    [holder, 1n], [holder.toUpperCase() as Address, 2n]
+  ])), /unique ignoring case/);
+  assert.throws(() => buildAirdropTree(params, entitlements([[holder, 0n]])), /positive/);
+});
+
+test("verification binds the holder preimage, not only the stored leaf hash", () => {
+  const tree = buildAirdropTree(params, entitlements(HOLDERS));
+  const tampered = { ...tree.leaves[0]!, holder: HOLDERS[1]![0] };
+  assert.equal(verifyAirdropProof(params, tampered, tree.rootHash, tree.rootSum), false);
 });

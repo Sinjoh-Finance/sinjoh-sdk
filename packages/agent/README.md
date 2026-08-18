@@ -32,8 +32,8 @@ Register in an MCP client (e.g. Claude Code):
 | `sinjoh_manifest` | Deployed addresses from the packaged manifest |
 | `sinjoh_verify_manifest` | Live runtime code-hash verification |
 | `sinjoh_router_snapshot` | A router's full immutable structure and binding state |
-| `sinjoh_plan_router_work` | Every currently eligible permissionless action, with amounts and prepared calls |
-| `sinjoh_preflight_guard` | Immutable swap floor with explicit oracle/interval/price states |
+| `sinjoh_plan_router_work` | Every eligible permissionless action, with contract-capped amounts, prepared calls, and exact guard-preflight inputs |
+| `sinjoh_preflight_guard` | Immutable swap floor with explicit oracle/interval/price states; accepts route hash and signed guard bytes |
 | `sinjoh_check_activation` | Launch wiring checklist incl. EIP-1167 clone verification |
 | `sinjoh_validate_config` | Offline validation + canonical encoding + configHash for router/raffle/sink configs |
 | `sinjoh_plan_ponsv2_launch` | The full predict/deploy/bind launch ordering as prepared calls with readbacks |
@@ -49,3 +49,7 @@ Amounts cross the wire as decimal strings. Configuration objects carry bigint fi
 decimal strings. In `sinjoh_plan_ponsv2_launch`, the router config may use `"$ADAPTER"` and
 `"$RAFFLE"` placeholders for addresses that only exist after prediction, and the raffle
 config omits `exclusions` — the canonical list is computed from the predicted curve.
+
+For any planned action carrying `guardPreflight`, forward that object unchanged to
+`sinjoh_preflight_guard`. The planned transaction is a template until the returned floor is
+inserted and the call is simulated. Never submit its placeholder floor.

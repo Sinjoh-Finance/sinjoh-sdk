@@ -67,7 +67,7 @@ test("padding leaf matches the reference", () => {
 test("every proof verifies and yields its interval start", () => {
   const tree = buildRaffleTree(params, leaves);
   for (const leaf of tree.leaves) {
-    const result = verifyRaffleProof(leaf, tree.root, tree.rootSum);
+    const result = verifyRaffleProof(params, leaf, tree.root, tree.rootSum);
     assert.ok(result.valid, `proof for ${leaf.holder}`);
     assert.equal(result.offset, leaf.offset);
   }
@@ -89,7 +89,13 @@ test("a tampered sum breaks verification", () => {
   const tree = buildRaffleTree(params, leaves);
   const leaf = structuredClone(tree.leaves[0]!);
   leaf.proof[0]!.siblingSum += 1n;
-  assert.equal(verifyRaffleProof(leaf, tree.root, tree.rootSum).valid, false);
+  assert.equal(verifyRaffleProof(params, leaf, tree.root, tree.rootSum).valid, false);
+});
+
+test("verification binds the holder preimage, not only the stored leaf hash", () => {
+  const tree = buildRaffleTree(params, leaves);
+  const leaf = { ...tree.leaves[0]!, holder: tree.leaves[1]!.holder };
+  assert.equal(verifyRaffleProof(params, leaf, tree.root, tree.rootSum).valid, false);
 });
 
 test("rejects unsorted, duplicate, or zero-ticket leaves", () => {

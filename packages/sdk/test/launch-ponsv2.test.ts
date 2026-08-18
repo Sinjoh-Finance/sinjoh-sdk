@@ -83,7 +83,7 @@ function raffleConfig(exclusions: Address[]): RaffleConfig {
     protocolFeeRecipient: CREATOR, taxRecipient: CREATOR,
     tokensPerTicket: 10n ** 22n, maxTicketsPerHolder: 0n, minPrize: 1n, maxPrize: 0n,
     prizeBps: 500, recipientTaxBps: 0, recycleTaxBps: 0, minConfirmations: 1,
-    winnersPerRound: 1, minRoundInterval: 3_600, weightWindowBlocks: 900,
+    winnersPerRound: 1, minRoundInterval: 3_600, weightWindowBlocks: 0,
     randomnessTimeout: 7_200, claimWindow: 604_800, basis: 0,
     exclusions, stockRewards: []
   };

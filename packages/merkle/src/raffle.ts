@@ -144,9 +144,10 @@ export function buildRaffleTree(
 
 /** Mirrors the contract's verification, including the derived interval start. */
 export function verifyRaffleProof(
-  leaf: BuiltRaffleLeaf, root: Hex, rootSum: bigint
+  params: RaffleTreeParams, leaf: BuiltRaffleLeaf, root: Hex, rootSum: bigint
 ): { valid: boolean; offset: bigint } {
-  let hash = leaf.leafHash;
+  let hash = raffleLeafHash(params, leaf.holder, leaf.tickets);
+  if (hash !== leaf.leafHash) return { valid: false, offset: 0n };
   let sum = leaf.tickets;
   let offset = 0n;
   for (const element of leaf.proof) {

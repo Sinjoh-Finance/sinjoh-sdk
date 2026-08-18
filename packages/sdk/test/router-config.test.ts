@@ -94,3 +94,25 @@ test("hard limits are enforced locally", () => {
 
   assert.throws(() => encodeRouterConfig(noBuckets), /invalid router config/);
 });
+
+test("local validation mirrors the router's pure initializer invariants", () => {
+  const zeroCap = structuredClone(FIXTURE_CONFIG);
+  zeroCap.normalizations[0]!.maxAmountInPerCall = 0n;
+  assert.match(validateRouterConfig(zeroCap).join("; "), /greater than zero/);
+
+  const wethNormalization = structuredClone(FIXTURE_CONFIG);
+  wethNormalization.normalizations[0]!.asset.token = FIXTURE_CONFIG.weth;
+  assert.match(validateRouterConfig(wethNormalization).join("; "), /cannot duplicate WETH/);
+
+  const duplicateOutput = structuredClone(FIXTURE_CONFIG);
+  duplicateOutput.buckets[1]!.output = structuredClone(duplicateOutput.buckets[0]!.output);
+  assert.match(validateRouterConfig(duplicateOutput).join("; "), /duplicate bucket output/);
+
+  const guardedIdentity = structuredClone(FIXTURE_CONFIG);
+  guardedIdentity.buckets[0]!.priceGuard = FIXTURE_CONFIG.normalizations[0]!.priceGuard;
+  assert.match(validateRouterConfig(guardedIdentity).join("; "), /priceGuard must be zero/);
+
+  const repointableSink = structuredClone(FIXTURE_CONFIG);
+  repointableSink.buckets[0]!.allocations[1]!.creatorMayRepoint = true;
+  assert.match(validateRouterConfig(repointableSink).join("; "), /sink allocations cannot/);
+});

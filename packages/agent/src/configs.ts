@@ -1,6 +1,6 @@
 import type { Address, Hex } from "viem";
 import type {
-  AirdropSinkConfig, FlapTokenParams, LiquiditySinkConfig, RaffleConfig, RouterConfig
+  AirdropSinkConfig, FlapTokenInputParams, LiquiditySinkConfig, RaffleConfig, RouterConfig
 } from "@sinjoh/sdk";
 
 /**
@@ -55,8 +55,8 @@ export function liquiditySinkConfigFromWire(wire: Json): LiquiditySinkConfig {
   return config;
 }
 
-export function flapTokenParamsFromWire(wire: Json): Omit<FlapTokenParams, "salt"> {
-  const params = structuredClone(wire) as unknown as Omit<FlapTokenParams, "salt">;
+export function flapTokenParamsFromWire(wire: Json): FlapTokenInputParams {
+  const params = structuredClone(wire) as unknown as FlapTokenInputParams;
   params.quoteAmt = big(params.quoteAmt, "quoteAmt");
   params.taxDuration = big(params.taxDuration, "taxDuration");
   params.antiFarmerDuration = big(params.antiFarmerDuration, "antiFarmerDuration");

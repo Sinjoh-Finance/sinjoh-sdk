@@ -10,6 +10,26 @@ import {
  */
 
 const ZERO = "0x0000000000000000000000000000000000000000";
+const UINT16_MAX = 65_535;
+const UINT24_MAX = 16_777_215;
+const INT24_MIN = -8_388_608;
+const INT24_MAX = 8_388_607;
+const UINT48_MAX = 281_474_976_710_655;
+const UINT128_MAX = (1n << 128n) - 1n;
+
+function isZero(address: Address): boolean {
+  return address.toLowerCase() === ZERO;
+}
+
+function checkUint(value: number, max: number, label: string, issues: string[]): void {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    issues.push(`${label} must be an integer from 0 to ${max}`);
+  }
+}
+
+function checkUint128(value: bigint, label: string, issues: string[]): void {
+  if (value < 0n || value > UINT128_MAX) issues.push(`${label} must fit uint128`);
+}
 
 // ---------------------------------------------------------------------------
 // Airdrop distributor: SinjohAirdropDistributor.Config
@@ -35,6 +55,9 @@ const AIRDROP_COMPONENTS = [
 
 export function validateAirdropSinkConfig(config: AirdropSinkConfig): string[] {
   const issues: string[] = [];
+  checkUint128(config.minPayout, "minPayout", issues);
+  checkUint(config.maxBatchSize, UINT16_MAX, "maxBatchSize", issues);
+  checkUint(config.minConfirmations, UINT16_MAX, "minConfirmations", issues);
   if (config.minPayout <= 0n) issues.push("minPayout must be greater than zero");
   if (config.maxBatchSize < 1 || config.maxBatchSize > 64) {
     issues.push(`maxBatchSize must be 1 to 64, got ${config.maxBatchSize}`);
@@ -150,11 +173,26 @@ const LIQUIDITY_COMPONENTS = [
 
 export function validateLiquiditySinkConfig(config: LiquiditySinkConfig): string[] {
   const issues: string[] = [];
+  checkUint(config.venue, 255, "venue", issues);
+  checkUint(config.poolFee, UINT24_MAX, "poolFee", issues);
+  if (!Number.isInteger(config.tickSpacing)
+    || config.tickSpacing < INT24_MIN || config.tickSpacing > INT24_MAX) {
+    issues.push(`tickSpacing must be an integer from ${INT24_MIN} to ${INT24_MAX}`);
+  }
+  checkUint(config.quoteSwapBps, UINT16_MAX, "quoteSwapBps", issues);
+  checkUint(config.maxMintSlippageBps, UINT16_MAX, "maxMintSlippageBps", issues);
+  checkUint(config.minMintInterval, UINT48_MAX, "minMintInterval", issues);
+  checkUint(config.feeMode, 255, "feeMode", issues);
+  checkUint128(config.minNotionalPerMint, "minNotionalPerMint", issues);
+  checkUint128(config.maxNotionalPerMint, "maxNotionalPerMint", issues);
   if (config.venue !== Venue.UNISWAP_V3 && config.venue !== Venue.UNISWAP_V4) {
     issues.push(`venue must be 0 (v3) or 1 (v4), got ${config.venue}`);
   }
-  if (config.venue === Venue.UNISWAP_V3 && config.hooks !== ZERO) {
-    issues.push("v3 requires zero hooks");
+  if (config.venue === Venue.UNISWAP_V3) {
+    if (!isZero(config.hooks)) issues.push("v3 requires zero hooks");
+    if (isZero(config.quoteAsset)) issues.push("v3 requires a nonzero quoteAsset");
+  } else if (config.venue === Venue.UNISWAP_V4 && config.tickSpacing <= 0) {
+    issues.push("v4 requires positive tickSpacing");
   }
   const routeBytes = (config.swapRouteData.length - 2) / 2;
   if (routeBytes < 1 || routeBytes > 1_024) {
@@ -174,9 +212,11 @@ export function validateLiquiditySinkConfig(config: LiquiditySinkConfig): string
     issues.push(`feeMode must be 0 to 3, got ${config.feeMode}`);
   }
   if ((config.feeMode === FeeMode.CREATOR || config.feeMode === FeeMode.TREASURY)
-    && config.feeRecipient === ZERO) {
+    && isZero(config.feeRecipient)) {
     issues.push("feeRecipient must be nonzero for CREATOR and TREASURY fee modes");
   }
+  if (isZero(config.swapAdapter)) issues.push("swapAdapter must be nonzero");
+  if (isZero(config.priceGuard)) issues.push("priceGuard must be nonzero");
   return issues;
 }
 

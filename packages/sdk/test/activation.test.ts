@@ -28,6 +28,7 @@ function stubClient(overrides: Record<string, unknown> = {}): PublicClient {
     [`${ROUTER}:intakeAssetCount`]: 2n,
     [`${ROUTER}:intakeAsset:[0]`]: [{ kind: 1, token: WETH }, WETH],
     [`${ROUTER}:intakeAsset:[1]`]: [{ kind: 2, token: ZERO }, SUBJECT],
+    [`${ROUTER}:normalizationInfo:["${SUBJECT}"]`]: [IMPL, IMPL, "0x", 100n],
     [`${ROUTER}:bucketCount`]: 0,
     ...overrides
   };

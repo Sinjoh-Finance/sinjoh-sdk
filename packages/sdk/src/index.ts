@@ -41,11 +41,11 @@ export { allVerified, type VerificationResult } from "@sinjoh/deployments";
 export {
   readRouterIdentity, readRouterSnapshot,
   type RouterAllocation, type RouterBucket, type RouterConversion, type RouterIdentity,
-  type RouterSnapshot
+  type RouterNormalization, type RouterSnapshot
 } from "./reads.js";
 
 export {
-  preflightMinimumOutput, quoteAtTwap, type GuardPreflight
+  preflightMinimumOutput, quoteAtTwap, type GuardPreflight, type GuardPreflightInput
 } from "./guards.js";
 
 export {
@@ -74,7 +74,8 @@ export {
 
 export {
   planFlapLaunch, predictUniswapV2Pair, raffleExclusionsForFlapLaunch,
-  type FlapLaunchPlan, type FlapLaunchPlanInput, type FlapLaunchStep, type FlapTokenParams
+  type FlapLaunchPlan, type FlapLaunchPlanInput, type FlapLaunchStep,
+  type FlapTokenInputParams, type FlapTokenParams
 } from "./launch/flap.js";
 
 export {
