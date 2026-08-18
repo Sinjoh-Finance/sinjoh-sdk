@@ -36,6 +36,8 @@ export {
   createSinjohClient, type CreateSinjohClientOptions, type ReadClient, type SinjohClient
 } from "./client.js";
 
+export { allVerified, type VerificationResult } from "@sinjoh/deployments";
+
 export {
   readRouterIdentity, readRouterSnapshot,
   type RouterAllocation, type RouterBucket, type RouterConversion, type RouterIdentity,
