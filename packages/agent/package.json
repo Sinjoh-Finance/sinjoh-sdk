@@ -1,0 +1,37 @@
+{
+  "name": "@sinjoh/agent",
+  "version": "0.0.1",
+  "private": true,
+  "description": "MCP server exposing the Sinjoh SDK's read, plan, preflight, and prepare surface to agents. Never signs or submits transactions.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "sinjoh-mcp": "dist/src/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist/src",
+    "llms.txt"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@sinjoh/deployments": "0.0.1",
+    "@sinjoh/sdk": "0.0.1",
+    "viem": "2.55.10",
+    "zod": "^4.4.3"
+  }
+}

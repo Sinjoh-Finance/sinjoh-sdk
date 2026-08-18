@@ -15,7 +15,11 @@ Remaining for Phase 3: launch flows for the gated launchpad families
 (Flap, pools.trade, letscash) and the mainnet-fork rehearsal replayed
 through the SDK — fork tests need RPC egress the development sandbox does
 not have, so they must run in an environment with `RH_RPC_URL` access.
-Publishing remains gated on the license and npm-scope decisions.
+Phase 4's core is landed: `@sinjoh/agent` (the `sinjoh-mcp` stdio MCP
+server over the read/plan/preflight/validate/prepare surface, tested over
+an in-memory transport), the `llms.txt` protocol digest, and an example
+script; generated reference docs remain. Publishing remains gated on the
+license and npm-scope decisions.
 
 ## Purpose
 

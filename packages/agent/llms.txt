@@ -1,0 +1,66 @@
+# Sinjoh — protocol digest for agents
+
+Sinjoh is a set of independent, immutable, non-upgradeable contracts for post-launch token
+economics on Robinhood Chain (mainnet chainId 4663). There is no admin, no upgrade path, and
+no platform: policy is frozen at deployment, and improvement ships as new deployments.
+
+## The one-paragraph model
+
+Launchpad trading fees flow into a per-launch SinjohFeeRouter through a launchpad adapter.
+The router recognizes intake with `sync` (charging a fixed 1% protocol fee exactly once),
+converts it to each bucket's output asset under immutable price guards, and assigns the
+remainder to allocations: wallets, or sinks (airdrop distributor, liquidity manager, raffle).
+The airdrop distributor pushes funds to holders via attestor-committed Merkle-sum epochs (no
+claims). The liquidity manager mints permanent, unwithdraw-able full-range Uniswap positions.
+The raffle pays holders by hourly ECVRF lottery. Protocol fees land in the revenue collector,
+which anyone may forward to its governance-selected processor.
+
+## Rules that never bend
+
+- Every unit of value belongs to exactly one on-chain ledger; on-chain balance >= accounted
+  liabilities, always. Failed deliveries stay credited, never swept.
+- Configuration bytes are identity: `keccak256(abi.encode(config))` gates CREATE2 addresses
+  and first-fund freezing. A reformatted config is a different config.
+- Calling is permissionless; safety policy is not. Callers may tighten a swap floor, never
+  weaken an immutable guard, route, or interval.
+- Live contract state is authoritative. Indexer and database data are history only.
+- One failure-isolated protocol action per transaction. Simulate before signing, always.
+- The protocol pays no gas. You call because you want the outcome.
+
+## What an agent can do here (via the sinjoh_* MCP tools)
+
+1. `sinjoh_manifest` / `sinjoh_verify_manifest` — resolve deployed addresses, then prove the
+   live runtime code matches the recorded hashes. Never act on an unverified address.
+2. `sinjoh_router_snapshot` — read a router's immutable structure and binding state.
+3. `sinjoh_plan_router_work` — the main loop: every currently eligible permissionless action
+   with amounts and prepared calls. Actions flagged needsGuardPreflight require step 4 first.
+4. `sinjoh_preflight_guard` — ask the immutable guard for the swap floor; explicit
+   oracle-not-ready / price-moved / interval-locked states instead of blind reverts.
+5. `sinjoh_check_activation` — the launch wiring checklist; show active only when all pass.
+6. `sinjoh_validate_config` — validate + canonically encode router/raffle/sink configs
+   offline; the returned configHash is the on-chain identity.
+7. `sinjoh_plan_ponsv2_launch` — the full circular predict/deploy/bind ordering resolved into
+   ordered prepared calls with expected readbacks.
+8. `sinjoh_decode_error` — turn revert data into a named error plus operator guidance.
+
+The tools never sign or submit. Prepared calls are data: simulate them (`simulateContract`),
+then hand them to whatever holds a key. Amounts are decimal strings; keep them as integers.
+
+## Sharp edges
+
+- A plan is a snapshot of one block; re-simulate immediately before submission.
+- Bucket conversions are tranche-capped by `maxAmountInPerCall`; smaller tranches are always
+  safe, and splitting cannot change cumulative outcomes (D'Hondt apportionment, carried
+  remainders).
+- The 255-block hash window (~25.6s) bounds raffle commitment and randomness sealing; a
+  missed window is a skipped round, never a reason to reuse a stale snapshot.
+- Upstream launchpads can repoint future fees away from Sinjoh; monitor redirects and label
+  integrations inactive immediately. Value already received stays governed by Sinjoh.
+- Attestor commits, quote-floor signing, governance, and the ECVRF prover key are outside
+  this surface by design. Do not attempt them.
+
+## Deeper references
+
+Normative behavior: each contract package's SPEC.md. Integration handoff: UI-NOTES.md.
+Launch ordering reference: sinjoh-integration/test/ProductionPonsV2Raffle.fork.t.sol.
+Addresses and code hashes: mainnet-deployments.json (via @sinjoh/deployments).
