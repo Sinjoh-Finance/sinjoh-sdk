@@ -24,7 +24,8 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@sinjoh/abis": "0.0.1"
+    "@sinjoh/abis": "0.0.1",
+    "@sinjoh/deployments": "0.0.1"
   },
   "peerDependencies": {
     "viem": ">=2.55.10 <3"

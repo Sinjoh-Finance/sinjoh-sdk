@@ -1,12 +1,18 @@
 # Sinjoh SDK Development Plan
 
 Last updated: 2026-08-18
-Status: in progress — Phases 0–1 complete (`sinjoh-sdk/` workspace:
+Status: in progress — Phases 0–2 complete (`sinjoh-sdk/` workspace:
 `@sinjoh/abis`, `@sinjoh/deployments`, `@sinjoh/merkle` — the package the
 plan below calls `@sinjoh/trees` — with the keeper consuming
-`@sinjoh/merkle`); Phase 2 codecs/prediction/errors landed in
-`@sinjoh/sdk`. Publishing remains gated on the license and npm-scope
-decisions.
+`@sinjoh/merkle`; `@sinjoh/sdk` carries the codecs, prediction, error
+decoding, client setup, live read layer, and guard preflights). Phase 3
+is partially landed: prepared-action builders for the full permissionless
+lifecycle, the router work planner, and the Pons v2 activation checklist.
+Remaining for Phase 3: the resumable multi-step launch flows for the
+other launchpad families and the mainnet-fork rehearsal replayed through
+the SDK — fork tests need RPC egress this sandbox does not have, so they
+must run in an environment with `RH_RPC_URL` access. Publishing remains
+gated on the license and npm-scope decisions.
 
 ## Purpose
 

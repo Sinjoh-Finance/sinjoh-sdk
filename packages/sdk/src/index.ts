@@ -29,3 +29,37 @@ export { expectedCloneRuntime } from "./predict/clones.js";
 export {
   decodeSinjohError, errorGuidance, sinjohErrorAbi, type DecodedSinjohError
 } from "./errors.js";
+
+export { robinhoodMainnet, robinhoodTestnet } from "./chains.js";
+
+export {
+  createSinjohClient, type CreateSinjohClientOptions, type ReadClient, type SinjohClient
+} from "./client.js";
+
+export {
+  readRouterIdentity, readRouterSnapshot,
+  type RouterAllocation, type RouterBucket, type RouterConversion, type RouterIdentity,
+  type RouterSnapshot
+} from "./reads.js";
+
+export {
+  preflightMinimumOutput, quoteAtTwap, type GuardPreflight
+} from "./guards.js";
+
+export {
+  adapterCollect, adapterForward, airdropPush, airdropSendProtocolFee, collectorForward,
+  collectorForwardAll, liquidityCollect, liquidityMint, liquiditySendFee,
+  liquiditySendProtocolFee, raffleAbandonRound, raffleClaim, raffleDeliverOwed,
+  raffleDeliverStockOwed, raffleExpireRound, raffleSync, randomnessDeliver,
+  randomnessFulfill, randomnessSeal, routerFundSink, routerProcessBucket,
+  routerSendProtocolFee, routerSendWallet, routerSync,
+  type AirdropPushLeaf, type AirdropPushProofElement, type PreparedCall
+} from "./actions.js";
+
+export {
+  planRouterWork, type PlannedAction, type RouterWorkKind, type RouterWorkPlan
+} from "./planner.js";
+
+export {
+  checkPonsV2Activation, type ActivationCheck, type ActivationReport, type CodeReadClient
+} from "./activation.js";
