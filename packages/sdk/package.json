@@ -1,0 +1,32 @@
+{
+  "name": "@sinjoh/sdk",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Core Sinjoh SDK: byte-exact configuration codecs, launch prediction, and custom-error decoding for the immutable Sinjoh protocols on Robinhood Chain.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist/src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@sinjoh/abis": "0.0.1"
+  },
+  "peerDependencies": {
+    "viem": ">=2.55.10 <3"
+  }
+}

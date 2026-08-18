@@ -1,7 +1,12 @@
 # Sinjoh SDK Development Plan
 
 Last updated: 2026-08-18
-Status: planning — no SDK code exists yet
+Status: in progress — Phases 0–1 complete (`sinjoh-sdk/` workspace:
+`@sinjoh/abis`, `@sinjoh/deployments`, `@sinjoh/merkle` — the package the
+plan below calls `@sinjoh/trees` — with the keeper consuming
+`@sinjoh/merkle`); Phase 2 codecs/prediction/errors landed in
+`@sinjoh/sdk`. Publishing remains gated on the license and npm-scope
+decisions.
 
 ## Purpose
 
