@@ -65,8 +65,10 @@ byte-exact configuration encoding. Everything else builds on those.
 
 ## Design principles
 
-These mirror the protocol's own principles and the existing handoff docs
-(`STRATEGY.md`, `UI-NOTES.md`, `KEEPER_REQUIREMENTS.md`):
+These mirror the rules the contracts themselves enforce, as specified in the
+per-package `SPEC.md` files and the operational handoffs (`UI-NOTES.md`,
+`KEEPER_REQUIREMENTS.md`). (`STRATEGY.md` is historical and is not a
+normative reference for the SDK.)
 
 1. **Manifest-driven, never hard-coded.** Every client loads a versioned,
    chain-specific deployment manifest with addresses and expected runtime code
