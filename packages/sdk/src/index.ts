@@ -63,3 +63,9 @@ export {
 export {
   checkPonsV2Activation, type ActivationCheck, type ActivationReport, type CodeReadClient
 } from "./activation.js";
+
+export {
+  planPonsV2Launch,
+  type PonsV2LaunchPlan, type PonsV2LaunchPlanInput, type PonsV2LaunchStep,
+  type PonsV2LaunchTokenInput
+} from "./launch/ponsv2.js";

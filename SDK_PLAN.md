@@ -7,12 +7,15 @@ plan below calls `@sinjoh/trees` — with the keeper consuming
 `@sinjoh/merkle`; `@sinjoh/sdk` carries the codecs, prediction, error
 decoding, client setup, live read layer, and guard preflights). Phase 3
 is partially landed: prepared-action builders for the full permissionless
-lifecycle, the router work planner, and the Pons v2 activation checklist.
-Remaining for Phase 3: the resumable multi-step launch flows for the
-other launchpad families and the mainnet-fork rehearsal replayed through
-the SDK — fork tests need RPC egress this sandbox does not have, so they
-must run in an environment with `RH_RPC_URL` access. Publishing remains
-gated on the license and npm-scope decisions.
+lifecycle, the router work planner, the Pons v2 activation checklist, and
+the step-typed Pons v2 launch flow (`planPonsV2Launch`, ported from the
+production fork rehearsal's ordering), plus a CI workflow enforcing
+generated-source drift checks and the keeper's shared-package suite.
+Remaining for Phase 3: launch flows for the gated launchpad families
+(Flap, pools.trade, letscash) and the mainnet-fork rehearsal replayed
+through the SDK — fork tests need RPC egress the development sandbox does
+not have, so they must run in an environment with `RH_RPC_URL` access.
+Publishing remains gated on the license and npm-scope decisions.
 
 ## Purpose
 

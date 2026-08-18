@@ -33,7 +33,8 @@ export const ponsV2FactoryPredictionAbi = parseAbi([
   "function poolManager() view returns (address)",
   "function getLaunchConfig(uint256 id) view returns ((uint256 supply,uint256 curveFeeBps,uint256 phantomQuote,uint256 graduationThreshold,uint24 poolFee,int24 tickSpacing,bool enabled))",
   "function pairTokenEconomics(address pairToken) view returns (uint256 phantomQuote,uint256 graduationThreshold,uint8 decimals)",
-  "function previewLaunchEconomics(uint256 launchConfigId,address pairToken) view returns (bytes32)"
+  "function previewLaunchEconomics(uint256 launchConfigId,address pairToken) view returns (bytes32)",
+  "function launchFee() view returns (uint256)"
 ]);
 
 export const ponsV2MemeHookAbi = parseAbi([
@@ -208,6 +209,8 @@ export async function predictLaunchAddresses(client: PublicClient, args: {
 export async function raffleExclusionsForLaunch(client: PublicClient, args: {
   factory: Address;
   curve: Address;
+  /** Additional recommended exclusions, e.g. the launch adapter. */
+  extra?: readonly Address[];
 }): Promise<Address[]> {
   const factory = { address: args.factory, abi: ponsV2FactoryPredictionAbi } as const;
   const [poolManager, buybackVault, memeHook] = await Promise.all([
@@ -216,7 +219,7 @@ export async function raffleExclusionsForLaunch(client: PublicClient, args: {
     client.readContract({ ...factory, functionName: "memeHook" }),
   ]);
   const unique = [...new Set(
-    [args.curve, args.factory, poolManager, buybackVault, memeHook]
+    [args.curve, args.factory, poolManager, buybackVault, memeHook, ...(args.extra ?? [])]
       .map((value) => getAddress(value)),
   )];
   return unique.sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1));

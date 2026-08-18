@@ -23,6 +23,8 @@ export interface PreparedCall {
   abi: Abi;
   functionName: string;
   args: readonly unknown[];
+  /** Native value the call must carry (e.g. a Pons launch fee); absent means zero. */
+  value?: bigint;
   description: string;
 }
 
