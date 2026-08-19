@@ -1,13 +1,17 @@
 # Sinjoh SDK
 
+[![CI](https://github.com/Sinjoh-Finance/sinjoh-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Sinjoh-Finance/sinjoh-sdk/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
+
 TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood
 Chain. It provides deterministic, side-effect-free building blocks for applications,
 keepers, and agents. The SDK prepares data and calls; it never holds keys, signs, or submits
 transactions.
 
-> Release status: source-complete release candidate. All packages remain `"private": true`
-> and `UNLICENSED` until the project owner approves a public license and the `@sinjoh` npm
-> organization. The private flags are a deliberate publication lock, not unfinished code.
+> Release status: public source release under the Apache License 2.0. The npm
+> packages remain `"private": true` as a deliberate publication lock until
+> package versions and the `@sinjoh` npm organization receive a separate
+> release approval.
 
 ## Requirements
 
@@ -123,3 +127,9 @@ replace it with the successful preflight floor and simulate immediately before s
 
 See [`SDK_PLAN.md`](./SDK_PLAN.md) for the original delivery plan and phase gates. The code,
 tests, and this README are authoritative when the plan describes an earlier implementation state.
+
+## Contributing and license
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the development and generated-source workflow.
+This repository is licensed under the [Apache License 2.0](./LICENSE). Attribution notices are
+recorded in [`NOTICE`](./NOTICE).

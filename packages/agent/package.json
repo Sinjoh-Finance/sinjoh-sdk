@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "MCP server exposing the Sinjoh SDK's read, plan, preflight, and prepare surface to agents. Never signs or submits transactions.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git",

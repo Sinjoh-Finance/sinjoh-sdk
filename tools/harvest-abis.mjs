@@ -130,7 +130,7 @@ for (const pkg of PACKAGES) {
 }
 
 writeFileSync(join(outDir, "meta.ts"), `${banner}
-/** The monorepo commit the shipped ABIs were compiled from. */
+/** The contracts repository commit the shipped ABIs were compiled from. */
 export const abiSourceCommit = ${JSON.stringify(sourceCommit)};
 export const abiContractCounts = ${JSON.stringify(summary, null, 2)} as const;
 `);

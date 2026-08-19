@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git",

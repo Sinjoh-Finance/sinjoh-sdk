@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Typed Sinjoh deployment manifests for Robinhood Chain, generated from the canonical mainnet-deployments.json, with a runtime code-hash verifier.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git",

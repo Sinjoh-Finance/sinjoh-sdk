@@ -2,8 +2,8 @@
 // Harvested from Foundry build artifacts by tools/harvest-abis.mjs.
 // Regenerate with: forge build (per package), then npm run generate:abis.
 
-/** The monorepo commit the shipped ABIs were compiled from. */
-export const abiSourceCommit = "62233b9651cb2976933d8884ddad5e8aa0efe933";
+/** The contracts repository commit the shipped ABIs were compiled from. */
+export const abiSourceCommit = "e15e415ce707fc7cf4f735c2d0edb38ff1c7e8fb";
 export const abiContractCounts = {
   "sinjoh-fee-router": 3,
   "sinjoh-revenue-collector": 1,
