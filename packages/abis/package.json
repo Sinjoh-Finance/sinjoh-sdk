@@ -1,7 +1,6 @@
 {
   "name": "@sinjoh/abis",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
   "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
   "license": "Apache-2.0",
   "repository": {
@@ -15,6 +14,7 @@
   },
   "keywords": ["sinjoh", "ethereum", "abi", "viem", "robinhood-chain"],
   "type": "module",
+  "sideEffects": false,
   "engines": {
     "node": ">=22.0.0"
   },

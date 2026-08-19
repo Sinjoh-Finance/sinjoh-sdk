@@ -1,7 +1,6 @@
 {
   "name": "@sinjoh/sdk",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
   "description": "Core Sinjoh SDK: byte-exact configuration codecs, launch prediction, and custom-error decoding for the immutable Sinjoh protocols on Robinhood Chain.",
   "license": "Apache-2.0",
   "repository": {
@@ -15,6 +14,7 @@
   },
   "keywords": ["sinjoh", "ethereum", "sdk", "viem", "robinhood-chain"],
   "type": "module",
+  "sideEffects": false,
   "engines": {
     "node": ">=22.0.0"
   },
@@ -36,8 +36,8 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@sinjoh/abis": "0.0.1",
-    "@sinjoh/deployments": "0.0.1"
+    "@sinjoh/abis": "1.0.0",
+    "@sinjoh/deployments": "1.0.0"
   },
   "peerDependencies": {
     "viem": ">=2.55.10 <3"

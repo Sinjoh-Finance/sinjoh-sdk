@@ -2,16 +2,16 @@
 
 [![CI](https://github.com/Sinjoh-Finance/sinjoh-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Sinjoh-Finance/sinjoh-sdk/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/@sinjoh/sdk.svg)](https://www.npmjs.com/package/@sinjoh/sdk)
 
 TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood
 Chain. It provides deterministic, side-effect-free building blocks for applications,
 keepers, and agents. The SDK prepares data and calls; it never holds keys, signs, or submits
 transactions.
 
-> Release status: public source release under the Apache License 2.0. The npm
-> packages remain `"private": true` as a deliberate publication lock until
-> package versions and the `@sinjoh` npm organization receive a separate
-> release approval.
+> Release status: stable `1.0.0` source and package metadata, licensed under
+> Apache-2.0. Tagged releases are published to npm with build provenance after
+> all deterministic release gates pass.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ transactions.
 
 ## Quick start
 
-After the packages are published, install the core SDK and its peer dependency:
+Install the core SDK and its peer dependency:
 
 ```sh
 npm install @sinjoh/sdk viem
@@ -69,6 +69,12 @@ High-level launch planners currently cover Pons v2, Flap, and letscash.fun. Pons
 pools.trade contracts are available through the generated ABIs and deployment manifest, but do
 not yet have equivalent end-to-end launch planners. This distinction is intentional and should
 remain explicit in application UI.
+
+## Public API
+
+The read-only Sinjoh Raffle API is live at [`https://api.sinjoh.com/v1`](https://api.sinjoh.com/v1).
+It requires no key for normal use. See the [integration guide](./docs/raffle-api.md) or the
+[OpenAPI 3.1 specification](./openapi/raffle-api.yaml).
 
 ## Safety model
 
@@ -125,8 +131,8 @@ the exact subject, assets, amount, route hash, and guard bytes to pass to
 `preflightMinimumOutput`. Their prepared calls contain only a structural placeholder floor;
 replace it with the successful preflight floor and simulate immediately before signing.
 
-See [`SDK_PLAN.md`](./SDK_PLAN.md) for the original delivery plan and phase gates. The code,
-tests, and this README are authoritative when the plan describes an earlier implementation state.
+See [`SDK_PLAN.md`](./SDK_PLAN.md) for the historical delivery plan and explicitly deferred
+coverage. The code, tests, package READMEs, and this README define the supported v1 surface.
 
 ## Contributing and license
 

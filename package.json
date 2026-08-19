@@ -1,6 +1,6 @@
 {
   "name": "sinjoh-sdk",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood Chain.",
   "license": "Apache-2.0",
@@ -28,7 +28,8 @@
     "build": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run build -w @sinjoh/agent",
     "typecheck": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run typecheck --workspaces",
     "test": "npm test --workspaces",
-    "pack:check": "npm run build && npm pack --dry-run --workspaces"
+    "pack:check": "npm run build && npm pack --dry-run --workspaces",
+    "release:check": "node tools/verify-release.mjs"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

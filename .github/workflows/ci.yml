@@ -38,4 +38,9 @@ jobs:
           npm test
 
       - name: Verify package contents
-        run: npm run pack:check
+        run: |
+          npm run release:check
+          npm run pack:check
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

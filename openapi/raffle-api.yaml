@@ -1,0 +1,347 @@
+openapi: 3.1.0
+info:
+  title: Sinjoh Raffle API
+  version: 1.0.0
+  description: Public, read-only raffle data from Robinhood Chain mainnet.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+servers:
+  - url: https://api.sinjoh.com
+    description: Production
+tags:
+  - name: Service
+    description: Service discovery and capacity metadata.
+  - name: Raffles
+    description: Live raffle discovery, state, and completed payouts.
+paths:
+  /v1:
+    get:
+      operationId: getServiceIndex
+      tags: [Service]
+      summary: Get service metadata and available routes
+      responses:
+        "200":
+          description: Service metadata
+          headers:
+            x-ratelimit-limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            x-ratelimit-remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+            x-sinjoh-daily-remaining:
+              $ref: "#/components/headers/DailyRemaining"
+            x-sinjoh-daily-reset:
+              $ref: "#/components/headers/DailyReset"
+            x-sinjoh-monthly-remaining:
+              $ref: "#/components/headers/MonthlyRemaining"
+            x-sinjoh-monthly-reset:
+              $ref: "#/components/headers/MonthlyReset"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceIndex"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/tokens:
+    get:
+      operationId: listRaffleTokens
+      tags: [Raffles]
+      summary: List tokens with a configured raffle
+      responses:
+        "200":
+          description: Raffle token list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenList"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/tokens/{address}:
+    get:
+      operationId: getRaffleSnapshot
+      tags: [Raffles]
+      summary: Get a live raffle snapshot
+      parameters:
+        - $ref: "#/components/parameters/TokenAddress"
+      responses:
+        "200":
+          description: Current raffle state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RaffleSnapshot"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/tokens/{address}/winners:
+    get:
+      operationId: listRaffleWinners
+      tags: [Raffles]
+      summary: List completed raffle payouts, newest first
+      parameters:
+        - $ref: "#/components/parameters/TokenAddress"
+        - name: limit
+          in: query
+          required: false
+          description: Result count. Values are clamped to 1–100.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        "200":
+          description: Paid winner history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WinnerList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Optional higher-limit key. Anonymous access is supported.
+  parameters:
+    TokenAddress:
+      name: address
+      in: path
+      required: true
+      description: Checksummed or lowercase EVM token address.
+      schema:
+        $ref: "#/components/schemas/Address"
+  headers:
+    RateLimitLimit:
+      description: Per-client requests allowed in the current minute.
+      schema: { type: integer }
+    RateLimitRemaining:
+      description: Per-client requests remaining in the current minute.
+      schema: { type: integer }
+    DailyRemaining:
+      description: Accepted requests remaining in the shared UTC-day budget.
+      schema: { type: integer }
+    DailyReset:
+      description: UTC-day budget reset time.
+      schema: { type: string, format: date-time }
+    MonthlyRemaining:
+      description: Accepted requests remaining in the shared UTC-month budget.
+      schema: { type: integer }
+    MonthlyReset:
+      description: UTC-month budget reset time.
+      schema: { type: string, format: date-time }
+  responses:
+    BadRequest:
+      description: Invalid address
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Unknown route, token, or raffle
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    RateLimited:
+      description: Per-client or shared capacity exhausted
+      headers:
+        retry-after:
+          description: Seconds until the client should retry.
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    UpstreamError:
+      description: Live chain or registry read failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unavailable:
+      description: A required rate or capacity check is unavailable
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Address:
+      type: string
+      pattern: "^0x[0-9a-fA-F]{40}$"
+      examples: ["0x20c86dde46F7cB6B1adB52598d2f2dA70EcEf7d9"]
+    Hash:
+      type: string
+      pattern: "^0x[0-9a-fA-F]{64}$"
+    UintString:
+      type: string
+      pattern: "^[0-9]+$"
+    Amount:
+      type: object
+      additionalProperties: false
+      required: [wei, formatted]
+      properties:
+        wei: { $ref: "#/components/schemas/UintString" }
+        formatted:
+          type: string
+          pattern: "^[0-9]+(?:\\.[0-9]+)?$"
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }
+    Capacity:
+      type: object
+      additionalProperties: false
+      required: [dailyLimit, monthlyLimit, resetsAt]
+      properties:
+        dailyLimit: { type: integer }
+        monthlyLimit: { type: integer }
+        resetsAt:
+          type: object
+          additionalProperties: false
+          required: [daily, monthly]
+          properties:
+            daily: { type: string, format: date-time }
+            monthly: { type: string, format: date-time }
+    ServiceIndex:
+      type: object
+      required: [service, chainId, auth, capacity, endpoints, docs]
+      properties:
+        service: { type: string, const: sinjoh-raffle-api }
+        chainId: { type: integer, const: 4663 }
+        auth: { type: string }
+        capacity: { $ref: "#/components/schemas/Capacity" }
+        endpoints:
+          type: object
+          additionalProperties: { type: string }
+        docs: { type: string }
+    Token:
+      type: object
+      additionalProperties: false
+      required: [address, symbol, name, raffle]
+      properties:
+        address: { $ref: "#/components/schemas/Address" }
+        symbol: { type: [string, "null"] }
+        name: { type: [string, "null"] }
+        raffle: { $ref: "#/components/schemas/Address" }
+    TokenList:
+      type: object
+      additionalProperties: false
+      required: [chainId, tokens]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        tokens:
+          type: array
+          items: { $ref: "#/components/schemas/Token" }
+    RaffleRound:
+      type: object
+      additionalProperties: false
+      required: [id, state, totalTickets, prize, snapshotBlock, committedAt, drawnAt]
+      properties:
+        id: { type: integer }
+        state:
+          type: string
+          enum: [committed, drawn, settled, expired, abandoned, unknown]
+        totalTickets: { $ref: "#/components/schemas/UintString" }
+        prize: { $ref: "#/components/schemas/Amount" }
+        snapshotBlock: { type: integer }
+        committedAt: { type: integer }
+        drawnAt: { type: [integer, "null"] }
+    RaffleSnapshot:
+      type: object
+      additionalProperties: false
+      required: [chainId, token, raffle, pool, nextPrize, nextDraw, latestRound, pendingRounds, config, fetchedAt]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        token:
+          type: object
+          additionalProperties: false
+          required: [address, symbol, name, tokensPerTicket]
+          properties:
+            address: { $ref: "#/components/schemas/Address" }
+            symbol: { type: [string, "null"] }
+            name: { type: [string, "null"] }
+            tokensPerTicket: { $ref: "#/components/schemas/UintString" }
+        raffle:
+          type: object
+          additionalProperties: false
+          required: [address, prizeAsset, prizeAssetSymbol]
+          properties:
+            address: { $ref: "#/components/schemas/Address" }
+            prizeAsset: { $ref: "#/components/schemas/Address" }
+            prizeAssetSymbol: { type: [string, "null"] }
+        pool: { $ref: "#/components/schemas/Amount" }
+        nextPrize: { $ref: "#/components/schemas/Amount" }
+        nextDraw:
+          type: object
+          additionalProperties: false
+          required: [eligibleAt, secondsUntil, status]
+          properties:
+            eligibleAt: { type: [integer, "null"] }
+            secondsUntil: { type: integer, minimum: 0 }
+            status: { type: string, enum: [counting_down, due] }
+        latestRound:
+          oneOf:
+            - { $ref: "#/components/schemas/RaffleRound" }
+            - { type: "null" }
+        pendingRounds: { type: integer, minimum: 0 }
+        config:
+          type: object
+          additionalProperties: false
+          required: [prizeBps, winnersPerRound, minRoundIntervalSeconds, weightWindowBlocks, maxTicketsPerHolder, claimWindowSeconds, basis]
+          properties:
+            prizeBps: { type: integer }
+            winnersPerRound: { type: integer }
+            minRoundIntervalSeconds: { type: integer }
+            weightWindowBlocks: { type: integer }
+            maxTicketsPerHolder: { $ref: "#/components/schemas/UintString" }
+            claimWindowSeconds: { type: integer }
+            basis: { type: string, enum: [snapshot, min_balance] }
+        fetchedAt: { type: string, format: date-time }
+    Winner:
+      type: object
+      additionalProperties: false
+      required: [roundId, slot, winner, gross, net, blockNumber, transactionHash]
+      properties:
+        roundId: { type: integer }
+        slot: { type: integer }
+        winner: { $ref: "#/components/schemas/Address" }
+        gross: { $ref: "#/components/schemas/Amount" }
+        net: { $ref: "#/components/schemas/Amount" }
+        blockNumber: { type: integer }
+        transactionHash: { $ref: "#/components/schemas/Hash" }
+    WinnerList:
+      type: object
+      additionalProperties: false
+      required: [chainId, token, raffle, winners]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        token: { $ref: "#/components/schemas/Address" }
+        raffle: { $ref: "#/components/schemas/Address" }
+        winners:
+          type: array
+          items: { $ref: "#/components/schemas/Winner" }
+security:
+  - {}
+  - ApiKey: []

@@ -1,7 +1,8 @@
 # Sinjoh SDK Development Plan
 
-Last updated: 2026-08-18
-Status: in progress — Phases 0–2 complete (`sinjoh-sdk/` workspace:
+Last updated: 2026-08-19
+Status: v1.0 release scope complete. This is the historical implementation plan; it is retained
+for architectural context, not as a current release checklist. Phases 0–2 complete (`sinjoh-sdk/` workspace:
 `@sinjoh/abis`, `@sinjoh/deployments`, `@sinjoh/merkle` — the package the
 plan below calls `@sinjoh/trees` — with the keeper consuming
 `@sinjoh/merkle`; `@sinjoh/sdk` carries the codecs, prediction, error
@@ -18,12 +19,17 @@ rehearsal; pools.trade deliberately waits for a rehearsal of its own in
 pools.trade rehearsal + flow, and the mainnet-fork rehearsals replayed
 through the SDK — fork tests need RPC egress the development sandbox does
 not have, so they must run in an environment with `RH_RPC_URL` access.
-Phase 4's core is landed: `@sinjoh/agent` (the `sinjoh-mcp` stdio MCP
+Phase 4's supported v1 scope is landed: `@sinjoh/agent` (the `sinjoh-mcp` stdio MCP
 server over the read/plan/preflight/validate/prepare surface, tested over
 an in-memory transport), the `llms.txt` protocol digest, and an example
-script; generated reference docs remain. Fixture regeneration is one
-command (`npm run fixtures` in `sinjoh-sdk/`). Publishing remains gated
-on the license and npm-scope decisions.
+script; package-level reference docs are published alongside the generated types. Fixture regeneration is one
+command (`npm run fixtures` in `sinjoh-sdk/`). Apache-2.0 and the public `@sinjoh/*`
+npm scope are the v1 release choices.
+
+The intentionally deferred items—pools.trade and Pons v1 end-to-end launch planners,
+mainnet-fork CI that requires private RPC capacity, and an SDK-native indexer client—are not
+promised by the v1 public API. Their ABI and deployment data remain available. Adding them is
+future additive scope rather than a blocker for the documented v1 surface.
 
 The 2026-08-18 hardening pass also closes the principal trust-boundary gaps:
 local config validation mirrors initializer limits, launch planners reject
@@ -316,26 +322,19 @@ published versions.
   and fails on drift; the manifest verifier fails on runtime code-hash
   mismatch.
 
-## Open questions (need owner decisions before Phase 1)
+## Historical open questions and v1 decisions
 
-1. **npm scope and registry** — is `@sinjoh/*` on public npm the intent, and
-   is the scope available? Public registry vs. GitHub Packages?
-2. **License** — the repo currently has no top-level LICENSE; the SDK needs
-   one before publishing.
-3. **Repo placement** — this plan assumes `sinjoh-sdk/` inside the monorepo
-   (keeps fixtures and fork tests adjacent). A separate repo would decouple
-   release cadence but re-create the artifact-sync problem the SDK exists to
-   solve.
-4. **Third-party ABI redistribution** — confirm we may redistribute the
-   verified Pons/Flap/pools.trade/letscash ABI subsets in `@sinjoh/abis`
-   (they are on-chain-verified, but licensing posture should be explicit).
-5. **Launchpad coverage for v1** — all five families from day one, or
-   Pons v1 + Pons v2 (+ raffle) first with Flap/pools.trade/letscash in a
-   fast-follow?
-6. **Testnet manifest** — testnet `46630` contracts predate the hardened
-   revision; does the SDK ship the historical testnet manifest, wait for the
-   fresh release-candidate testnet sweep, or mark it explicitly
-   `historical`?
-7. **Supabase surface** — should `public_launches` be consumed directly by
-   the SDK, or only via the UI's `/api/launches` so the Supabase project
-   stays an internal detail?
+1. **npm scope and registry** — resolved: public npm under `@sinjoh/*`.
+2. **License** — resolved: Apache-2.0 with a top-level `LICENSE` and `NOTICE`.
+3. **Repo placement** — resolved: standalone `Sinjoh-Finance/sinjoh-sdk`, with provenance-pinned
+   generation from the sibling contracts repository.
+4. **Third-party ABI redistribution** — resolved: `@sinjoh/abis` publishes the compiled public
+   interfaces of Sinjoh-owned contracts and adapters. References to upstream interface types are
+   compatibility data, not a relicensing of upstream source; third-party packages retain their
+   original license terms as stated in `NOTICE`.
+5. **Launchpad coverage for v1** — resolved: end-to-end planners for Pons v2, Flap, and
+   letscash.fun; ABI/deployment access only for Pons v1 and pools.trade.
+6. **Testnet manifest** — resolved: no packaged testnet deployment manifest until a hardened
+   deployment is available; callers may supply an explicit manifest through the library API.
+7. **Supabase surface** — resolved: Supabase remains an implementation detail behind the public
+   `api.sinjoh.com` hostname; the SDK does not expose project credentials or direct table access.
