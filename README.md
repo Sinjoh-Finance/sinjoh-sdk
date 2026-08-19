@@ -10,8 +10,8 @@ keepers, and agents. The SDK prepares data and calls; it never holds keys, signs
 transactions.
 
 > Release status: stable `1.0.0` source and package metadata, licensed under
-> Apache-2.0. Tagged releases are published to npm with build provenance after
-> all deterministic release gates pass.
+> Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
+> publishing, with build provenance, after all deterministic release gates pass.
 
 ## Requirements
 
