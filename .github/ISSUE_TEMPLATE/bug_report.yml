@@ -18,7 +18,7 @@ body:
     id: revision
     attributes:
       label: Source revision
-      description: Provide the commit SHA. npm packages are not yet published.
+      description: Provide the npm package version or source commit SHA.
     validations:
       required: true
   - type: textarea

@@ -1,7 +1,6 @@
 {
   "name": "@sinjoh/agent",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
   "description": "MCP server exposing the Sinjoh SDK's read, plan, preflight, and prepare surface to agents. Never signs or submits transactions.",
   "license": "Apache-2.0",
   "repository": {
@@ -41,8 +40,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@sinjoh/deployments": "0.0.1",
-    "@sinjoh/sdk": "0.0.1",
+    "@sinjoh/deployments": "1.0.0",
+    "@sinjoh/sdk": "1.0.0",
     "viem": "2.55.10",
     "zod": "^4.4.3"
   },
