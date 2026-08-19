@@ -38,5 +38,5 @@ scripts, mocks, copied interfaces, and vendored libraries are excluded.
 Do not edit generated files. From the repository's `sinjoh-sdk` directory, build the Foundry
 packages and run `npm run generate`. CI fails when committed ABIs drift from build output.
 
-See the [SDK workspace documentation](https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk)
+See the [SDK workspace documentation](https://github.com/Sinjoh-Finance/sinjoh-sdk)
 for the package map and release status.

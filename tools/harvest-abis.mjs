@@ -5,11 +5,14 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, "..", "..");
-const outDir = join(here, "..", "packages", "abis", "src", "generated");
+const sdkRoot = join(here, "..");
+const contractsRoot = resolve(
+  process.env.SINJOH_CONTRACTS_ROOT ?? join(sdkRoot, "..", "sinjoh-contracts"),
+);
+const outDir = join(sdkRoot, "packages", "abis", "src", "generated");
 
 const PACKAGES = [
   "sinjoh-fee-router",
@@ -37,7 +40,7 @@ const contracts = new Map();
 const conflicts = [];
 
 for (const pkg of PACKAGES) {
-  const artifactRoot = join(repoRoot, pkg, "out");
+  const artifactRoot = join(contractsRoot, pkg, "out");
   let sourceDirs;
   try {
     sourceDirs = readdirSync(artifactRoot, { withFileTypes: true });
@@ -89,7 +92,7 @@ if (conflicts.length > 0) {
 
 let sourceCommit = "unknown";
 try {
-  sourceCommit = execSync("git rev-parse HEAD", { cwd: repoRoot }).toString().trim();
+  sourceCommit = execSync("git rev-parse HEAD", { cwd: contractsRoot }).toString().trim();
 } catch {
   // generated meta records "unknown" outside a git checkout
 }
@@ -99,7 +102,7 @@ mkdirSync(outDir, { recursive: true });
 
 const banner = `// GENERATED FILE - DO NOT EDIT.
 // Harvested from Foundry build artifacts by tools/harvest-abis.mjs.
-// Regenerate with: forge build (per package), then npm run generate (from sinjoh-sdk/).
+// Regenerate with: forge build (per package), then npm run generate:abis.
 `;
 
 const byPackage = new Map(PACKAGES.map((pkg) => [pkg, []]));
@@ -132,7 +135,7 @@ export const abiSourceCommit = ${JSON.stringify(sourceCommit)};
 export const abiContractCounts = ${JSON.stringify(summary, null, 2)} as const;
 `);
 
-writeFileSync(join(here, "..", "packages", "abis", "src", "index.ts"),
+writeFileSync(join(sdkRoot, "packages", "abis", "src", "index.ts"),
   `${banner}\nexport { abiContractCounts, abiSourceCommit } from "./generated/meta.js";\n${
     indexExports.join("\n")}\n`);
 

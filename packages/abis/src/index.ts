@@ -1,6 +1,6 @@
 // GENERATED FILE - DO NOT EDIT.
 // Harvested from Foundry build artifacts by tools/harvest-abis.mjs.
-// Regenerate with: forge build (per package), then npm run generate (from sinjoh-sdk/).
+// Regenerate with: forge build (per package), then npm run generate:abis.
 
 export { abiContractCounts, abiSourceCommit } from "./generated/meta.js";
 export * from "./generated/feeRouter.js";

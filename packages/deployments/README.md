@@ -42,5 +42,5 @@ valid. `allVerified([])` returns `false`.
 - `allVerified(results)`: true only when the result set is nonempty and every check passed.
 - `ChainManifest`, `DeploymentEntry`, `CodeReader`, `VerificationResult`: public TypeScript types.
 
-See the [SDK workspace documentation](https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk)
+See the [SDK workspace documentation](https://github.com/Sinjoh-Finance/sinjoh-sdk)
 for the package map and safety model.

@@ -1,10 +1,22 @@
+title = "Sinjoh SDK secret-scanning policy"
+minVersion = "8.25.0"
+
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Known public Uniswap V2 fixture addresses misclassified as generic API keys"
+targetRules = ["generic-api-key"]
 regexTarget = "match"
 regexes = [
   '''tokenA:\s*"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"''',
   '''tokenB:\s*"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"'''
+]
+
+[[allowlists]]
+description = "Public EVM addresses in the deployment snapshot are not credentials"
+targetRules = ["generic-api-key"]
+regexTarget = "line"
+regexes = [
+  '''(?i)["'][a-z0-9_]*(token|implementation|splitter)[a-z0-9_]*["']?\s*:\s*["']0x[0-9a-f]{40}\b''',
 ]

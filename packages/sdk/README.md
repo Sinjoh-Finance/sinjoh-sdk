@@ -64,5 +64,5 @@ for them.
 4. Re-read or simulate immediately before signing because eligibility and owed amounts can change.
 5. Keep RPC credentials outside source control and logs.
 
-See the [workspace README](https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk) for generation,
+See the [workspace README](https://github.com/Sinjoh-Finance/sinjoh-sdk) for generation,
 testing, MCP integration, and release status.

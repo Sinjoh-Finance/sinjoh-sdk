@@ -99,7 +99,9 @@ Generated sources are committed. To regenerate them:
 
 ```sh
 # 1. Build every Foundry package (requires forge + solc 0.8.28)
-for p in ../sinjoh-*/foundry.toml; do (cd "$(dirname "$p")" && forge build); done
+for p in ../sinjoh-contracts/sinjoh-*/foundry.toml; do
+  (cd "$(dirname "$p")" && forge build)
+done
 
 # 2. Harvest ABIs and deployment manifests
 npm run generate
@@ -119,5 +121,5 @@ the exact subject, assets, amount, route hash, and guard bytes to pass to
 `preflightMinimumOutput`. Their prepared calls contain only a structural placeholder floor;
 replace it with the successful preflight floor and simulate immediately before signing.
 
-See [`../SDK_PLAN.md`](../SDK_PLAN.md) for the original delivery plan and phase gates. The code,
+See [`SDK_PLAN.md`](./SDK_PLAN.md) for the original delivery plan and phase gates. The code,
 tests, and this README are authoritative when the plan describes an earlier implementation state.

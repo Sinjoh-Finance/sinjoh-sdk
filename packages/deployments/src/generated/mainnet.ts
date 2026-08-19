@@ -1,6 +1,6 @@
 // GENERATED FILE - DO NOT EDIT.
 // Derived from mainnet-deployments.json by tools/gen-deployments.mjs.
-// Regenerate with: npm run generate (from sinjoh-sdk/).
+// Regenerate with: npm run generate:deployments.
 
 export const mainnet = {
   chainId: 4663,

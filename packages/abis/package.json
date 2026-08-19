@@ -6,12 +6,12 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DSB-117/Sinjoh.git",
-    "directory": "sinjoh-sdk/packages/abis"
+    "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git",
+    "directory": "packages/abis"
   },
-  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "homepage": "https://github.com/Sinjoh-Finance/sinjoh-sdk#readme",
   "bugs": {
-    "url": "https://github.com/DSB-117/Sinjoh/issues"
+    "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
   "keywords": ["sinjoh", "ethereum", "abi", "viem", "robinhood-chain"],
   "type": "module",

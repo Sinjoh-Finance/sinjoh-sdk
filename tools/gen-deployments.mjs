@@ -1,4 +1,4 @@
-// Generates packages/deployments/src/generated/mainnet.ts from ../mainnet-deployments.json.
+// Generates packages/deployments/src/generated/mainnet.ts from mainnet-deployments.json.
 // The JSON stays the hand-maintained source of truth; this derives a typed, checksummed,
 // validated view of it. Never edit the generated file by hand.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { getAddress } from "viem";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const sourcePath = join(here, "..", "..", "mainnet-deployments.json");
+const sourcePath = join(here, "..", "mainnet-deployments.json");
 const outDir = join(here, "..", "packages", "deployments", "src", "generated");
 const outPath = join(outDir, "mainnet.ts");
 
@@ -101,7 +101,7 @@ function literal(value, indent) {
 
 const banner = `// GENERATED FILE - DO NOT EDIT.
 // Derived from mainnet-deployments.json by tools/gen-deployments.mjs.
-// Regenerate with: npm run generate (from sinjoh-sdk/).
+// Regenerate with: npm run generate:deployments.
 `;
 
 const body = `${banner}

@@ -6,12 +6,11 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DSB-117/Sinjoh.git",
-    "directory": "sinjoh-sdk"
+    "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git"
   },
-  "homepage": "https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk#readme",
+  "homepage": "https://github.com/Sinjoh-Finance/sinjoh-sdk#readme",
   "bugs": {
-    "url": "https://github.com/DSB-117/Sinjoh/issues"
+    "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
   "type": "module",
   "packageManager": "npm@10.9.8",
@@ -22,7 +21,9 @@
     "packages/*"
   ],
   "scripts": {
-    "generate": "node tools/harvest-abis.mjs && node tools/gen-deployments.mjs",
+    "generate": "npm run generate:abis && npm run generate:deployments",
+    "generate:abis": "node tools/harvest-abis.mjs",
+    "generate:deployments": "node tools/gen-deployments.mjs",
     "fixtures": "node tools/sync-fixtures.mjs",
     "build": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run build -w @sinjoh/agent",
     "typecheck": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run typecheck --workspaces",

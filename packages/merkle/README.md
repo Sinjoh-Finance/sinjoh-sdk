@@ -51,5 +51,5 @@ if (!verifyAirdropProof(params, tree.leaves[0]!, tree.rootHash, tree.rootSum)) {
   `raffleEmptyLeafHash`, `ownerOfIndex`, `winningIndex`.
 - The package exports the parameter, leaf, proof-element, and built-tree types for both trees.
 
-See the [SDK workspace documentation](https://github.com/DSB-117/Sinjoh/tree/main/sinjoh-sdk)
+See the [SDK workspace documentation](https://github.com/Sinjoh-Finance/sinjoh-sdk)
 for the package map and fixture regeneration workflow.
