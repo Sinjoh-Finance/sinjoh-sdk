@@ -1,4 +1,8 @@
-export { createSinjohAgentServer, type SinjohAgentContext } from "./server.js";
+export {
+  createSinjohAgentServer,
+  type SinjohAgentContext,
+  type SinjohWalletExecutor,
+} from "./server.js";
 export {
   airdropSinkConfigFromWire, flapTokenParamsFromWire, liquiditySinkConfigFromWire,
   raffleConfigFromWire, resolvePlaceholders, routerConfigFromWire

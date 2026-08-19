@@ -13,8 +13,14 @@ export function toJson(value: unknown): string {
 /** A text-content MCP tool result. */
 export function textResult(value: unknown): {
   content: { type: "text"; text: string }[];
+  structuredContent?: Record<string, unknown>;
 } {
-  return { content: [{ type: "text", text: toJson(value) }] };
+  return {
+    content: [{ type: "text", text: toJson(value) }],
+    ...(typeof value === "object" && value !== null && !Array.isArray(value)
+      ? { structuredContent: value as Record<string, unknown> }
+      : {}),
+  };
 }
 
 /** An MCP error result carrying the failure as readable text. */
