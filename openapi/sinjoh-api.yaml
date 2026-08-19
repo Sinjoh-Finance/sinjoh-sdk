@@ -1,0 +1,996 @@
+openapi: 3.1.0
+info:
+  title: Sinjoh API
+  version: 1.0.0
+  description: Read-only protocol data for Sinjoh on Robinhood Chain mainnet.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+  contact:
+    url: https://github.com/Sinjoh-Finance/sinjoh-sdk/issues
+servers:
+  - url: https://api.sinjoh.com
+    description: Production
+security:
+  - {}
+  - apiKey: []
+tags:
+  - { name: Service, description: API discovery and capacity metadata. }
+  - { name: Contracts, description: Canonical Sinjoh deployment records. }
+  - { name: Launches, description: Active launch registry. }
+  - { name: Markets, description: Indexed market volume and trades. }
+  - { name: Raffles, description: Live raffle state and indexed history. }
+  - { name: Airdrops, description: Airdrop accounts and committed epochs. }
+  - { name: Liquidity, description: Liquidity account state. }
+  - { name: Funding Bands, description: Funding Bands accounts and band state. }
+  - { name: Revenue, description: Protocol revenue totals. }
+  - { name: Randomness, description: Verifiable-randomness request lifecycle. }
+  - { name: Events, description: Normalized cross-protocol event history. }
+  - { name: Wallets, description: Wallet-attributed protocol activity. }
+paths:
+  /v1:
+    get:
+      operationId: getServiceIndex
+      tags: [Service]
+      summary: Discover API capabilities
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200":
+          description: Service metadata and endpoint catalog
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceIndex" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/contracts:
+    get:
+      operationId: listContracts
+      tags: [Contracts]
+      summary: List canonical deployments
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+        - name: type
+          in: query
+          schema: { type: string }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/ContractList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/contracts/{address}:
+    get:
+      operationId: getContract
+      tags: [Contracts]
+      summary: Get a canonical deployment
+      parameters: [{ $ref: "#/components/parameters/Address" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200":
+          description: Deployment record
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [contract]
+                properties:
+                  contract: { $ref: "#/components/schemas/Deployment" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/launches:
+    get:
+      operationId: listLaunches
+      tags: [Launches]
+      summary: List active launches
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+        - name: launchpad
+          in: query
+          schema: { type: string }
+        - name: creator
+          in: query
+          schema: { $ref: "#/components/schemas/Address" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/LaunchList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/launches/{subject}:
+    get:
+      operationId: getLaunch
+      tags: [Launches]
+      summary: Get a launch by subject
+      parameters: [{ $ref: "#/components/parameters/Subject" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200":
+          description: Launch record
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [launch]
+                properties:
+                  launch: { $ref: "#/components/schemas/Launch" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/markets/{subject}:
+    get:
+      operationId: getMarket
+      tags: [Markets]
+      summary: Get market totals and hourly history
+      parameters:
+        - { $ref: "#/components/parameters/Subject" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/MarketSummary" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/markets/{subject}/trades:
+    get:
+      operationId: listMarketTrades
+      tags: [Markets]
+      summary: List indexed trades
+      parameters:
+        - { $ref: "#/components/parameters/Subject" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/MarketTrades" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/raffles:
+    get:
+      operationId: listRaffles
+      tags: [Raffles]
+      summary: List raffle accounts and totals
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/RaffleList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/raffles/{subject}:
+    get:
+      operationId: getRaffle
+      tags: [Raffles]
+      summary: Get live raffle state
+      parameters: [{ $ref: "#/components/parameters/Subject" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200":
+          description: Live raffle snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RaffleSnapshot" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/raffles/{subject}/rounds:
+    get:
+      operationId: listRaffleRounds
+      tags: [Raffles]
+      summary: List raffle rounds
+      parameters:
+        - { $ref: "#/components/parameters/Subject" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/RaffleRounds" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/raffles/{subject}/prizes:
+    get:
+      operationId: listRafflePrizes
+      tags: [Raffles]
+      summary: List paid and deferred raffle prizes
+      parameters:
+        - { $ref: "#/components/parameters/Subject" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/RafflePrizes" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/airdrops/accounts:
+    get:
+      operationId: listAirdropAccounts
+      tags: [Airdrops]
+      summary: List airdrop accounts
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/AirdropAccountList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/airdrops/accounts/{accountId}:
+    get:
+      operationId: getAirdropAccount
+      tags: [Airdrops]
+      summary: Get an airdrop account
+      parameters: [{ $ref: "#/components/parameters/AccountId" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/AirdropAccountObject" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/airdrops/accounts/{accountId}/epochs:
+    get:
+      operationId: listAirdropEpochs
+      tags: [Airdrops]
+      summary: List committed airdrop epochs
+      parameters:
+        - { $ref: "#/components/parameters/AccountId" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/AirdropEpochs" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/liquidity/accounts:
+    get:
+      operationId: listLiquidityAccounts
+      tags: [Liquidity]
+      summary: List liquidity accounts
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/LiquidityAccountList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/liquidity/accounts/{accountId}:
+    get:
+      operationId: getLiquidityAccount
+      tags: [Liquidity]
+      summary: Get a liquidity account
+      parameters: [{ $ref: "#/components/parameters/AccountId" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/LiquidityAccountObject" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/funding-bands/accounts:
+    get:
+      operationId: listFundingBandsAccounts
+      tags: [Funding Bands]
+      summary: List Funding Bands accounts
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/FundingBandsAccountList" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/funding-bands/accounts/{accountId}:
+    get:
+      operationId: getFundingBandsAccount
+      tags: [Funding Bands]
+      summary: Get a Funding Bands account
+      parameters: [{ $ref: "#/components/parameters/AccountId" }]
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/FundingBandsAccountObject" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/funding-bands/accounts/{accountId}/bands:
+    get:
+      operationId: listFundingBands
+      tags: [Funding Bands]
+      summary: List bands for an account
+      parameters:
+        - { $ref: "#/components/parameters/AccountId" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/FundingBands" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/revenue/balances:
+    get:
+      operationId: listRevenueBalances
+      tags: [Revenue]
+      summary: List revenue balances
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/RevenueBalances" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/randomness/requests:
+    get:
+      operationId: listRandomnessRequests
+      tags: [Randomness]
+      summary: List randomness requests
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/RandomnessRequests" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/events:
+    get:
+      operationId: listProtocolEvents
+      tags: [Events]
+      summary: List normalized protocol events
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+        - { name: family, in: query, schema: { type: string } }
+        - { name: eventName, in: query, schema: { type: string } }
+        - { name: accountId, in: query, schema: { $ref: "#/components/schemas/Bytes32" } }
+        - { name: subject, in: query, schema: { $ref: "#/components/schemas/Address" } }
+        - { name: asset, in: query, schema: { $ref: "#/components/schemas/Address" } }
+        - { name: recipient, in: query, schema: { $ref: "#/components/schemas/Address" } }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/ProtocolEvents" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/wallets/{address}/activity:
+    get:
+      operationId: getWalletActivity
+      tags: [Wallets]
+      summary: Get wallet-attributed protocol activity
+      description: Historical attribution only; this is not a claimability oracle.
+      parameters:
+        - { $ref: "#/components/parameters/Address" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "400": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/WalletActivity" }
+        default: { $ref: "#/components/responses/Error" }
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Optional higher-rate key. Never send it in a URL.
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 10000, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+    Address:
+      name: address
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Address" }
+    Subject:
+      name: subject
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Address" }
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Bytes32" }
+  schemas:
+    Address:
+      type: string
+      pattern: "^0x[0-9a-fA-F]{40}$"
+      examples: ["0x20c86dde46F7cB6B1adB52598d2f2dA70EcEf7d9"]
+    Bytes32:
+      type: string
+      pattern: "^0x[0-9a-fA-F]{64}$"
+    ExactInteger:
+      type: string
+      pattern: "^[0-9]+$"
+      description: Base-unit integer; parse with BigInt.
+    Page:
+      type: object
+      required: [number, size, hasMore]
+      properties:
+        number: { type: integer, minimum: 1 }
+        size: { type: integer, minimum: 1, maximum: 100 }
+        hasMore: { type: boolean }
+    Amount:
+      type: object
+      required: [wei, formatted]
+      properties:
+        wei: { $ref: "#/components/schemas/ExactInteger" }
+        formatted: { type: string }
+    Deployment:
+      type: object
+      required: [chainId, type, address, transactionHash, deploymentBlock, runtimeCodeHash, verified, explorerUrl]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        type: { type: string }
+        address: { $ref: "#/components/schemas/Address" }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+        deploymentBlock: { $ref: "#/components/schemas/ExactInteger" }
+        runtimeCodeHash: { $ref: "#/components/schemas/Bytes32" }
+        verified: { type: boolean }
+        explorerUrl: { type: string, format: uri }
+    Launch:
+      type: object
+      required: [chainId, name, symbol, subject, creator, launchpad, feeRouter, adapter, deploymentBlock, features]
+      properties:
+        id: { type: string, format: uuid }
+        chainId: { type: integer, const: 4663 }
+        name: { type: [string, "null"] }
+        symbol: { type: [string, "null"] }
+        subject: { $ref: "#/components/schemas/Address" }
+        creator: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        launchpad: { type: [string, "null"] }
+        feeRouter: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        adapter: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        deploymentBlock: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        features:
+          type: object
+          required: [raffle]
+          properties:
+            raffle: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+    Market:
+      type: object
+      required: [subject, launchpad, quoteAsset, totalQuote, tradeCount, updatedAtBlock, updatedAtTimestamp]
+      properties:
+        subject: { $ref: "#/components/schemas/Address" }
+        launchpad: { type: string }
+        quoteAsset: { $ref: "#/components/schemas/Address" }
+        totalQuote: { $ref: "#/components/schemas/ExactInteger" }
+        tradeCount: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtTimestamp: { $ref: "#/components/schemas/ExactInteger" }
+    MarketHour:
+      type: object
+      required: [launchpad, quoteAsset, bucketStart, quoteTotal, tradeCount]
+      properties:
+        launchpad: { type: string }
+        quoteAsset: { $ref: "#/components/schemas/Address" }
+        bucketStart: { $ref: "#/components/schemas/ExactInteger" }
+        quoteTotal: { $ref: "#/components/schemas/ExactInteger" }
+        tradeCount: { $ref: "#/components/schemas/ExactInteger" }
+    MarketTrade:
+      type: object
+      required: [launchpad, quoteAsset, quoteAmount, blockNumber, transactionHash, logIndex, timestamp]
+      properties:
+        launchpad: { type: string }
+        quoteAsset: { $ref: "#/components/schemas/Address" }
+        quoteAmount: { $ref: "#/components/schemas/ExactInteger" }
+        blockNumber: { $ref: "#/components/schemas/ExactInteger" }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+        logIndex: { type: integer, minimum: 0 }
+        timestamp: { $ref: "#/components/schemas/ExactInteger" }
+    Raffle:
+      type: object
+      required: [raffle, configHash, latestRoundId, updatedAtBlock, totalDeposited, totalNetDeposited, totalPrizesCommitted, totalPrizeInputSpent, totalPaidToWinners, totalProtocolFeeAccrued, totalProtocolFeeSent, totalTaxAccrued, totalTaxSent, totalRecycled]
+      properties:
+        raffle: { $ref: "#/components/schemas/Address" }
+        creator: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        subject: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        configHash: { $ref: "#/components/schemas/Bytes32" }
+        factory: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        implementation: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        attestor: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        randomness: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        prizeAsset: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        protocolFeeRecipient: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        taxRecipient: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        tokensPerTicket: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        maxTicketsPerHolder: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        minPrize: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        maxPrize: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        prizeBps: { type: [integer, "null"] }
+        recipientTaxBps: { type: [integer, "null"] }
+        recycleTaxBps: { type: [integer, "null"] }
+        minConfirmations: { type: [integer, "null"] }
+        winnersPerRound: { type: [integer, "null"] }
+        minRoundInterval: { type: [integer, "null"] }
+        weightWindowBlocks: { type: [integer, "null"] }
+        randomnessTimeout: { type: [integer, "null"] }
+        claimWindow: { type: [integer, "null"] }
+        basis: { type: [string, "null"] }
+        totalDeposited: { $ref: "#/components/schemas/ExactInteger" }
+        totalNetDeposited: { $ref: "#/components/schemas/ExactInteger" }
+        totalPrizesCommitted: { $ref: "#/components/schemas/ExactInteger" }
+        totalPrizeInputSpent: { $ref: "#/components/schemas/ExactInteger" }
+        totalPaidToWinners: { $ref: "#/components/schemas/ExactInteger" }
+        totalProtocolFeeAccrued: { $ref: "#/components/schemas/ExactInteger" }
+        totalProtocolFeeSent: { $ref: "#/components/schemas/ExactInteger" }
+        totalTaxAccrued: { $ref: "#/components/schemas/ExactInteger" }
+        totalTaxSent: { $ref: "#/components/schemas/ExactInteger" }
+        totalRecycled: { $ref: "#/components/schemas/ExactInteger" }
+        latestRoundId: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    RaffleRound:
+      type: object
+      required: [roundId, state, rootHash, totalTickets, prize, paidTotal, winnersPerRound, slotsPaid, snapshotBlock, snapshotBlockHash, requestId, committedAtBlock, transactionHash]
+      properties:
+        roundId: { $ref: "#/components/schemas/ExactInteger" }
+        state: { type: string }
+        rootHash: { $ref: "#/components/schemas/Bytes32" }
+        totalTickets: { $ref: "#/components/schemas/ExactInteger" }
+        prize: { $ref: "#/components/schemas/ExactInteger" }
+        paidTotal: { $ref: "#/components/schemas/ExactInteger" }
+        winnersPerRound: { type: integer }
+        slotsPaid: { type: integer }
+        returned: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        snapshotBlock: { $ref: "#/components/schemas/ExactInteger" }
+        snapshotBlockHash: { $ref: "#/components/schemas/Bytes32" }
+        requestId: { $ref: "#/components/schemas/Bytes32" }
+        seed: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        committedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+        drawnAtBlock: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+    RafflePrize:
+      type: object
+      required: [roundId, slot, holder, gross, recipientTax, recycleTax, net, deferred, blockNumber, transactionHash]
+      properties:
+        roundId: { $ref: "#/components/schemas/ExactInteger" }
+        slot: { type: integer }
+        holder: { $ref: "#/components/schemas/Address" }
+        gross: { $ref: "#/components/schemas/ExactInteger" }
+        recipientTax: { $ref: "#/components/schemas/ExactInteger" }
+        recycleTax: { $ref: "#/components/schemas/ExactInteger" }
+        net: { $ref: "#/components/schemas/ExactInteger" }
+        fundingAsset: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        payoutAsset: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        fundingSpent: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        payoutAmount: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        deferred: { type: boolean }
+        blockNumber: { $ref: "#/components/schemas/ExactInteger" }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+    AirdropAccount:
+      type: object
+      required: [distributor, accountId, funder, subject, asset, configHash, minPayout, maxBatchSize, minConfirmations, totalFunded, totalPaid, latestEpochId, updatedAtBlock]
+      properties:
+        distributor: { $ref: "#/components/schemas/Address" }
+        accountId: { $ref: "#/components/schemas/Bytes32" }
+        funder: { $ref: "#/components/schemas/Address" }
+        subject: { $ref: "#/components/schemas/Address" }
+        asset: { $ref: "#/components/schemas/Address" }
+        configHash: { $ref: "#/components/schemas/Bytes32" }
+        minPayout: { $ref: "#/components/schemas/ExactInteger" }
+        maxBatchSize: { type: integer }
+        minConfirmations: { type: integer }
+        totalFunded: { $ref: "#/components/schemas/ExactInteger" }
+        totalPaid: { $ref: "#/components/schemas/ExactInteger" }
+        latestEpochId: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    AirdropEpoch:
+      type: object
+      required: [distributor, accountId, epochId, snapshotBlock, snapshotBlockHash, rootHash, rootSum, blockNumber, transactionHash]
+      properties:
+        distributor: { $ref: "#/components/schemas/Address" }
+        accountId: { $ref: "#/components/schemas/Bytes32" }
+        epochId: { $ref: "#/components/schemas/ExactInteger" }
+        snapshotBlock: { $ref: "#/components/schemas/ExactInteger" }
+        snapshotBlockHash: { $ref: "#/components/schemas/Bytes32" }
+        rootHash: { $ref: "#/components/schemas/Bytes32" }
+        rootSum: { $ref: "#/components/schemas/ExactInteger" }
+        blockNumber: { $ref: "#/components/schemas/ExactInteger" }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+    LiquidityAccount:
+      type: object
+      required: [manager, accountId, funder, subject, quoteAsset, venue, configHash, totalFunded, totalQuoteSpent, totalSubjectReceived, liquidity, feesQuote, feesSubject, updatedAtBlock]
+      properties:
+        manager: { $ref: "#/components/schemas/Address" }
+        accountId: { $ref: "#/components/schemas/Bytes32" }
+        funder: { $ref: "#/components/schemas/Address" }
+        subject: { $ref: "#/components/schemas/Address" }
+        quoteAsset: { $ref: "#/components/schemas/Address" }
+        venue: { type: integer }
+        configHash: { $ref: "#/components/schemas/Bytes32" }
+        totalFunded: { $ref: "#/components/schemas/ExactInteger" }
+        totalQuoteSpent: { $ref: "#/components/schemas/ExactInteger" }
+        totalSubjectReceived: { $ref: "#/components/schemas/ExactInteger" }
+        positionId: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        liquidity: { $ref: "#/components/schemas/ExactInteger" }
+        feesQuote: { $ref: "#/components/schemas/ExactInteger" }
+        feesSubject: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    FundingBandsAccount:
+      type: object
+      required: [manager, accountId, subject, creator, profileId, venue, quoteAsset, launchSupply, subjectDecimals, ethUsdE8, oracleUpdatedAt, bandCount, totalDeposited, totalInvested, totalResidual, totalRealizedWeth, totalProtocolFee, totalNetWeth, totalSubjectProceeds, totalProceedsSent, updatedAtBlock]
+      properties:
+        manager: { $ref: "#/components/schemas/Address" }
+        accountId: { $ref: "#/components/schemas/Bytes32" }
+        subject: { $ref: "#/components/schemas/Address" }
+        creator: { $ref: "#/components/schemas/Address" }
+        profileId: { type: integer }
+        venue: { type: integer }
+        quoteAsset: { $ref: "#/components/schemas/Address" }
+        launchSupply: { $ref: "#/components/schemas/ExactInteger" }
+        subjectDecimals: { type: integer }
+        ethUsdE8: { $ref: "#/components/schemas/ExactInteger" }
+        oracleUpdatedAt: { $ref: "#/components/schemas/ExactInteger" }
+        bandCount: { type: integer }
+        totalDeposited: { $ref: "#/components/schemas/ExactInteger" }
+        totalInvested: { $ref: "#/components/schemas/ExactInteger" }
+        totalResidual: { $ref: "#/components/schemas/ExactInteger" }
+        totalRealizedWeth: { $ref: "#/components/schemas/ExactInteger" }
+        totalProtocolFee: { $ref: "#/components/schemas/ExactInteger" }
+        totalNetWeth: { $ref: "#/components/schemas/ExactInteger" }
+        totalSubjectProceeds: { $ref: "#/components/schemas/ExactInteger" }
+        totalProceedsSent: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    FundingBand:
+      type: object
+      required: [manager, accountId, bandId, lowerMarketCapUsdE8, upperMarketCapUsdE8, lowerWethPerSubjectX128, upperWethPerSubjectX128, tickLower, tickUpper, destination, recipient, status, deposited, invested, residual, liquidity, realizedWeth, protocolFee, netWeth, subjectProceeds, proceedsSentWeth, proceedsSentSubject, updatedAtBlock]
+      properties:
+        manager: { $ref: "#/components/schemas/Address" }
+        accountId: { $ref: "#/components/schemas/Bytes32" }
+        bandId: { type: integer }
+        lowerMarketCapUsdE8: { $ref: "#/components/schemas/ExactInteger" }
+        upperMarketCapUsdE8: { $ref: "#/components/schemas/ExactInteger" }
+        lowerWethPerSubjectX128: { $ref: "#/components/schemas/ExactInteger" }
+        upperWethPerSubjectX128: { $ref: "#/components/schemas/ExactInteger" }
+        tickLower: { type: integer }
+        tickUpper: { type: integer }
+        destination: { type: integer }
+        recipient: { $ref: "#/components/schemas/Address" }
+        status: { type: string }
+        deposited: { $ref: "#/components/schemas/ExactInteger" }
+        invested: { $ref: "#/components/schemas/ExactInteger" }
+        residual: { $ref: "#/components/schemas/ExactInteger" }
+        positionId: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        liquidity: { $ref: "#/components/schemas/ExactInteger" }
+        realizedWeth: { $ref: "#/components/schemas/ExactInteger" }
+        protocolFee: { $ref: "#/components/schemas/ExactInteger" }
+        netWeth: { $ref: "#/components/schemas/ExactInteger" }
+        subjectProceeds: { $ref: "#/components/schemas/ExactInteger" }
+        proceedsSentWeth: { $ref: "#/components/schemas/ExactInteger" }
+        proceedsSentSubject: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    RevenueBalance:
+      type: object
+      required: [collector, asset, totalReceived, totalForwarded, updatedAtBlock]
+      properties:
+        collector: { $ref: "#/components/schemas/Address" }
+        asset: { $ref: "#/components/schemas/Address" }
+        totalReceived: { $ref: "#/components/schemas/ExactInteger" }
+        totalForwarded: { $ref: "#/components/schemas/ExactInteger" }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    RandomnessRequest:
+      type: object
+      required: [adapter, requestId, consumer, roundId, requestBlock, sealDeadlineBlock, state, updatedAtBlock]
+      properties:
+        adapter: { $ref: "#/components/schemas/Address" }
+        requestId: { $ref: "#/components/schemas/Bytes32" }
+        consumer: { $ref: "#/components/schemas/Address" }
+        roundId: { $ref: "#/components/schemas/ExactInteger" }
+        requestBlock: { $ref: "#/components/schemas/ExactInteger" }
+        sealDeadlineBlock: { $ref: "#/components/schemas/ExactInteger" }
+        entropy: { oneOf: [{ $ref: "#/components/schemas/Bytes32" }, { type: "null" }] }
+        alpha: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        output: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        seed: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        prover: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        state: { type: string }
+        updatedAtBlock: { $ref: "#/components/schemas/ExactInteger" }
+    ProtocolEvent:
+      type: object
+      required: [family, eventName, contract, blockNumber, blockHash, transactionHash, logIndex, timestamp]
+      properties:
+        family: { type: string }
+        eventName: { type: string }
+        contract: { $ref: "#/components/schemas/Address" }
+        accountId: { oneOf: [{ $ref: "#/components/schemas/Bytes32" }, { type: "null" }] }
+        subject: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        asset: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        recipient: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        amount0: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        amount1: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        amount2: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        reference: { oneOf: [{ $ref: "#/components/schemas/Bytes32" }, { type: "null" }] }
+        success: { type: [boolean, "null"] }
+        blockNumber: { $ref: "#/components/schemas/ExactInteger" }
+        blockHash: { $ref: "#/components/schemas/Bytes32" }
+        transactionHash: { $ref: "#/components/schemas/Bytes32" }
+        logIndex: { type: integer, minimum: 0 }
+        timestamp: { $ref: "#/components/schemas/ExactInteger" }
+    RaffleSnapshot:
+      type: object
+      required: [chainId, token, raffle, pool, nextPrize, nextDraw, latestRound, pendingRounds, config, fetchedAt]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        token:
+          type: object
+          required: [address, symbol, name, tokensPerTicket]
+          properties:
+            address: { $ref: "#/components/schemas/Address" }
+            symbol: { type: [string, "null"] }
+            name: { type: [string, "null"] }
+            tokensPerTicket: { $ref: "#/components/schemas/ExactInteger" }
+        raffle:
+          type: object
+          required: [address, prizeAsset, prizeAssetSymbol]
+          properties:
+            address: { $ref: "#/components/schemas/Address" }
+            prizeAsset: { $ref: "#/components/schemas/Address" }
+            prizeAssetSymbol: { type: [string, "null"] }
+        pool: { $ref: "#/components/schemas/Amount" }
+        nextPrize: { $ref: "#/components/schemas/Amount" }
+        nextDraw:
+          type: object
+          required: [eligibleAt, secondsUntil, status]
+          properties:
+            eligibleAt: { type: [integer, "null"] }
+            secondsUntil: { type: integer, minimum: 0 }
+            status: { type: string, enum: [counting_down, due] }
+        latestRound:
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [id, state, totalTickets, prize, snapshotBlock, committedAt, drawnAt]
+              properties:
+                id: { type: integer }
+                state: { type: string }
+                totalTickets: { $ref: "#/components/schemas/ExactInteger" }
+                prize: { $ref: "#/components/schemas/Amount" }
+                snapshotBlock: { type: integer }
+                committedAt: { type: integer }
+                drawnAt: { type: [integer, "null"] }
+        pendingRounds: { type: integer }
+        config:
+          type: object
+          required: [prizeBps, winnersPerRound, minRoundIntervalSeconds, weightWindowBlocks, maxTicketsPerHolder, claimWindowSeconds, basis]
+          properties:
+            prizeBps: { type: integer }
+            winnersPerRound: { type: integer }
+            minRoundIntervalSeconds: { type: integer }
+            weightWindowBlocks: { type: integer }
+            maxTicketsPerHolder: { $ref: "#/components/schemas/ExactInteger" }
+            claimWindowSeconds: { type: integer }
+            basis: { type: string, enum: [snapshot, min_balance] }
+        fetchedAt: { type: string, format: date-time }
+    ServiceIndex:
+      type: object
+      required: [service, version, chainId, network, auth, capacity, endpoints, pagination, docs, openapi]
+      properties:
+        service: { type: string, const: sinjoh-api }
+        version: { type: string }
+        chainId: { type: integer, const: 4663 }
+        network: { type: string }
+        auth: { type: string }
+        capacity:
+          type: object
+          required: [dailyLimit, monthlyLimit, resetsAt]
+          properties:
+            dailyLimit: { type: integer }
+            monthlyLimit: { type: integer }
+            resetsAt:
+              type: object
+              required: [daily, monthly]
+              properties:
+                daily: { type: string, format: date-time }
+                monthly: { type: string, format: date-time }
+        endpoints: { type: object, additionalProperties: { type: string } }
+        pagination: { type: string }
+        docs: { type: string, format: uri }
+        openapi: { type: string, format: uri }
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }
+  responses:
+    Error:
+      description: Stable error slug and human-readable message
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ContractList:
+      description: Deployment page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [contracts, page]
+            properties:
+              contracts:
+                type: array
+                items: { $ref: "#/components/schemas/Deployment" }
+              page: { $ref: "#/components/schemas/Page" }
+    LaunchList:
+      description: Launch page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, launches, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              launches:
+                type: array
+                items: { $ref: "#/components/schemas/Launch" }
+              page: { $ref: "#/components/schemas/Page" }
+    MarketSummary:
+      description: Market totals and hourly history
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, market, hours, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              market: { $ref: "#/components/schemas/Market" }
+              hours: { type: array, items: { $ref: "#/components/schemas/MarketHour" } }
+              page: { $ref: "#/components/schemas/Page" }
+    MarketTrades:
+      description: Trade page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, subject, trades, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              subject: { $ref: "#/components/schemas/Address" }
+              trades: { type: array, items: { $ref: "#/components/schemas/MarketTrade" } }
+              page: { $ref: "#/components/schemas/Page" }
+    RaffleList:
+      description: Raffle page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, raffles, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              raffles: { type: array, items: { $ref: "#/components/schemas/Raffle" } }
+              page: { $ref: "#/components/schemas/Page" }
+    RaffleRounds:
+      description: Raffle round page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, subject, raffle, rounds, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              subject: { $ref: "#/components/schemas/Address" }
+              raffle: { $ref: "#/components/schemas/Address" }
+              rounds: { type: array, items: { $ref: "#/components/schemas/RaffleRound" } }
+              page: { $ref: "#/components/schemas/Page" }
+    RafflePrizes:
+      description: Raffle prize page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, subject, raffle, prizes, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              subject: { $ref: "#/components/schemas/Address" }
+              raffle: { $ref: "#/components/schemas/Address" }
+              prizes: { type: array, items: { $ref: "#/components/schemas/RafflePrize" } }
+              page: { $ref: "#/components/schemas/Page" }
+    AirdropAccountList:
+      description: Airdrop account page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, accounts, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              accounts: { type: array, items: { $ref: "#/components/schemas/AirdropAccount" } }
+              page: { $ref: "#/components/schemas/Page" }
+    AirdropAccountObject:
+      description: Airdrop account
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, account]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              account: { $ref: "#/components/schemas/AirdropAccount" }
+    AirdropEpochs:
+      description: Airdrop epoch page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, accountId, epochs, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              accountId: { $ref: "#/components/schemas/Bytes32" }
+              epochs: { type: array, items: { $ref: "#/components/schemas/AirdropEpoch" } }
+              page: { $ref: "#/components/schemas/Page" }
+    LiquidityAccountList:
+      description: Liquidity account page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, accounts, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              accounts: { type: array, items: { $ref: "#/components/schemas/LiquidityAccount" } }
+              page: { $ref: "#/components/schemas/Page" }
+    LiquidityAccountObject:
+      description: Liquidity account
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, account]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              account: { $ref: "#/components/schemas/LiquidityAccount" }
+    FundingBandsAccountList:
+      description: Funding Bands account page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, accounts, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              accounts: { type: array, items: { $ref: "#/components/schemas/FundingBandsAccount" } }
+              page: { $ref: "#/components/schemas/Page" }
+    FundingBandsAccountObject:
+      description: Funding Bands account
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, account]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              account: { $ref: "#/components/schemas/FundingBandsAccount" }
+    FundingBands:
+      description: Funding band page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, accountId, bands, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              accountId: { $ref: "#/components/schemas/Bytes32" }
+              bands: { type: array, items: { $ref: "#/components/schemas/FundingBand" } }
+              page: { $ref: "#/components/schemas/Page" }
+    RevenueBalances:
+      description: Revenue balance page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, balances, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              balances: { type: array, items: { $ref: "#/components/schemas/RevenueBalance" } }
+              page: { $ref: "#/components/schemas/Page" }
+    RandomnessRequests:
+      description: Randomness request page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, requests, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              requests: { type: array, items: { $ref: "#/components/schemas/RandomnessRequest" } }
+              page: { $ref: "#/components/schemas/Page" }
+    ProtocolEvents:
+      description: Normalized protocol event page
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, events, page]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              events: { type: array, items: { $ref: "#/components/schemas/ProtocolEvent" } }
+              page: { $ref: "#/components/schemas/Page" }
+    WalletActivity:
+      description: Wallet-attributed protocol history; not claimability
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, wallet, events, rafflePrizes, page, note]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              wallet: { $ref: "#/components/schemas/Address" }
+              events: { type: array, items: { $ref: "#/components/schemas/ProtocolEvent" } }
+              rafflePrizes: { type: array, items: { $ref: "#/components/schemas/RafflePrize" } }
+              page: { $ref: "#/components/schemas/Page" }
+              note: { type: string }

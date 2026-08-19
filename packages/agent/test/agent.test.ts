@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import type { Address, PublicClient } from "viem";
-import { createSinjohAgentServer } from "../src/server.js";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import type { Address, Hex, PublicClient } from "viem";
+import type { SinjohApiClient } from "@sinjoh/sdk";
+import {
+  createSinjohAgentServer,
+  type SinjohWalletExecutor,
+} from "../src/server.js";
 
 const ROUTER = "0x00000000000000000000000000000000000000aa" as Address;
 const WETH = "0x00000000000000000000000000000000000000e1" as Address;
@@ -11,7 +14,13 @@ const SUBJECT = "0x00000000000000000000000000000000000000e2" as Address;
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
 /** A quiet single-bucket router, keyed the same way as the SDK planner tests. */
-function stubChain(onRead?: (args: { functionName: string; args?: readonly unknown[] }) => void): PublicClient {
+interface ChainHooks {
+  onRead?: (args: { functionName: string; args?: readonly unknown[] }) => void;
+  onCall?: (args: { account?: Address; to?: Address; data?: Hex; value?: bigint }) => void;
+  onWait?: (hash: Hex) => void;
+}
+
+function stubChain(hooks: ChainHooks = {}): PublicClient {
   const routes: Record<string, unknown> = {
     "creator": ZERO,
     "protocolFeeRecipient": ZERO,
@@ -32,7 +41,7 @@ function stubChain(onRead?: (args: { functionName: string; args?: readonly unkno
   };
   return {
     readContract: async (args: { functionName: string; args?: readonly unknown[] }) => {
-      onRead?.(args);
+      hooks.onRead?.(args);
       if (args.functionName === "minimumOutput") return [12n, 1234];
       const key = args.args === undefined || args.args.length === 0
         ? args.functionName
@@ -40,15 +49,24 @@ function stubChain(onRead?: (args: { functionName: string; args?: readonly unkno
           typeof v === "bigint" ? Number(v) : v)}`;
       if (key in routes) return routes[key];
       throw new Error(`unexpected read ${key}`);
-    }
+    },
+    call: async (args: { account?: Address; to?: Address; data?: Hex; value?: bigint }) => {
+      hooks.onCall?.(args);
+      return { data: "0x" };
+    },
+    waitForTransactionReceipt: async ({ hash }: { hash: Hex }) => {
+      hooks.onWait?.(hash);
+      return { status: "success", transactionHash: hash, blockNumber: 123n };
+    },
   } as unknown as PublicClient;
 }
 
 async function connectedClient(
-  onRead?: (args: { functionName: string; args?: readonly unknown[] }) => void
+  hooks: ChainHooks = {},
+  wallet?: SinjohWalletExecutor,
 ): Promise<Client> {
   const server = createSinjohAgentServer({
-    client: stubChain(onRead),
+    client: stubChain(hooks),
     manifest: {
       chainId: 4663,
       contracts: {
@@ -56,7 +74,20 @@ async function connectedClient(
           address: "0xD030064fB83d14C97c22A6B63bF376552eBA7112" as Address
         }
       }
-    }
+    },
+    api: {
+      index: async () => ({
+        service: "sinjoh-api", version: "1.0.0", chainId: 4663,
+        network: "Robinhood Chain mainnet", auth: "keyless", endpoints: {},
+        docs: "https://example.test/docs", openapi: "https://example.test/openapi",
+      }),
+      listLaunches: async () => ({
+        chainId: 4663,
+        launches: [],
+        page: { number: 1, size: 25, hasMore: false },
+      }),
+    } as unknown as SinjohApiClient,
+    ...(wallet === undefined ? {} : { wallet }),
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "0.0.1" });
@@ -78,14 +109,34 @@ test("exposes the full read/plan/validate tool surface", async () => {
   const { tools } = await client.listTools();
   const names = tools.map((tool) => tool.name).sort();
   assert.deepEqual(names, [
-    "sinjoh_check_activation", "sinjoh_decode_error", "sinjoh_manifest",
+    "sinjoh_api_capabilities", "sinjoh_check_activation", "sinjoh_decode_error",
+    "sinjoh_discover", "sinjoh_get", "sinjoh_history", "sinjoh_manifest",
     "sinjoh_plan_flap_launch", "sinjoh_plan_letscash_integration",
     "sinjoh_plan_ponsv2_launch", "sinjoh_plan_router_work", "sinjoh_preflight_guard",
-    "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest"
+    "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest",
+    "sinjoh_wallet_activity"
   ]);
   for (const tool of tools) {
     assert.ok((tool.description ?? "").length > 40, `${tool.name} is documented`);
   }
+  for (const name of ["sinjoh_api_capabilities", "sinjoh_discover", "sinjoh_get", "sinjoh_history", "sinjoh_wallet_activity"]) {
+    const tool = tools.find((candidate) => candidate.name === name);
+    assert.equal(tool?.annotations?.readOnlyHint, true, `${name} is annotated read-only`);
+  }
+  await client.close();
+});
+
+test("public API MCP tools return structured content", async () => {
+  const client = await connectedClient();
+  const result = await client.callTool({ name: "sinjoh_api_capabilities", arguments: {} });
+  assert.equal(JSON.parse(text(result)).service, "sinjoh-api");
+  assert.equal((result.structuredContent as { chainId?: number } | undefined)?.chainId, 4663);
+
+  const launches = await client.callTool({
+    name: "sinjoh_discover",
+    arguments: { resource: "launches", limit: 10 },
+  });
+  assert.deepEqual(JSON.parse(text(launches)).launches, []);
   await client.close();
 });
 
@@ -117,9 +168,9 @@ test("plan_router_work serializes amounts as decimal strings", async () => {
 
 test("preflight_guard forwards the route hash and guard data", async () => {
   let minimumOutputArgs: readonly unknown[] | undefined;
-  const client = await connectedClient((args) => {
+  const client = await connectedClient({ onRead: (args) => {
     if (args.functionName === "minimumOutput") minimumOutputArgs = args.args;
-  });
+  }});
   const routeHash = `0x${"ab".repeat(32)}`;
   const result = JSON.parse(text(await client.callTool({
     name: "sinjoh_preflight_guard",
@@ -135,6 +186,89 @@ test("preflight_guard forwards the route hash and guard data", async () => {
   })));
   assert.deepEqual(result, { status: "ok", minOut: "12", validUntil: 1234 });
   assert.deepEqual(minimumOutputArgs, [SUBJECT, SUBJECT, WETH, 99n, routeHash, "0x1234"]);
+  await client.close();
+});
+
+test("host wallet execution simulates before signing and can wait for a receipt", async () => {
+  const steps: string[] = [];
+  const hash = `0x${"42".repeat(32)}` as Hex;
+  const client = await connectedClient({
+    onCall: () => steps.push("simulate"),
+    onWait: (seenHash) => {
+      assert.equal(seenHash, hash);
+      steps.push("receipt");
+    },
+  }, {
+    account: SUBJECT,
+    chainId: 4663,
+    sendTransaction: async ({ to, data, value }) => {
+      assert.equal(to, ROUTER);
+      assert.equal(data, "0x1234");
+      assert.equal(value, 7n);
+      steps.push("sign");
+      return hash;
+    },
+  });
+
+  const { tools } = await client.listTools();
+  const execute = tools.find((tool) => tool.name === "sinjoh_execute_transaction");
+  assert.equal(execute?.annotations?.readOnlyHint, false);
+  assert.equal(execute?.annotations?.destructiveHint, true);
+  assert.equal(execute?.annotations?.idempotentHint, false);
+
+  const result = JSON.parse(text(await client.callTool({
+    name: "sinjoh_execute_transaction",
+    arguments: { to: ROUTER, data: "0x1234", value: "7", waitForReceipt: true },
+  })));
+  assert.equal(result.transactionHash, hash);
+  assert.equal(result.status, "confirmed");
+  assert.equal(result.receipt.status, "success");
+  assert.equal(result.receipt.blockNumber, "123");
+  assert.deepEqual(steps, ["simulate", "sign", "receipt"]);
+  await client.close();
+});
+
+test("wallet execution never signs a reverting simulation", async () => {
+  let signed = false;
+  const client = await connectedClient({
+    onCall: () => { throw new Error("execution reverted"); },
+  }, {
+    account: SUBJECT,
+    chainId: 4663,
+    sendTransaction: async () => {
+      signed = true;
+      return `0x${"42".repeat(32)}` as Hex;
+    },
+  });
+
+  const result = await client.callTool({
+    name: "sinjoh_execute_transaction",
+    arguments: { to: ROUTER, data: "0x1234" },
+  });
+  assert.equal(result.isError, true);
+  assert.equal(signed, false);
+  await client.close();
+});
+
+test("receipt polling failure returns the submitted hash to prevent duplicate signing", async () => {
+  const hash = `0x${"43".repeat(32)}` as Hex;
+  const client = await connectedClient({
+    onWait: () => { throw new Error("receipt timeout"); },
+  }, {
+    account: SUBJECT,
+    chainId: 4663,
+    sendTransaction: async () => hash,
+  });
+
+  const result = await client.callTool({
+    name: "sinjoh_execute_transaction",
+    arguments: { to: ROUTER, data: "0x1234", waitForReceipt: true },
+  });
+  const body = JSON.parse(text(result));
+  assert.notEqual(result.isError, true);
+  assert.equal(body.status, "submitted");
+  assert.equal(body.transactionHash, hash);
+  assert.equal(body.receiptError, "receipt timeout");
   await client.close();
 });
 

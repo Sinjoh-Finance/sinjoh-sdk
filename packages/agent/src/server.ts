@@ -1,14 +1,16 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { Address, Hex, PublicClient } from "viem";
 import { allVerified, verifyManifest, type ChainManifest } from "@sinjoh/deployments";
 import {
   airdropSinkConfigHash, checkPonsV2Activation, decodeSinjohError,
+  createSinjohApiClient,
   encodeAirdropSinkConfig, encodeLiquiditySinkConfig, encodeRaffleConfig, encodeRouterConfig,
   liquiditySinkConfigHash, planFlapLaunch, planLetsCashIntegration, planPonsV2Launch,
   planRouterWork, preflightMinimumOutput, raffleConfigHash, readRouterSnapshot,
   routerConfigHash, validateAirdropSinkConfig, validateLiquiditySinkConfig,
-  validateRaffleConfig, validateRouterConfig, type CodeReadClient
+  validateRaffleConfig, validateRouterConfig, type CodeReadClient,
+  type SinjohApiClient
 } from "@sinjoh/sdk";
 import {
   airdropSinkConfigFromWire, flapTokenParamsFromWire, liquiditySinkConfigFromWire,
@@ -17,23 +19,58 @@ import {
 import { errorResult, textResult } from "./serialize.js";
 
 /**
- * The Sinjoh agent surface: every tool is read, plan, validate, or prepare — none signs or
- * submits. Prepared calls come back as data for the caller to simulate and (if it holds a
- * signer) submit itself. Amounts cross the wire as decimal strings.
+ * The Sinjoh agent surface. Prepared calls always remain portable wallet-ready data. A host
+ * may additionally inject a wallet executor, in which case the server exposes a guarded
+ * simulate-then-submit tool without ever receiving or storing raw key material. Amounts cross
+ * the wire as decimal strings.
  */
 
 export interface SinjohAgentContext {
   client: PublicClient;
   manifest: Pick<ChainManifest, "chainId" | "contracts">;
+  /** Defaults to the keyless production API client. */
+  api?: SinjohApiClient;
+  /** Optional host-owned wallet. When present, the server can simulate and submit calls. */
+  wallet?: SinjohWalletExecutor;
+}
+
+export interface SinjohWalletExecutor {
+  account: Address;
+  chainId: number;
+  sendTransaction(request: {
+    to: Address;
+    data: Hex;
+    value: bigint;
+  }): Promise<Hex>;
 }
 
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/).describe("20-byte hex address");
 const hex = z.string().regex(/^0x[0-9a-fA-F]*$/).describe("hex bytes");
 const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/).describe("32-byte hex value");
+const page = z.number().int().min(1).max(10_000).optional();
+const limit = z.number().int().min(1).max(100).optional();
+const READ_ONLY = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+} as const;
 
 export function createSinjohAgentServer(context: SinjohAgentContext): McpServer {
-  const server = new McpServer({ name: "sinjoh", version: "0.0.1" });
+  const server = new McpServer(
+    { name: "sinjoh", version: "1.0.0" },
+    {
+      instructions: "Use API tools for discovery and indexed history. Use chain tools for "
+        + "live verification, reads, planning, and prepared calls. Wallet activity is not a "
+        + "claimability oracle. Prepared calls are wallet-ready. Transaction execution is "
+        + "available only when the host injects its own wallet executor; the server stores no key."
+    }
+  );
   const { client, manifest } = context;
+  const api = context.api ?? createSinjohApiClient();
+  if (context.wallet && context.wallet.chainId !== manifest.chainId) {
+    throw new Error(`wallet chain ${context.wallet.chainId} does not match manifest chain ${manifest.chainId}`);
+  }
 
   server.registerTool("sinjoh_manifest", {
     description: "Look up deployed Sinjoh contract addresses from the packaged manifest. "
@@ -394,6 +431,234 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
       return errorResult(error);
     }
   });
+
+  server.registerTool("sinjoh_api_capabilities", {
+    description: "Discover the production Sinjoh API version, chain, capacity windows, "
+      + "documentation, and complete endpoint catalog. Call this when choosing which public "
+      + "data tool to use.",
+    inputSchema: z.object({}),
+    annotations: READ_ONLY,
+  }, async () => {
+    try {
+      return textResult(await api.index());
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_discover", {
+    description: "List a public Sinjoh resource group. Results are indexed or registry data, "
+      + "paginated newest-first where ordering applies, and exact integer amounts remain strings.",
+    inputSchema: z.object({
+      resource: z.enum([
+        "contracts", "launches", "raffles", "airdrops", "liquidity",
+        "funding-bands", "revenue", "randomness",
+      ]),
+      page,
+      limit,
+      launchpad: z.string().optional().describe("launches only"),
+      creator: address.optional().describe("launches only"),
+      contractType: z.string().optional().describe("contracts only"),
+    }),
+    annotations: READ_ONLY,
+  }, async (args) => {
+    const paging = {
+      ...(args.page === undefined ? {} : { page: args.page }),
+      ...(args.limit === undefined ? {} : { limit: args.limit }),
+    };
+    try {
+      switch (args.resource) {
+        case "contracts":
+          return textResult(await api.listContracts({
+            ...paging,
+            ...(args.contractType === undefined ? {} : { type: args.contractType }),
+          }));
+        case "launches":
+          return textResult(await api.listLaunches({
+            ...paging,
+            ...(args.launchpad === undefined ? {} : { launchpad: args.launchpad }),
+            ...(args.creator === undefined ? {} : { creator: args.creator }),
+          }));
+        case "raffles": return textResult(await api.listRaffles(paging));
+        case "airdrops": return textResult(await api.listAirdropAccounts(paging));
+        case "liquidity": return textResult(await api.listLiquidityAccounts(paging));
+        case "funding-bands": return textResult(await api.listFundingBandsAccounts(paging));
+        case "revenue": return textResult(await api.listRevenueBalances(paging));
+        case "randomness": return textResult(await api.listRandomnessRequests(paging));
+      }
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_get", {
+    description: "Get one Sinjoh resource. contract identifiers are addresses; launch, market, "
+      + "and raffle identifiers are subject-token addresses; account identifiers are bytes32.",
+    inputSchema: z.object({
+      resource: z.enum([
+        "contract", "launch", "market", "raffle", "airdrop-account",
+        "liquidity-account", "funding-bands-account",
+      ]),
+      identifier: z.string().min(1),
+      page,
+      limit,
+    }),
+    annotations: READ_ONLY,
+  }, async (args) => {
+    const paging = {
+      ...(args.page === undefined ? {} : { page: args.page }),
+      ...(args.limit === undefined ? {} : { limit: args.limit }),
+    };
+    try {
+      switch (args.resource) {
+        case "contract": return textResult(await api.getContract(args.identifier));
+        case "launch": return textResult(await api.getLaunch(args.identifier));
+        case "market": return textResult(await api.getMarket(args.identifier, paging));
+        case "raffle": return textResult(await api.getRaffle(args.identifier));
+        case "airdrop-account": return textResult(await api.getAirdropAccount(args.identifier));
+        case "liquidity-account": return textResult(await api.getLiquidityAccount(args.identifier));
+        case "funding-bands-account": return textResult(await api.getFundingBandsAccount(args.identifier));
+      }
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_history", {
+    description: "Read bounded indexed history. market-trades, raffle-rounds, raffle-prizes, "
+      + "airdrop-epochs, and funding-bands require the matching subject or account identifier. "
+      + "events accepts exact-match protocol filters.",
+    inputSchema: z.object({
+      resource: z.enum([
+        "market-trades", "raffle-rounds", "raffle-prizes", "airdrop-epochs",
+        "funding-bands", "events",
+      ]),
+      identifier: z.string().optional(),
+      page,
+      limit,
+      family: z.string().optional(),
+      eventName: z.string().optional(),
+      accountId: bytes32.optional(),
+      subject: address.optional(),
+      asset: address.optional(),
+      recipient: address.optional(),
+    }),
+    annotations: READ_ONLY,
+  }, async (args) => {
+    const paging = {
+      ...(args.page === undefined ? {} : { page: args.page }),
+      ...(args.limit === undefined ? {} : { limit: args.limit }),
+    };
+    const requireIdentifier = () => {
+      if (!args.identifier) throw new Error(`${args.resource} requires identifier`);
+      return args.identifier;
+    };
+    try {
+      switch (args.resource) {
+        case "market-trades": return textResult(await api.listMarketTrades(requireIdentifier(), paging));
+        case "raffle-rounds": return textResult(await api.listRaffleRounds(requireIdentifier(), paging));
+        case "raffle-prizes": return textResult(await api.listRafflePrizes(requireIdentifier(), paging));
+        case "airdrop-epochs": return textResult(await api.listAirdropEpochs(requireIdentifier(), paging));
+        case "funding-bands": return textResult(await api.listFundingBands(requireIdentifier(), paging));
+        case "events": return textResult(await api.listEvents({
+          ...paging,
+          ...(args.family === undefined ? {} : { family: args.family }),
+          ...(args.eventName === undefined ? {} : { eventName: args.eventName }),
+          ...(args.accountId === undefined ? {} : { accountId: args.accountId }),
+          ...(args.subject === undefined ? {} : { subject: args.subject }),
+          ...(args.asset === undefined ? {} : { asset: args.asset }),
+          ...(args.recipient === undefined ? {} : { recipient: args.recipient }),
+        }));
+      }
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_wallet_activity", {
+    description: "Read wallet-attributed protocol events and raffle prize settlements. "
+      + "This is historical attribution, not proof that a reward is currently claimable.",
+    inputSchema: z.object({ address, page, limit }),
+    annotations: READ_ONLY,
+  }, async (args) => {
+    try {
+      return textResult(await api.getWalletActivity(args.address, {
+        ...(args.page === undefined ? {} : { page: args.page }),
+        ...(args.limit === undefined ? {} : { limit: args.limit }),
+      }));
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  if (context.wallet) {
+    const wallet = context.wallet;
+    server.registerTool("sinjoh_execute_transaction", {
+      description: "Simulate a prepared transaction against the live chain, then ask the "
+        + "host-injected wallet to sign and submit it. The tool rejects a reverting simulation "
+        + "before requesting a signature. It accepts only destination, calldata, and native "
+        + "value; the server never receives raw private keys.",
+      inputSchema: z.object({
+        to: address.describe("transaction destination from a Sinjoh prepared call"),
+        data: hex.describe("transaction calldata from a Sinjoh prepared call"),
+        value: z.string().regex(/^\d+$/).default("0")
+          .describe("native token value in wei as a decimal string"),
+        waitForReceipt: z.boolean().default(true)
+          .describe("wait for a mined receipt before returning"),
+      }),
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    }, async (args) => {
+      const request = {
+        account: wallet.account,
+        to: args.to as Address,
+        data: args.data as Hex,
+        value: BigInt(args.value),
+      };
+      try {
+        await client.call(request);
+      } catch (error) {
+        return errorResult(error);
+      }
+      if (wallet.chainId !== manifest.chainId) {
+        return errorResult(new Error(
+          `wallet chain changed to ${wallet.chainId} after simulation; expected ${manifest.chainId}`,
+        ));
+      }
+
+      let transactionHash: Hex;
+      try {
+        transactionHash = await wallet.sendTransaction({
+          to: request.to,
+          data: request.data,
+          value: request.value,
+        });
+      } catch (error) {
+        return errorResult(error);
+      }
+
+      const submitted = {
+        chainId: manifest.chainId,
+        account: wallet.account,
+        transactionHash,
+      };
+      if (!args.waitForReceipt) return textResult({ ...submitted, status: "submitted" });
+
+      try {
+        const receipt = await client.waitForTransactionReceipt({ hash: transactionHash });
+        return textResult({ ...submitted, status: "confirmed", receipt });
+      } catch (error) {
+        // Submission is irreversible even when receipt polling fails. Return the hash as a
+        // successful submitted result so an agent reconciles it instead of signing twice.
+        const receiptError = error instanceof Error ? error.message : String(error);
+        return textResult({ ...submitted, status: "submitted", receiptError });
+      }
+    });
+  }
 
   return server;
 }

@@ -28,11 +28,12 @@
     "build": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run build -w @sinjoh/agent",
     "typecheck": "npm run build -w @sinjoh/abis -w @sinjoh/deployments -w @sinjoh/merkle -w @sinjoh/sdk && npm run typecheck --workspaces",
     "test": "npm test --workspaces",
+    "openapi:lint": "redocly lint openapi/sinjoh-api.yaml",
     "pack:check": "npm run build && npm pack --dry-run --workspaces",
     "release:check": "node tools/verify-release.mjs"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@redocly/cli": "2.46.1",
     "@types/node": "22.20.1",
     "tsx": "4.23.1",
     "typescript": "7.0.2",

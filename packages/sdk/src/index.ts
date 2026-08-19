@@ -83,3 +83,16 @@ export {
   type LetsCashIntegrationPlan, type LetsCashIntegrationPlanInput,
   type LetsCashIntegrationStep
 } from "./launch/letscash.js";
+
+export {
+  createSinjohApiClient, SinjohApiError,
+  type AirdropAccountRecord, type AirdropEpochRecord, type Amount, type ApiIndex,
+  type CreateSinjohApiClientOptions, type DeploymentRecord, type EvmAddress,
+  type FundingBandRecord, type FundingBandsAccountRecord, type HexValue,
+  type IndexedRecord, type JsonPrimitive, type JsonValue, type LaunchRecord,
+  type LiquidityAccountRecord, type MarketHourRecord, type MarketRecord,
+  type MarketTradeRecord, type Page, type PageOptions, type ProtocolEventRecord,
+  type RafflePrizeRecord, type RaffleRecord, type RaffleRoundRecord,
+  type RaffleSnapshot, type RandomnessRequestRecord, type RevenueBalanceRecord,
+  type SinjohApiClient
+} from "./api.js";

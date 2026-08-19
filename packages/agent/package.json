@@ -1,7 +1,7 @@
 {
   "name": "@sinjoh/agent",
   "version": "1.0.0",
-  "description": "MCP server exposing the Sinjoh SDK's read, plan, preflight, and prepare surface to agents. Never signs or submits transactions.",
+  "description": "MCP server for Sinjoh public data, contract planning, prepared calls, and optional host-wallet transaction execution.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -12,7 +12,13 @@
   "bugs": {
     "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
-  "keywords": ["sinjoh", "mcp", "agents", "ethereum", "robinhood-chain"],
+  "keywords": [
+    "sinjoh",
+    "mcp",
+    "agents",
+    "ethereum",
+    "robinhood-chain"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -39,7 +45,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "@sinjoh/deployments": "1.0.0",
     "@sinjoh/sdk": "1.0.0",
     "viem": "2.55.10",
@@ -47,5 +53,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0"
   }
 }

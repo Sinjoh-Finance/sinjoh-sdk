@@ -15,13 +15,16 @@ The first stable public release.
 - Deterministic airdrop and raffle Merkle-sum trees pinned to Solidity fixtures.
 - Pons v2, Flap, and letscash.fun launch planners; lifecycle prepared calls; router
   work planning; activation checks; guard preflights; and typed error guidance.
-- A signer-free MCP server for read, plan, validate, preflight, and prepare workflows.
+- An MCP server for public data, read, plan, validate, preflight, and prepare workflows,
+  with optional simulate-first submission through a host-injected wallet.
+- A typed client for the full public Sinjoh API, covering every protocol data group.
 - Apache-2.0 licensing, package provenance, deterministic release gates, and public
   developer documentation.
 
 ### Security
 
-- The SDK never stores keys, signs transactions, or submits them.
+- The core SDK never stores keys, signs transactions, or submits them. The MCP server accepts
+  only a host-owned wallet executor, checks its chain, and simulates before requesting a signature.
 - Packaged deployment addresses are treated as untrusted until their live runtime
   hashes pass verification.
 - Guarded prepared calls remain non-executable templates until a fresh preflight

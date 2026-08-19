@@ -42,6 +42,8 @@ placeholder minimum.
 ## Public surface
 
 - Client and chains: `createSinjohClient`, `robinhoodMainnet`, `robinhoodTestnet`.
+- Public data API: `createSinjohApiClient`, typed methods for every v1 route, and
+  structured `SinjohApiError` failures. It defaults to `https://api.sinjoh.com`.
 - Configuration codecs: router, raffle, airdrop-sink, and liquidity-sink encode, hash, decode
   where supported, and initializer-level validation functions.
 - Reads and planning: router identity/snapshot reads, `planRouterWork`, guard preflight, TWAP
@@ -55,6 +57,20 @@ placeholder minimum.
 Pons v1 and pools.trade contracts are available from `@sinjoh/abis` and
 `@sinjoh/deployments`, but this package does not yet expose equivalent end-to-end launch planners
 for them.
+
+## Query public protocol data
+
+```ts
+import { createSinjohApiClient } from "@sinjoh/sdk";
+
+const api = createSinjohApiClient();
+const { launches } = await api.listLaunches({ limit: 10 });
+const history = await api.listEvents({ family: "raffle", limit: 25 });
+```
+
+The API client needs no RPC provider. Use it for discovery, aggregates, and
+history; use `createSinjohClient` for live contract reads, verification, planning,
+and prepared calls. See the [API reference](../../docs/api.md).
 
 ## Safety rules
 
