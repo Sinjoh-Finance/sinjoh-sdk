@@ -1,0 +1,42 @@
+name: Bug report
+description: Report reproducible incorrect SDK or tooling behavior.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not report security vulnerabilities here. Use the repository's
+        private vulnerability reporting workflow instead.
+  - type: input
+    id: package
+    attributes:
+      label: Affected package
+      placeholder: "@sinjoh/sdk"
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Source revision
+      description: Provide the commit SHA. npm packages are not yet published.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed and expected behavior
+      description: Explain what happened and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include the smallest deterministic test or command sequence.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Node.js, npm, and viem versions and whether RPC access was used.

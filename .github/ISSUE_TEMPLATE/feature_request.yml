@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a scoped improvement to the public SDK or agent tooling.
+title: "feature: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the concrete developer or agent problem.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the desired API or behavior and affected package.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety impact
+      description: Note signer-boundary, simulation, manifest, or compatibility implications.
+    validations:
+      required: true
