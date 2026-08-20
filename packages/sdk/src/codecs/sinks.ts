@@ -12,6 +12,7 @@ import {
 const ZERO = "0x0000000000000000000000000000000000000000";
 const UINT16_MAX = 65_535;
 const UINT24_MAX = 16_777_215;
+const UINT32_MAX = 4_294_967_295;
 const INT24_MIN = -8_388_608;
 const INT24_MAX = 8_388_607;
 const UINT48_MAX = 281_474_976_710_655;
@@ -117,6 +118,80 @@ export function decodeAirdropSinkConfig(data: Hex): AirdropSinkConfig {
 
 export function airdropSinkConfigHash(config: AirdropSinkConfig): Hex {
   return keccak256(encodeAirdropSinkConfig(config));
+}
+
+// ---------------------------------------------------------------------------
+// Launch staking: SinjohLaunchStakingEngine.Config
+// ---------------------------------------------------------------------------
+
+export interface LaunchStakingSinkConfig {
+  /** Snapshot cadence; 1 hour to 30 days. */
+  interval: number;
+  /** Claim window after execution; 1 to 365 days. */
+  claimPeriod: number;
+  /** Receives the unclaimed remainder after the claim window. */
+  unclaimedDestination: Address;
+}
+
+const LAUNCH_STAKING_COMPONENTS = [
+  { name: "interval", type: "uint32" },
+  { name: "claimPeriod", type: "uint32" },
+  { name: "unclaimedDestination", type: "address" }
+] as const;
+
+export function validateLaunchStakingSinkConfig(config: LaunchStakingSinkConfig): string[] {
+  const issues: string[] = [];
+  checkUint(config.interval, UINT32_MAX, "interval", issues);
+  checkUint(config.claimPeriod, UINT32_MAX, "claimPeriod", issues);
+  if (config.interval < 3_600 || config.interval > 30 * 24 * 60 * 60) {
+    issues.push(`interval must be 3,600 to 2,592,000 seconds, got ${config.interval}`);
+  }
+  if (config.claimPeriod < 24 * 60 * 60 || config.claimPeriod > 365 * 24 * 60 * 60) {
+    issues.push(`claimPeriod must be 86,400 to 31,536,000 seconds, got ${config.claimPeriod}`);
+  }
+  if (isZero(config.unclaimedDestination)) {
+    issues.push("unclaimedDestination must be nonzero");
+  }
+  return issues;
+}
+
+export function encodeLaunchStakingSinkConfig(config: LaunchStakingSinkConfig): Hex {
+  const issues = validateLaunchStakingSinkConfig(config);
+  if (issues.length > 0) {
+    throw new Error(`invalid launch staking sink config: ${issues.join("; ")}`);
+  }
+  return encodeAbiParameters(
+    [{
+      type: "tuple",
+      components: LAUNCH_STAKING_COMPONENTS as unknown as { name: string; type: string }[]
+    }],
+    [config as unknown as Record<string, unknown>]
+  );
+}
+
+export function decodeLaunchStakingSinkConfig(data: Hex): LaunchStakingSinkConfig {
+  const [decoded] = decodeAbiParameters(
+    [{
+      type: "tuple",
+      components: LAUNCH_STAKING_COMPONENTS as unknown as { name: string; type: string }[]
+    }],
+    data
+  ) as unknown as [LaunchStakingSinkConfig];
+  return { ...decoded };
+}
+
+export function launchStakingSinkConfigHash(config: LaunchStakingSinkConfig): Hex {
+  return keccak256(encodeLaunchStakingSinkConfig(config));
+}
+
+/** Reward account identity used by the shared multi-token staking deployment. */
+export function launchStakingAccountId(
+  funder: Address, subject: Address, asset: Address
+): Hex {
+  return keccak256(encodeAbiParameters(
+    [{ type: "address" }, { type: "address" }, { type: "address" }],
+    [funder, subject, asset]
+  ));
 }
 
 // ---------------------------------------------------------------------------

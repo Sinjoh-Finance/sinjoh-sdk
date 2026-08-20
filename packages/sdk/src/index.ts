@@ -10,10 +10,12 @@ export {
 } from "./codecs/router.js";
 
 export {
-  airdropSinkConfigHash, decodeAirdropSinkConfig, decodeLiquiditySinkConfig,
-  encodeAirdropSinkConfig, encodeLiquiditySinkConfig, FeeMode, liquiditySinkConfigHash,
-  validateAirdropSinkConfig, validateLiquiditySinkConfig, Venue,
-  type AirdropSinkConfig, type LiquiditySinkConfig
+  airdropSinkConfigHash, decodeAirdropSinkConfig, decodeLaunchStakingSinkConfig,
+  decodeLiquiditySinkConfig, encodeAirdropSinkConfig, encodeLaunchStakingSinkConfig,
+  encodeLiquiditySinkConfig, FeeMode, launchStakingAccountId,
+  launchStakingSinkConfigHash, liquiditySinkConfigHash, validateAirdropSinkConfig,
+  validateLaunchStakingSinkConfig, validateLiquiditySinkConfig, Venue,
+  type AirdropSinkConfig, type LaunchStakingSinkConfig, type LiquiditySinkConfig
 } from "./codecs/sinks.js";
 
 export {
@@ -51,7 +53,9 @@ export {
 export {
   adapterCollect, adapterForward, airdropPush, airdropSendProtocolFee, collectorForward,
   collectorForwardAll, liquidityCollect, liquidityMint, liquiditySendFee,
-  liquiditySendProtocolFee, raffleAbandonRound, raffleClaim, raffleDeliverOwed,
+  liquiditySendProtocolFee, launchStakingClaim, launchStakingExecuteEpoch,
+  launchStakingStake, launchStakingSweepUnclaimed, launchStakingUnstake,
+  raffleAbandonRound, raffleClaim, raffleDeliverOwed,
   raffleDeliverStockOwed, raffleExpireRound, raffleSync, randomnessDeliver,
   randomnessFulfill, randomnessSeal, routerFundSink, routerProcessBucket,
   routerSendProtocolFee, routerSendWallet, routerSync,

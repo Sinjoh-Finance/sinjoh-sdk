@@ -30,6 +30,13 @@ const CALLS: [string, actions.PreparedCall][] = [
     proofs: [[{ siblingHash: ID, siblingSum: 1n, siblingIsLeft: false }]]
   })],
   ["airdropSendProtocolFee", actions.airdropSendProtocolFee(A, B, 5n)],
+  ["launchStakingStake", actions.launchStakingStake(A, B, 5n)],
+  ["launchStakingUnstake", actions.launchStakingUnstake(A, B, 5n)],
+  ["launchStakingExecuteEpoch", actions.launchStakingExecuteEpoch(A, {
+    funder: B, subject: C, asset: A
+  })],
+  ["launchStakingClaim", actions.launchStakingClaim(A, ID, [1n, 2n])],
+  ["launchStakingSweepUnclaimed", actions.launchStakingSweepUnclaimed(A, ID, 1n)],
   ["raffleSync", actions.raffleSync(A)],
   ["raffleExpireRound", actions.raffleExpireRound(A, 7n)],
   ["raffleAbandonRound", actions.raffleAbandonRound(A, 7n)],

@@ -1,6 +1,6 @@
 # Mainnet Deployment Provenance
 
-Verified: 2026-08-18
+Verified: 2026-08-20
 
 Network: Robinhood Chain mainnet (`chainId` 4663)
 
@@ -28,7 +28,8 @@ public identifiers; commit hashes are included for independent verification.
 | `deploy/mainnet/funding-bands-v2-2026-08-14` | `ffb5aedf577a7566335273da901b7ab222ce66c4` | 6 |
 | `deploy/mainnet/funding-bands-v3-2026-08-15` | `7b42c164aebc01a3eeba40a75f7655eee9876c25` | 7 |
 | `deploy/mainnet/funding-bands-v4-2026-08-15` | `036972edec6b07a2f867bbe1582d3e51aaae0a65` | 11 |
-| **Total** | | **72** |
+| `deploy/mainnet/launch-staking-engine-2026-08-20` | `2ad644ef758b3766026b3f53c43e59ae8499c4d2` | 1 |
+| **Total** | | **73** |
 
 The pools.trade Merkle claim factory is an explicitly identified byte-identical
 deployment of an upstream Uniswap artifact and is not counted as a Sinjoh

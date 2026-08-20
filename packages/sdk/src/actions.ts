@@ -2,7 +2,7 @@ import { parseAbi, type Abi, type Address, type Hex } from "viem";
 import {
   sinjohAirdropDistributorAbi, sinjohEcvrfRandomnessAbi,
   sinjohFeeRouterAbi, sinjohLiquidityManagerAbi, sinjohRaffleRewardsAbi,
-  sinjohRevenueCollectorAbi
+  sinjohRevenueCollectorAbi, sinjohLaunchStakingEngineAbi
 } from "@sinjoh/abis";
 
 /** The `ISinjohLaunchpadAdapter` seam — a copied convention shared by every adapter family. */
@@ -176,6 +176,58 @@ export function airdropSendProtocolFee(
     address: distributor, abi: sinjohAirdropDistributorAbi as Abi,
     functionName: "sendProtocolFee", args: [asset, amount],
     description: "Deliver accrued protocol fees to the immutable protocol recipient"
+  };
+}
+
+// -- Launch staking ----------------------------------------------------------
+
+export function launchStakingStake(
+  engine: Address, subject: Address, amount: bigint
+): PreparedCall {
+  return {
+    address: engine, abi: sinjohLaunchStakingEngineAbi as Abi, functionName: "stake",
+    args: [subject, amount],
+    description: "Stake a launched token at one-token-to-one-reward-unit weight"
+  };
+}
+
+export function launchStakingUnstake(
+  engine: Address, subject: Address, amount: bigint
+): PreparedCall {
+  return {
+    address: engine, abi: sinjohLaunchStakingEngineAbi as Abi, functionName: "unstake",
+    args: [subject, amount],
+    description: "Return staked launch tokens immediately"
+  };
+}
+
+export function launchStakingExecuteEpoch(engine: Address, args: {
+  funder: Address; subject: Address; asset: Address;
+}): PreparedCall {
+  return {
+    address: engine, abi: sinjohLaunchStakingEngineAbi as Abi, functionName: "executeEpoch",
+    args: [args.funder, args.subject, args.asset],
+    description: "Snapshot active stake and open the funded reward epoch"
+  };
+}
+
+export function launchStakingClaim(
+  engine: Address, accountId: Hex, epochIds: readonly bigint[]
+): PreparedCall {
+  return {
+    address: engine, abi: sinjohLaunchStakingEngineAbi as Abi, functionName: "claim",
+    args: [accountId, epochIds],
+    description: "Claim one or more launch-staking snapshot rewards"
+  };
+}
+
+export function launchStakingSweepUnclaimed(
+  engine: Address, accountId: Hex, epochId: bigint
+): PreparedCall {
+  return {
+    address: engine, abi: sinjohLaunchStakingEngineAbi as Abi,
+    functionName: "sweepUnclaimed", args: [accountId, epochId],
+    description: "Sweep an expired epoch remainder to its immutable destination"
   };
 }
 

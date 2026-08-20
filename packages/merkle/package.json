@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/merkle",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deterministic Merkle-sum trees for Sinjoh airdrop epochs and raffle ticket intervals, pinned to the Solidity reference fixtures.",
   "license": "Apache-2.0",
   "repository": {
@@ -12,7 +12,13 @@
   "bugs": {
     "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
-  "keywords": ["sinjoh", "ethereum", "merkle-tree", "raffle", "airdrop"],
+  "keywords": [
+    "sinjoh",
+    "ethereum",
+    "merkle-tree",
+    "raffle",
+    "airdrop"
+  ],
   "type": "module",
   "sideEffects": false,
   "engines": {

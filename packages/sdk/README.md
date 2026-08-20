@@ -44,12 +44,12 @@ placeholder minimum.
 - Client and chains: `createSinjohClient`, `robinhoodMainnet`, `robinhoodTestnet`.
 - Public data API: `createSinjohApiClient`, typed methods for every v1 route, and
   structured `SinjohApiError` failures. It defaults to `https://api.sinjoh.com`.
-- Configuration codecs: router, raffle, airdrop-sink, and liquidity-sink encode, hash, decode
+- Configuration codecs: router, raffle, holder-airdrop, launch-staking, and liquidity sink encode, hash, decode
   where supported, and initializer-level validation functions.
 - Reads and planning: router identity/snapshot reads, `planRouterWork`, guard preflight, TWAP
   quote reads, and Pons v2 activation checks.
 - Launch planning: Pons v2, Flap, and letscash.fun prediction and ordered prepared-call plans.
-- Prepared lifecycle calls: router, adapter, collector, airdrop, liquidity, raffle, and randomness
+- Prepared lifecycle calls: router, adapter, collector, holder airdrop, launch staking, liquidity, raffle, and randomness
   actions, each limited to one protocol action per call.
 - Prediction and diagnostics: Pons v2 launch assembly, EIP-1167 clone runtime construction,
   custom-error decoding, and operator guidance.

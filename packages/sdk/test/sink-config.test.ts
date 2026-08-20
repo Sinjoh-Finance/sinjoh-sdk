@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
-  airdropSinkConfigHash, decodeAirdropSinkConfig, decodeLiquiditySinkConfig,
-  encodeAirdropSinkConfig, encodeLiquiditySinkConfig, FeeMode, liquiditySinkConfigHash,
-  validateAirdropSinkConfig, validateLiquiditySinkConfig, Venue,
-  type AirdropSinkConfig, type LiquiditySinkConfig
+  airdropSinkConfigHash, decodeAirdropSinkConfig, decodeLaunchStakingSinkConfig,
+  decodeLiquiditySinkConfig, encodeAirdropSinkConfig, encodeLaunchStakingSinkConfig,
+  encodeLiquiditySinkConfig, FeeMode, launchStakingAccountId,
+  launchStakingSinkConfigHash, liquiditySinkConfigHash, validateAirdropSinkConfig,
+  validateLaunchStakingSinkConfig, validateLiquiditySinkConfig, Venue,
+  type AirdropSinkConfig, type LaunchStakingSinkConfig, type LiquiditySinkConfig
 } from "../src/codecs/sinks.js";
 
 const airdropFixture = JSON.parse(
@@ -46,6 +48,16 @@ const LIQUIDITY_CONFIG: LiquiditySinkConfig = {
   feeRecipient: "0x0000000000000000000000000000000000000000"
 };
 
+const LAUNCH_STAKING_CONFIG: LaunchStakingSinkConfig = {
+  interval: 86_400,
+  claimPeriod: 30 * 24 * 60 * 60,
+  unclaimedDestination: "0x1111111111111111111111111111111111111111"
+};
+const LAUNCH_STAKING_ENCODED =
+  "0x0000000000000000000000000000000000000000000000000000000000015180" +
+  "0000000000000000000000000000000000000000000000000000000000278d00" +
+  "0000000000000000000000001111111111111111111111111111111111111111";
+
 test("airdrop sink encoding is byte-identical to the distributor's abi.encode", () => {
   assert.equal(encodeAirdropSinkConfig(AIRDROP_CONFIG), airdropFixture.encoded);
   assert.equal(airdropSinkConfigHash(AIRDROP_CONFIG), airdropFixture.configHash);
@@ -56,7 +68,19 @@ test("liquidity sink encoding is byte-identical to the manager's abi.encode", ()
   assert.equal(liquiditySinkConfigHash(LIQUIDITY_CONFIG), liquidityFixture.configHash);
 });
 
-test("both codecs round-trip through decode", () => {
+test("launch staking sink encoding is canonical and identifies isolated reward accounts", () => {
+  assert.equal(encodeLaunchStakingSinkConfig(LAUNCH_STAKING_CONFIG),
+    LAUNCH_STAKING_ENCODED);
+  assert.equal(launchStakingSinkConfigHash(LAUNCH_STAKING_CONFIG),
+    "0xe02bdb83f72ea3edfa985d01cd7f9332f318ce10f97fb31f695f421690b78e27");
+  assert.equal(launchStakingAccountId(
+    "0x1111111111111111111111111111111111111111",
+    "0x2222222222222222222222222222222222222222",
+    "0x3333333333333333333333333333333333333333"
+  ), "0x0f26894a77a56c6ff5ad183a7793ebece25def861eaa77e707a1f741aef63f62");
+});
+
+test("all sink codecs round-trip through decode", () => {
   const airdrop = decodeAirdropSinkConfig(encodeAirdropSinkConfig(AIRDROP_CONFIG));
   assert.equal(airdrop.minPayout, AIRDROP_CONFIG.minPayout);
   assert.equal(airdrop.maxBatchSize, AIRDROP_CONFIG.maxBatchSize);
@@ -67,6 +91,27 @@ test("both codecs round-trip through decode", () => {
   assert.equal(liquidity.tickSpacing, LIQUIDITY_CONFIG.tickSpacing);
   assert.equal(liquidity.minNotionalPerMint, LIQUIDITY_CONFIG.minNotionalPerMint);
   assert.equal(liquidity.feeMode, LIQUIDITY_CONFIG.feeMode);
+
+  const staking = decodeLaunchStakingSinkConfig(
+    encodeLaunchStakingSinkConfig(LAUNCH_STAKING_CONFIG)
+  );
+  assert.deepEqual(staking, LAUNCH_STAKING_CONFIG);
+});
+
+test("launch staking sink limits are enforced locally", () => {
+  assert.match(validateLaunchStakingSinkConfig({
+    ...LAUNCH_STAKING_CONFIG, interval: 3_599
+  }).join("; "), /interval/);
+  assert.match(validateLaunchStakingSinkConfig({
+    ...LAUNCH_STAKING_CONFIG, claimPeriod: 86_399
+  }).join("; "), /claimPeriod/);
+  assert.match(validateLaunchStakingSinkConfig({
+    ...LAUNCH_STAKING_CONFIG,
+    unclaimedDestination: "0x0000000000000000000000000000000000000000"
+  }).join("; "), /unclaimedDestination/);
+  assert.throws(() => encodeLaunchStakingSinkConfig({
+    ...LAUNCH_STAKING_CONFIG, interval: 30 * 24 * 60 * 60 + 1
+  }), /invalid launch staking sink config/);
 });
 
 test("airdrop sink limits are enforced locally", () => {

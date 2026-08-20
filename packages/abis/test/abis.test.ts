@@ -48,6 +48,9 @@ test("core protocol surfaces expose their known entrypoints", () => {
         "getPastTotalStaked"]],
     [abis.sinjohStakingEngineAbi, "SinjohStakingEngine",
       ["createSchedule", "executeEpoch", "claim", "claimable", "sweepUnclaimed"]],
+    [abis.sinjohLaunchStakingEngineAbi, "SinjohLaunchStakingEngine",
+      ["stake", "unstake", "fund", "executeEpoch", "claim", "claimable",
+        "sweepUnclaimed", "accountId", "getPastBalance", "getPastTotalStaked"]],
     [abis.yieldBasketAbi, "YieldBasket",
       ["configureAdapter", "setAdapterRewardRoutes", "allocate", "harvest",
         "writeOffAdapter", "recoverWrittenOffShares", "realizeIdleValue",
@@ -73,6 +76,7 @@ test("contract ABIs carry their events and custom errors", () => {
   assert.ok(names(abis.sinjohFeeRouterAbi, "event").includes("Synchronized"));
   assert.ok(names(abis.feeRouterV2Abi, "event").includes("RouteEscrowed"));
   assert.ok(names(abis.stakingEngineAbi, "event").includes("Unstaked"));
+  assert.ok(names(abis.sinjohLaunchStakingEngineAbi, "event").includes("EpochExecuted"));
   assert.ok(names(abis.yieldBasketAbi, "event").includes("NonDepositAssetRecovered"));
   assert.ok(names(abis.sinjohAirdropDistributorAbi, "event").includes("PaymentFailed"));
   assert.ok(names(abis.sinjohRaffleRewardsAbi, "error").length > 0,
