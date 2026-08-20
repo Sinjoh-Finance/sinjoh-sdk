@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/abis",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
   "license": "Apache-2.0",
   "repository": {
@@ -12,7 +12,13 @@
   "bugs": {
     "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
-  "keywords": ["sinjoh", "ethereum", "abi", "viem", "robinhood-chain"],
+  "keywords": [
+    "sinjoh",
+    "ethereum",
+    "abi",
+    "viem",
+    "robinhood-chain"
+  ],
   "type": "module",
   "sideEffects": false,
   "engines": {

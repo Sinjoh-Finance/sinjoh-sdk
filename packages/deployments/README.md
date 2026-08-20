@@ -27,6 +27,9 @@ if (!allVerified(results)) {
 
 const routerFactory = mainnet.contracts["agnosticFeeRouterFactory"];
 if (!routerFactory) throw new Error("router factory is absent from the manifest");
+
+const launchStaking = mainnet.contracts["launchStakingEngine"];
+if (!launchStaking) throw new Error("launch staking is absent from the manifest");
 ```
 
 A manifest is data, not a trust anchor. `verifyManifest` checks every selected contract with a

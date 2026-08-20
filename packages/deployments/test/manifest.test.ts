@@ -33,11 +33,22 @@ test("every contract entry is checksummed with well-formed metadata", () => {
 test("core infrastructure is present under stable keys", () => {
   for (const key of [
     "agnosticFeeRouterFactory", "revenueCollector", "airdropDistributor",
-    "liquidityManagerV3", "raffleFactory", "ecvrfRandomness", "fundingBands.manager"
+    "liquidityManagerV3", "raffleFactory", "ecvrfRandomness", "fundingBands.manager",
+    "launchStakingEngine"
   ]) {
     assert.ok(key in mainnet.contracts, `missing ${key}`);
   }
   assert.ok("weth" in mainnet.dependencies, "missing weth dependency");
+});
+
+test("launch staking pins the reviewed multi-token deployment", () => {
+  const entry = mainnet.contracts.launchStakingEngine;
+  assert.equal(entry.address, "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b");
+  assert.equal(entry.deploymentTransaction,
+    "0x2271aaa33905873d5dd0486e042cb5118e3703460205016edf5c2cb37ccc1bbd");
+  assert.equal(entry.deploymentBlock, 41666632);
+  assert.equal(entry.runtimeCodeHash,
+    "0x4da43ef12471fdfefd88fdb3eebf47dbe13aee37ddb752bc7ab2a92f26876d34");
 });
 
 test("verifyManifest compares live code hashes and flags mismatches", async () => {

@@ -12,6 +12,13 @@ export const mainnet = {
   deployer: "0x3d58E42d3a920dE4C1F71EE041c7eBb82ee23f49",
   governance: "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
   contracts: {
+    "launchStakingEngine": {
+      "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
+      "deploymentBlock": 41666632,
+      "deploymentTransaction": "0x2271aaa33905873d5dd0486e042cb5118e3703460205016edf5c2cb37ccc1bbd",
+      "runtimeCodeHash": "0x4da43ef12471fdfefd88fdb3eebf47dbe13aee37ddb752bc7ab2a92f26876d34",
+      "purpose": "Shared multi-token staking and snapshot-reward sink for new Sinjoh launches that explicitly require staking for airdrops. Standard holder airdrops remain the default."
+    },
     "fundingBands.deployer": {
       "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f"
     },

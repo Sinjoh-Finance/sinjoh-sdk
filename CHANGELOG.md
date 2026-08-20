@@ -3,6 +3,19 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.1.0 - 2026-08-20
+
+### Added
+
+- `sinjohLaunchStakingEngineAbi`, generated from the merged contracts source commit.
+- The verified Robinhood Chain deployment at
+  `mainnet.contracts.launchStakingEngine`, including its transaction, block, and runtime hash.
+
+### Changed
+
+- Documented the launch-only staking surface separately from both standard holder airdrops and
+  the older single-token `$INJOH` staking deployment.
+
 ## 1.0.0 - 2026-08-19
 
 The first stable public release.

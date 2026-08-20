@@ -29,10 +29,10 @@ and return types. Contract names use lower camel case followed by `Abi`, such as
 `sinjohRaffleRewardsAbi` and `sinjohPonsV2AdapterAbi`. The governed protocol upgrade is
 exported in the same package, including `feeRouterV2Abi`, `stakingEngineAbi`,
 `sinjohStakingEngineAbi`, `yieldBasketAbi`, `dynamicFundingBandsAbi`, and
-`sinjohGovernorAbi`, plus `addressGovernanceControllerAbi`,
+`sinjohGovernorAbi`, plus `sinjohLaunchStakingEngineAbi`, `addressGovernanceControllerAbi`,
 `governanceControllerFactoryAbi`, `governedAbi`, `immutableGovernanceControllerAbi`, and
-`stakedVotesAdapterAbi`. These upgrade exports are source/ABI artifacts only: the deployment
-manifest contains no production addresses for them.
+`stakedVotesAdapterAbi`. These upgrade exports are source/ABI artifacts only except for the
+independently deployed `SinjohLaunchStakingEngine` described below.
 
 `sinjohAirdropDistributorAbi` remains the default standard airdrop surface and does not require
 staking. `sinjohStakingEngineAbi` is the separate optional surface for staking-driven,
@@ -45,6 +45,13 @@ exposes token-specific reward routes and the governed, fully-paused adapter writ
 lifecycle, plus governance-only recovery for non-deposit tokens received outside a verified
 harvest. `feeRouterV2Abi` exposes per-route escrow balances, permissionless retry, and governed
 recovery so one paused or reverting destination does not freeze unrelated fee routes.
+
+`sinjohLaunchStakingEngineAbi` is the production platform surface for new launches that opt into
+staking-required airdrops. It is a shared multi-token contract: every launched token is its own
+staking subject, one staked token is one reward unit, and unstaking is immediate. Reward accounts
+are isolated by fee router, subject, and payout asset. The reviewed Robinhood Chain deployment is
+available as `mainnet.contracts.launchStakingEngine` from `@sinjoh/deployments`. It is unrelated
+to the older single-token `$INJOH` deployment.
 
 ## Provenance
 
