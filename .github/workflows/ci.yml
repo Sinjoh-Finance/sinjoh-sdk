@@ -26,6 +26,30 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Read ABI source commit
+        id: abi-source
+        run: |
+          commit="$(sed -n 's/export const abiSourceCommit = "\([0-9a-f]*\)";/\1/p' packages/abis/src/generated/meta.ts)"
+          test "${#commit}" -eq 40
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Sinjoh-Finance/sinjoh-contracts
+          ref: ${{ steps.abi-source.outputs.commit }}
+          path: .abi-contracts
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+
+      - name: Check generated ABIs
+        run: |
+          while IFS= read -r manifest; do
+            (cd "$(dirname "$manifest")" && forge build)
+          done < <(find .abi-contracts -mindepth 2 -maxdepth 2 -name foundry.toml -print | sort)
+          SINJOH_CONTRACTS_ROOT="$PWD/.abi-contracts" npm run generate:abis
+          git diff --exit-code -- packages/abis/src/generated packages/abis/src/index.ts
+
       - name: Check generated deployment manifest
         run: |
           npm run generate:deployments
