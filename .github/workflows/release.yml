@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to publish"
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 permissions:
   contents: write
@@ -16,6 +25,8 @@ jobs:
     environment: npm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -30,7 +41,7 @@ jobs:
         run: npm ci
 
       - name: Verify tag and package versions
-        run: node tools/verify-release.mjs "${GITHUB_REF_NAME}"
+        run: node tools/verify-release.mjs "${RELEASE_TAG}"
 
       - name: Release gates
         run: |
@@ -44,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
+          version="${RELEASE_TAG#v}"
           publish_if_missing() {
             local package="$1"
             if npm view "${package}@${version}" version >/dev/null 2>&1; then
@@ -56,12 +67,14 @@ jobs:
           publish_if_missing @sinjoh/abis
           publish_if_missing @sinjoh/deployments
           publish_if_missing @sinjoh/merkle
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish SDK and agent packages
         shell: bash
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
+          version="${RELEASE_TAG#v}"
           publish_if_missing() {
             local package="$1"
             if npm view "${package}@${version}" version >/dev/null 2>&1; then
@@ -72,10 +85,12 @@ jobs:
           }
           publish_if_missing @sinjoh/sdk
           publish_if_missing @sinjoh/agent
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 || \
-            gh release create "${GITHUB_REF_NAME}" --verify-tag --generate-notes
+          gh release view "${RELEASE_TAG}" >/dev/null 2>&1 || \
+            gh release create "${RELEASE_TAG}" --verify-tag --generate-notes
