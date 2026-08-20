@@ -11,5 +11,6 @@ export * from "./generated/fundingBands.js";
 export * from "./generated/raffleRewards.js";
 export * from "./generated/randomness.js";
 export * from "./generated/treasuryVault.js";
+export * from "./generated/protocolUpgrade.js";
 export * from "./generated/ponsV1Adapter.js";
 export * from "./generated/launchpadAdapters.js";
