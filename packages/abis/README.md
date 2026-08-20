@@ -34,6 +34,10 @@ exported in the same package, including `feeRouterV2Abi`, `stakingEngineAbi`,
 `stakedVotesAdapterAbi`. These upgrade exports are source/ABI artifacts only: the deployment
 manifest contains no production addresses for them.
 
+`sinjohAirdropDistributorAbi` remains the default standard airdrop surface and does not require
+staking. `airdropDistributorV2Abi` is the separate optional surface for staking-driven,
+claim-based distributions.
+
 ## Provenance
 
 `abiSourceCommit` records the repository commit used to generate the package.
