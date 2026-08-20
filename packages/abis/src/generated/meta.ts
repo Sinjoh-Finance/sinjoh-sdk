@@ -3,7 +3,7 @@
 // Regenerate with: forge build (per package), then npm run generate:abis.
 
 /** The contracts repository commit the shipped ABIs were compiled from. */
-export const abiSourceCommit = "af7ea017d5ae03ccaa8ec9543e83d5263c43de4f";
+export const abiSourceCommit = "9cf5f1258d27befe39082f91b6c849f148c73f63";
 export const abiContractCounts = {
   "sinjoh-fee-router": 3,
   "sinjoh-revenue-collector": 1,

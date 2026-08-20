@@ -36,7 +36,9 @@ manifest contains no production addresses for them.
 
 `sinjohAirdropDistributorAbi` remains the default standard airdrop surface and does not require
 staking. `sinjohStakingEngineAbi` is the separate optional surface for staking-driven,
-claim-based distributions.
+claim-based distributions. Its empty-weight epochs roll pending rewards into a later eligible
+window. `yieldBasketAbi` exposes token-specific reward routes and the governed, fully-paused
+adapter write-off/recovery lifecycle.
 
 ## Provenance
 
