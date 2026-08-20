@@ -28,14 +28,14 @@ Every ABI export is a TypeScript `as const` value, so viem infers function names
 and return types. Contract names use lower camel case followed by `Abi`, such as
 `sinjohRaffleRewardsAbi` and `sinjohPonsV2AdapterAbi`. The governed protocol upgrade is
 exported in the same package, including `feeRouterV2Abi`, `stakingEngineAbi`,
-`airdropDistributorV2Abi`, `yieldBasketAbi`, `dynamicFundingBandsAbi`, and
+`sinjohStakingEngineAbi`, `yieldBasketAbi`, `dynamicFundingBandsAbi`, and
 `sinjohGovernorAbi`, plus `addressGovernanceControllerAbi`,
 `governanceControllerFactoryAbi`, `governedAbi`, `immutableGovernanceControllerAbi`, and
 `stakedVotesAdapterAbi`. These upgrade exports are source/ABI artifacts only: the deployment
 manifest contains no production addresses for them.
 
 `sinjohAirdropDistributorAbi` remains the default standard airdrop surface and does not require
-staking. `airdropDistributorV2Abi` is the separate optional surface for staking-driven,
+staking. `sinjohStakingEngineAbi` is the separate optional surface for staking-driven,
 claim-based distributions.
 
 ## Provenance

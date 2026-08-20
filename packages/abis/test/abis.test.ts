@@ -44,7 +44,7 @@ test("core protocol surfaces expose their known entrypoints", () => {
       ["proposeConfiguration", "activateConfiguration", "rollbackConfiguration", "sync"]],
     [abis.stakingEngineAbi, "StakingEngine",
       ["stake", "increaseStake", "extendLock", "getPastRewardWeight"]],
-    [abis.airdropDistributorV2Abi, "AirdropDistributorV2",
+    [abis.sinjohStakingEngineAbi, "SinjohStakingEngine",
       ["createSchedule", "executeEpoch", "claim", "sweepUnclaimed"]],
     [abis.yieldBasketAbi, "YieldBasket",
       ["configureAdapter", "allocate", "harvest", "realizeIdleValue"]],
