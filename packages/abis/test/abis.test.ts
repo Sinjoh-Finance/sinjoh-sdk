@@ -44,8 +44,8 @@ test("core protocol surfaces expose their known entrypoints", () => {
       ["proposeConfiguration", "activateConfiguration", "rollbackConfiguration", "sync",
         "routeEscrow", "totalEscrowed", "retryEscrow", "recoverEscrow"]],
     [abis.stakingEngineAbi, "StakingEngine",
-      ["stake", "increaseStake", "extendLock", "getPastRewardWeight",
-        "getPastEligibleRewardWeight", "getPastEligibleTotalRewardWeight"]],
+      ["stake", "unstake", "balanceOf", "totalStaked", "getPastBalance",
+        "getPastTotalStaked"]],
     [abis.sinjohStakingEngineAbi, "SinjohStakingEngine",
       ["createSchedule", "executeEpoch", "claim", "claimable", "sweepUnclaimed"]],
     [abis.yieldBasketAbi, "YieldBasket",
@@ -72,8 +72,19 @@ test("core protocol surfaces expose their known entrypoints", () => {
 test("contract ABIs carry their events and custom errors", () => {
   assert.ok(names(abis.sinjohFeeRouterAbi, "event").includes("Synchronized"));
   assert.ok(names(abis.feeRouterV2Abi, "event").includes("RouteEscrowed"));
+  assert.ok(names(abis.stakingEngineAbi, "event").includes("Unstaked"));
   assert.ok(names(abis.yieldBasketAbi, "event").includes("NonDepositAssetRecovered"));
   assert.ok(names(abis.sinjohAirdropDistributorAbi, "event").includes("PaymentFailed"));
   assert.ok(names(abis.sinjohRaffleRewardsAbi, "error").length > 0,
     "raffle ABI should include custom errors");
+});
+
+test("simple staking ABI excludes tiers, locks, and multipliers", () => {
+  const functions = new Set(names(abis.stakingEngineAbi, "function"));
+  for (const removed of [
+    "setTier", "increaseStake", "extendLock", "withdraw", "positions",
+    "getPastRewardWeight", "getPastUnlockTime"
+  ]) {
+    assert.ok(!functions.has(removed), `StakingEngine still exposes ${removed}()`);
+  }
 });
