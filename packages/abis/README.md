@@ -37,8 +37,11 @@ manifest contains no production addresses for them.
 `sinjohAirdropDistributorAbi` remains the default standard airdrop surface and does not require
 staking. `sinjohStakingEngineAbi` is the separate optional surface for staking-driven,
 claim-based distributions. Its empty-weight epochs roll pending rewards into a later eligible
-window. `yieldBasketAbi` exposes token-specific reward routes and the governed, fully-paused
-adapter write-off/recovery lifecycle.
+window. Staking checkpoints and the ERC-5805 adapter use timestamp timepoints; reward and voting
+weight become zero at the exact unlock timestamp even before principal is withdrawn. Epoch reads
+separate their conservative checkpoint time from the actual eligibility time. `yieldBasketAbi`
+exposes token-specific reward routes and the governed, fully-paused adapter write-off/recovery
+lifecycle.
 
 ## Provenance
 
