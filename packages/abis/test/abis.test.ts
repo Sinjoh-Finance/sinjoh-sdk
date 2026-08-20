@@ -41,7 +41,8 @@ test("core protocol surfaces expose their known entrypoints", () => {
     [abis.sinjohTreasuryFactoryAbi, "SinjohTreasuryFactory",
       ["createStandardTreasury"]],
     [abis.feeRouterV2Abi, "FeeRouterV2",
-      ["proposeConfiguration", "activateConfiguration", "rollbackConfiguration", "sync"]],
+      ["proposeConfiguration", "activateConfiguration", "rollbackConfiguration", "sync",
+        "routeEscrow", "totalEscrowed", "retryEscrow", "recoverEscrow"]],
     [abis.stakingEngineAbi, "StakingEngine",
       ["stake", "increaseStake", "extendLock", "getPastRewardWeight",
         "getPastEligibleRewardWeight", "getPastEligibleTotalRewardWeight"]],
@@ -49,7 +50,8 @@ test("core protocol surfaces expose their known entrypoints", () => {
       ["createSchedule", "executeEpoch", "claim", "claimable", "sweepUnclaimed"]],
     [abis.yieldBasketAbi, "YieldBasket",
       ["configureAdapter", "setAdapterRewardRoutes", "allocate", "harvest",
-        "writeOffAdapter", "recoverWrittenOffShares", "realizeIdleValue"]],
+        "writeOffAdapter", "recoverWrittenOffShares", "realizeIdleValue",
+        "recoverNonDepositAsset"]],
     [abis.dynamicFundingBandsAbi, "DynamicFundingBands",
       ["createBand", "activate", "observe", "redeem", "expire"]],
     [abis.sinjohGovernorAbi, "SinjohGovernor",
@@ -69,6 +71,8 @@ test("core protocol surfaces expose their known entrypoints", () => {
 
 test("contract ABIs carry their events and custom errors", () => {
   assert.ok(names(abis.sinjohFeeRouterAbi, "event").includes("Synchronized"));
+  assert.ok(names(abis.feeRouterV2Abi, "event").includes("RouteEscrowed"));
+  assert.ok(names(abis.yieldBasketAbi, "event").includes("NonDepositAssetRecovered"));
   assert.ok(names(abis.sinjohAirdropDistributorAbi, "event").includes("PaymentFailed"));
   assert.ok(names(abis.sinjohRaffleRewardsAbi, "error").length > 0,
     "raffle ABI should include custom errors");

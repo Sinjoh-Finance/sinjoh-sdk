@@ -41,7 +41,9 @@ window. Staking checkpoints and the ERC-5805 adapter use timestamp timepoints; r
 weight become zero at the exact unlock timestamp even before principal is withdrawn. Epoch reads
 separate their conservative checkpoint time from the actual eligibility time. `yieldBasketAbi`
 exposes token-specific reward routes and the governed, fully-paused adapter write-off/recovery
-lifecycle.
+lifecycle, plus governance-only recovery for non-deposit tokens received outside a verified
+harvest. `feeRouterV2Abi` exposes per-route escrow balances, permissionless retry, and governed
+recovery so one paused or reverting destination does not freeze unrelated fee routes.
 
 ## Provenance
 
