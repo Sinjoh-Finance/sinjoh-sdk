@@ -23,6 +23,7 @@ const PACKAGES = [
   "sinjoh-raffle-rewards",
   "sinjoh-randomness",
   "sinjoh-treasury-vault",
+  "sinjoh-protocol-upgrade",
   "sinjoh-pons-v1-adapter",
   "sinjoh-launchpad-adapters"
 ];
