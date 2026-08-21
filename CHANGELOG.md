@@ -3,6 +3,14 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.1.1 - 2026-08-21
+
+### Fixed
+
+- Let’s Cash integration plans now make the separate Sinjoh registry publication handoff
+  explicit after activation, preventing fully indexed launches from being omitted from
+  `public_launches`.
+
 ## 1.1.0 - 2026-08-20
 
 ### Added
