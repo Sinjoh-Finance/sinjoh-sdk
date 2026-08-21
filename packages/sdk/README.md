@@ -49,6 +49,8 @@ placeholder minimum.
 - Reads and planning: router identity/snapshot reads, `planRouterWork`, guard preflight, TWAP
   quote reads, and Pons v2 activation checks.
 - Launch planning: Pons v2, Flap, and letscash.fun prediction and ordered prepared-call plans.
+  The letscash.fun plan returns registry publication as an explicit post-launch follow-up because
+  indexed `TokenLaunched` and `Activated` events do not populate the curated launch registry.
 - Prepared lifecycle calls: router, adapter, collector, holder airdrop, launch staking, liquidity, raffle, and randomness
   actions, each limited to one protocol action per call.
 - Prediction and diagnostics: Pons v2 launch assembly, EIP-1167 clone runtime construction,
