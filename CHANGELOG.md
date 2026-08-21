@@ -3,6 +3,19 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.1.3 - 2026-08-21
+
+### Added
+
+- Added typed registry-parity health checks so integrations can detect any indexed launch that
+  has not reached public discovery.
+- Added `feeRouter` filtering to launch-list queries for canonical router authorization.
+
+### Changed
+
+- Documented the registry health contract, its unhealthy `503` response, and all publication
+  failure codes in the OpenAPI specification.
+
 ## 1.1.2 - 2026-08-21
 
 ### Fixed

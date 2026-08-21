@@ -59,6 +59,33 @@ export interface LaunchRecord {
   features: { raffle: `0x${string}` | null };
 }
 
+export interface LaunchRegistryFailure {
+  subject: `0x${string}` | null;
+  code:
+    | "missing_subject"
+    | "malformed_address"
+    | "malformed_config_hash"
+    | "unsupported_launchpad"
+    | "publication_failed";
+}
+
+export interface LaunchRegistryHealth {
+  ok: boolean;
+  error?: "reconciliation_unavailable";
+  indexed: number;
+  registered: number;
+  visible: number;
+  suppressed: number;
+  promoted: number;
+  inserted: number;
+  missing: number;
+  missingSubjects: `0x${string}`[];
+  failures: LaunchRegistryFailure[];
+  indexedByLaunchpad: Record<string, number>;
+  visibleByLaunchpad: Record<string, number>;
+  supportedLaunchpads: string[];
+}
+
 export interface RaffleSnapshot {
   chainId: number;
   token: {
@@ -370,9 +397,10 @@ export interface CreateSinjohApiClientOptions {
 
 export interface SinjohApiClient {
   index(): Promise<ApiIndex>;
+  getLaunchRegistryHealth(): Promise<{ chainId: number; registry: LaunchRegistryHealth }>;
   listContracts(options?: PageOptions & { type?: string }): Promise<{ contracts: DeploymentRecord[]; page: Page }>;
   getContract(address: string): Promise<{ contract: DeploymentRecord }>;
-  listLaunches(options?: PageOptions & { launchpad?: string; creator?: string }): Promise<{ chainId: number; launches: LaunchRecord[]; page: Page }>;
+  listLaunches(options?: PageOptions & { launchpad?: string; creator?: string; feeRouter?: string }): Promise<{ chainId: number; launches: LaunchRecord[]; page: Page }>;
   getLaunch(subject: string): Promise<{ launch: LaunchRecord }>;
   getMarket(subject: string, options?: PageOptions): Promise<{ chainId: number; market: MarketRecord; hours: MarketHourRecord[]; page: Page }>;
   listMarketTrades(subject: string, options?: PageOptions): Promise<{ chainId: number; subject: string; trades: MarketTradeRecord[]; page: Page }>;
@@ -454,6 +482,7 @@ export function createSinjohApiClient(
 
   return {
     index: () => get("/v1"),
+    getLaunchRegistryHealth: () => get("/v1/health/registry"),
     listContracts: (value = {}) => get(`/v1/contracts${query(value)}`),
     getContract: (address) => get(`/v1/contracts/${segment(address)}`),
     listLaunches: (value = {}) => get(`/v1/launches${query(value)}`),
