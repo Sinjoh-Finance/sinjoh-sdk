@@ -3,6 +3,13 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.1.2 - 2026-08-21
+
+### Fixed
+
+- Removed the manual registry handoff added in 1.1.1. The platform now reconciles every indexed,
+  subject-bound launch into public discovery automatically across all supported launchpads.
+
 ## 1.1.1 - 2026-08-21
 
 ### Fixed

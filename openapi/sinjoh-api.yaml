@@ -17,7 +17,7 @@ security:
 tags:
   - { name: Service, description: API discovery and capacity metadata. }
   - { name: Contracts, description: Canonical Sinjoh deployment records. }
-  - { name: Launches, description: Active launch registry. }
+  - { name: Launches, description: Automatically reconciled indexed and active launch registry. }
   - { name: Markets, description: Indexed market volume and trades. }
   - { name: Raffles, description: Live raffle state and indexed history. }
   - { name: Airdrops, description: Airdrop accounts and committed epochs. }
@@ -78,7 +78,7 @@ paths:
     get:
       operationId: listLaunches
       tags: [Launches]
-      summary: List active launches
+      summary: List indexed and active launches
       parameters:
         - { $ref: "#/components/parameters/Page" }
         - { $ref: "#/components/parameters/Limit" }

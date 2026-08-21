@@ -62,7 +62,9 @@ Returns one registered deployment or `404 contract_not_found`.
 
 ### `GET /v1/launches`
 
-Lists active launches from the registry. Optional filters:
+Lists indexed and active launches from the registry. Once any supported launchpad binds a
+subject and the chain indexer observes it, Sinjoh publishes the launch automatically; SDK
+builders do not need a separate registry handoff. Optional filters:
 
 | Query | Meaning |
 | --- | --- |
