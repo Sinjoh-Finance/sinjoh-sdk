@@ -18,7 +18,9 @@ import {
  * the subject and pool to the router. The Sinjoh-side plan therefore stops at the deployed
  * adapter; the upstream launch and the activate/bind follow-ups are returned as explicit
  * follow-up descriptions plus the `letscashActivate`/`raffleBind` builders, because their
- * arguments (subject, poolId) exist only after the upstream launch.
+ * arguments (subject, poolId) exist only after the upstream launch. Registry publication is
+ * also explicit: Envio records chain history, but it cannot write the curated Supabase launch
+ * registry used by `public_launches`.
  */
 
 /**
@@ -133,7 +135,11 @@ export async function planLetsCashIntegration(
       + "verify router.subject() equals the launched token and adapter.feeRoutingIntact().",
     ...(raffle === undefined ? [] : [
       `Bind the raffle: raffleBind(${raffle}, subject), from the raffle creator, once.`
-    ])
+    ]),
+    "Publish the activated launch through the Sinjoh registry writer. Registry publication "
+      + "is separate and not automatic: indexed TokenLaunched/Activated events do not write "
+      + "Supabase public_launches. Hand off the launch transaction hash, subject, poolId, "
+      + `configId, router (${router}), and adapter (${adapter}) to the registry operator.`
   ];
 
   return {

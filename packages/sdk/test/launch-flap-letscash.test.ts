@@ -196,9 +196,18 @@ test("planLetsCashIntegration stops at the adapter and hands off follow-ups", as
     plan.steps.map((step) => step.id),
     ["deploy-raffle", "deploy-router", "deploy-adapter"]
   );
-  assert.equal(plan.followUps.length, 3);
+  assert.equal(plan.followUps.length, 4);
   assert.match(plan.followUps[0]!, /launchWithFeeSplit/);
   assert.match(plan.followUps[1]!, /feeRoutingIntact/);
+  const registryFollowUp = plan.followUps[3]!;
+  assert.match(registryFollowUp, /registry publication is separate and not automatic/i);
+  assert.match(registryFollowUp, /public_launches/);
+  assert.match(registryFollowUp, /launch transaction hash/);
+  assert.match(registryFollowUp, /subject/);
+  assert.match(registryFollowUp, /poolId/);
+  assert.match(registryFollowUp, /configId/);
+  assert.match(registryFollowUp, new RegExp(ROUTER, "i"));
+  assert.match(registryFollowUp, new RegExp(ADAPTER, "i"));
 
   const deployRaffle = plan.steps.find((step) => step.id === "deploy-raffle");
   const config = deployRaffle!.call.args[1] as RaffleConfig;
@@ -274,7 +283,7 @@ test("omitting the raffle drops flap raffle steps but keeps the ordering", async
   assert.equal(plan.predicted.raffle, undefined);
 });
 
-test("omitting the raffle collapses letscash to two steps and two follow-ups", async () => {
+test("omitting the raffle collapses letscash to two steps and three follow-ups", async () => {
   const plan = await planLetsCashIntegration(stubClient(), {
     creator: CREATOR,
     adapterFactory: ADAPTER_FACTORY,
@@ -289,7 +298,8 @@ test("omitting the raffle collapses letscash to two steps and two follow-ups", a
     routerConfig: (predicted) => routerConfig({ adapter: predicted.adapter })
   });
   assert.deepEqual(plan.steps.map((step) => step.id), ["deploy-router", "deploy-adapter"]);
-  assert.equal(plan.followUps.length, 2);
+  assert.equal(plan.followUps.length, 3);
+  assert.match(plan.followUps[2]!, /registry publication is separate and not automatic/i);
   assert.equal(plan.predicted.raffle, undefined);
 });
 
