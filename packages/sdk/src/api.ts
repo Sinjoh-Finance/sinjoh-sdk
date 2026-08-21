@@ -32,6 +32,7 @@ export interface ApiIndex {
   pagination: string;
   docs: string;
   openapi: string;
+  supportedLaunchpads: string[];
 }
 
 export interface DeploymentRecord {
@@ -60,12 +61,14 @@ export interface LaunchRecord {
 }
 
 export interface LaunchRegistryFailure {
-  subject: `0x${string}` | null;
+  subject: string | null;
   code:
     | "missing_subject"
     | "malformed_address"
     | "malformed_config_hash"
     | "unsupported_launchpad"
+    | "duplicate_subject"
+    | "empty_index_projection"
     | "publication_failed";
 }
 
@@ -363,7 +366,7 @@ export interface ProtocolEventRecord {
   amount0: string | null;
   amount1: string | null;
   amount2: string | null;
-  reference: HexValue | null;
+  reference: string | null;
   success: boolean | null;
   blockNumber: string;
   blockHash: HexValue;
@@ -449,6 +452,36 @@ function segment(value: string) {
   return encodeURIComponent(value);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isLaunchRegistryHealthEnvelope(value: unknown): value is {
+  chainId: number;
+  registry: LaunchRegistryHealth;
+} {
+  if (!isRecord(value) || !Number.isInteger(value.chainId) || !isRecord(value.registry)) return false;
+  const registry = value.registry;
+  const counts = [
+    registry.indexed, registry.registered, registry.visible, registry.suppressed,
+    registry.promoted, registry.inserted, registry.missing,
+  ];
+  const validCountMap = (candidate: unknown) => isRecord(candidate)
+    && Object.values(candidate).every((count) => Number.isInteger(count) && Number(count) >= 0);
+  return typeof registry.ok === "boolean"
+    && counts.every((count) => Number.isInteger(count) && Number(count) >= 0)
+    && Array.isArray(registry.missingSubjects)
+    && registry.missingSubjects.every((subject) => typeof subject === "string")
+    && Array.isArray(registry.failures)
+    && registry.failures.every((failure) => isRecord(failure)
+      && (typeof failure.subject === "string" || failure.subject === null)
+      && typeof failure.code === "string")
+    && validCountMap(registry.indexedByLaunchpad)
+    && validCountMap(registry.visibleByLaunchpad)
+    && Array.isArray(registry.supportedLaunchpads)
+    && registry.supportedLaunchpads.every((launchpad) => typeof launchpad === "string");
+}
+
 export function createSinjohApiClient(
   options: CreateSinjohApiClientOptions = {},
 ): SinjohApiClient {
@@ -456,7 +489,10 @@ export function createSinjohApiClient(
   const fetchFn = options.fetch ?? globalThis.fetch;
   if (typeof fetchFn !== "function") throw new Error("A Fetch API implementation is required.");
 
-  async function get<T>(path: string): Promise<T> {
+  async function get<T>(
+    path: string,
+    acceptErrorBody?: (status: number, body: unknown) => boolean,
+  ): Promise<T> {
     const response = await fetchFn(`${baseUrl}${path}`, {
       method: "GET",
       ...(options.apiKey ? { headers: { "x-api-key": options.apiKey } } : {}),
@@ -468,8 +504,8 @@ export function createSinjohApiClient(
     } catch {
       throw new SinjohApiError(response.status, "invalid_response", "The Sinjoh API returned invalid JSON.", requestId);
     }
-    if (!response.ok) {
-      const error = body as { error?: unknown; message?: unknown };
+    if (!response.ok && !acceptErrorBody?.(response.status, body)) {
+      const error = isRecord(body) ? body : {};
       throw new SinjohApiError(
         response.status,
         typeof error.error === "string" ? error.error : "request_failed",
@@ -482,7 +518,10 @@ export function createSinjohApiClient(
 
   return {
     index: () => get("/v1"),
-    getLaunchRegistryHealth: () => get("/v1/health/registry"),
+    getLaunchRegistryHealth: () => get(
+      "/v1/health/registry",
+      (status, body) => status === 503 && isLaunchRegistryHealthEnvelope(body),
+    ),
     listContracts: (value = {}) => get(`/v1/contracts${query(value)}`),
     getContract: (address) => get(`/v1/contracts/${segment(address)}`),
     listLaunches: (value = {}) => get(`/v1/launches${query(value)}`),

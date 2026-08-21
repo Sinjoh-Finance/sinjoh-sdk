@@ -11,6 +11,16 @@ export const mainnet = {
   explorerUrl: "https://robinhoodchain.blockscout.com",
   deployer: "0x3d58E42d3a920dE4C1F71EE041c7eBb82ee23f49",
   governance: "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
+  roles: {
+    "deployer": {
+      "address": "0x3d58E42d3a920dE4C1F71EE041c7eBb82ee23f49",
+      "kind": "eoa"
+    },
+    "governance": {
+      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
+      "kind": "eoa"
+    }
+  },
   contracts: {
     "launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
@@ -20,10 +30,12 @@ export const mainnet = {
       "purpose": "Shared multi-token staking and snapshot-reward sink for new Sinjoh launches that explicitly require staking for airdrops. Standard holder airdrops remain the default."
     },
     "fundingBands.deployer": {
-      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f"
+      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
+      "kind": "eoa"
     },
     "fundingBands.governance": {
-      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f"
+      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
+      "kind": "eoa"
     },
     "fundingBands.manager": {
       "address": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
@@ -70,21 +82,26 @@ export const mainnet = {
     "fundingBands.fundingBandMath": {
       "address": "0x9E421c5B72f3950333420C5749381f61b96436b8",
       "deploymentBlock": 37220794,
-      "deploymentTransaction": "0xd53907742f5f8816d37a826ef9e22388d16af7701280f6d02bfdf6f152a65e47"
+      "deploymentTransaction": "0xd53907742f5f8816d37a826ef9e22388d16af7701280f6d02bfdf6f152a65e47",
+      "runtimeCodeHash": "0xabeefeed70b46391de5b9f110cf0e9ee857b0225c8224bee324fee623f30096e"
     },
     "fundingBands.fundingBandV4": {
       "address": "0x49D3C913844bdAF3960Db4738ED2B101E67986D6",
       "deploymentBlock": 37220817,
-      "deploymentTransaction": "0x037547de8a8ac8d3b20aa3e8f4cfffeb6bd70fcca301b0de50b62fb60f1622e5"
+      "deploymentTransaction": "0x037547de8a8ac8d3b20aa3e8f4cfffeb6bd70fcca301b0de50b62fb60f1622e5",
+      "runtimeCodeHash": "0xd373f618fc1355ec9344ae55717c563d9a1a795260bc5204ef50fc32e159d5a7"
     },
     "fundingBands.v4Infrastructure.stateView": {
-      "address": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b"
+      "address": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+      "runtimeCodeHash": "0x7d9c591e0956fd89d98feb4ffcfe8bf1f7a62bd485edd979fa21d104b49878a6"
     },
     "fundingBands.v4Infrastructure.poolManager": {
-      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951"
+      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+      "runtimeCodeHash": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626"
     },
     "fundingBands.operations.keeper": {
-      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f"
+      "address": "0x39E2f5eFdFd808F26B98979a06BA11ea82E1C85f",
+      "kind": "eoa"
     },
     "letscashAdapterFactory": {
       "address": "0x81f50D1695eeB6976b53f5dCc9E785Ff06C183DC",
@@ -335,12 +352,14 @@ export const mainnet = {
       "address": "0x192f324A9BF64C4c9f46aFF77d1A3C8d06c635a5",
       "deploymentBlock": 28781908,
       "deploymentTransaction": "0x2089b37369dd31f72fd51b1f8f9c08100ecfc8ff75fe128c3417ebc402d2c4de",
+      "runtimeCodeHash": "0x9e4ea40e94270576db99e5900997d0271f7f3a3c529a9929d787131b104e8d4e",
       "purpose": "Singleton sell route for pools.trade subjects: the normalization direction (subject to WETH) LBP intake requires. Native-quote pools sell and wrap; custom-currency pools hop currency-to-WETH through the pinned SwapRouter02 with the v3 tier in routeData."
     },
     "poolsTradeSubjectPriceGuard": {
       "address": "0x4c75DB11b1Eb18251E84A98049918D534176b5a2",
       "deploymentBlock": 28781908,
       "deploymentTransaction": "0x1d036f8ecd80c84cf63befbc8181fa807ab48998ca9e0024001fd6258e1aeacb",
+      "runtimeCodeHash": "0xb9874e31e2d48efdea35fe17d4729f62aed80d658b80442fe8fd6b5673803cba",
       "purpose": "Normalization guard for pools.trade subjects: v4 slot0 spot under a 5% haircut (v4 keeps no observations and cannot be quoted from view), composed with the shared v3 TWAP guard's quoteAtTwap for custom-currency legs. Normalization guards receive no caller data, so this quote plus the router's per-call cap and mandatory caller floor are the protection. Router configs MUST set a bounded normalization maxAmountInPerCall for the subject: unsold auction tokens can dwarf pool depth and an unbounded sync is refused by the haircut."
     },
     "poolsTradeBuybackPriceGuard": {
@@ -367,115 +386,161 @@ export const mainnet = {
       "implementationRuntimeCodeHash": "0xde10e2dbff2714101c98b24ab7320e0b1038a370a72b96f84e63626ec156cf98"
     },
     "raffleOperations.attestor": {
-      "address": "0xbd5323053ca81c4fD208874Db73e1484819214d7"
+      "address": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
+      "kind": "eoa"
     },
     "raffleOperations.ecvrfProver": {
-      "address": "0x8653117338aD8120FCC15A93452526e2695F8273"
+      "address": "0x8653117338aD8120FCC15A93452526e2695F8273",
+      "kind": "eoa"
     },
     "rafflePriceGuards.guard500": {
-      "address": "0xDad51edC925D4CCd46c1229763F40d1F32c7480C"
+      "address": "0xDad51edC925D4CCd46c1229763F40d1F32c7480C",
+      "runtimeCodeHash": "0xd0d2cf2912d6344ddfaf657911a1fb2a9a4e74ecd6e829d835c18dd342f9801e"
     },
     "rafflePriceGuards.guard3000": {
-      "address": "0xd01273Fa749BF16e333cFB85D27fD11A82D1515D"
+      "address": "0xd01273Fa749BF16e333cFB85D27fD11A82D1515D",
+      "runtimeCodeHash": "0xf3919ec4ce39d29d19e96af0452d1fe53cbb2dfce2a1e7ea053d48ae7f6cfc8f"
     },
     "rafflePriceGuards.guard10000": {
-      "address": "0xf81d21e0b51A7DD815f44682B63b7e732E0b4803"
+      "address": "0xf81d21e0b51A7DD815f44682B63b7e732E0b4803",
+      "runtimeCodeHash": "0xd99afa61854a819bd0adcd593bbc8c3a9a278e5fe29cd2b6f150efe9cdc8b74d"
     }
   },
   dependencies: {
     "ponsLaunchFactory": {
-      "address": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB"
+      "address": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
+      "runtimeCodeHash": "0x0a62b8ed1d88d30c7b342ea8361dfaf0ac336706992cf0c8ba38b129f06391d4"
     },
     "ponsLocker": {
-      "address": "0x736D76699C26D0d966744cAe304C000d471f7F35"
+      "address": "0x736D76699C26D0d966744cAe304C000d471f7F35",
+      "runtimeCodeHash": "0xa7880a625a649da833de5597c9f41585bb75e20ef91d45830ccc6f4e49cc281c"
     },
     "weth": {
-      "address": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
+      "address": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "runtimeCodeHash": "0x5706be52f64875fee65a2cec0d80e47a23d8793cbe85d214b48445e2d05f5353"
     },
     "v3Factory": {
-      "address": "0x1f7d7550B1b028f7571E69A784071F0205FD2EfA"
+      "address": "0x1f7d7550B1b028f7571E69A784071F0205FD2EfA",
+      "runtimeCodeHash": "0xec72b1abd1f2faee020cfea9c646bd8994f9fb389054f6e574f103a895091739"
     },
     "v3PositionManager": {
-      "address": "0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3"
+      "address": "0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3",
+      "runtimeCodeHash": "0x0a493d1af3d0f25fed8efa205244ebee14114267a08647fc38c515c7cd6ead4f"
     },
     "swapRouter": {
-      "address": "0xCaf681a66D020601342297493863E78C959E5cb2"
+      "address": "0xCaf681a66D020601342297493863E78C959E5cb2",
+      "runtimeCodeHash": "0x6f36c378e272c6324c48f045182bcb54bd8ad654cf9ebd42e8893d52c4cb25dc"
     },
     "ponsV2LaunchFactory": {
-      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e"
+      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
     },
     "ponsV2LaunchDeployer": {
-      "address": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42"
+      "address": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42",
+      "runtimeCodeHash": "0xeade22566c766377f6adfb99534f2772251efad9568642c0704a7051418e624c"
     },
     "ponsV2FeeEscrow": {
-      "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e"
+      "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
+      "runtimeCodeHash": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1"
     },
     "ponsV2MemeHook": {
-      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044"
+      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+      "runtimeCodeHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db"
     },
     "ponsV2BuybackVault": {
-      "address": "0x42df2a798f82289E177311362e8f5ccC45c1219c"
+      "address": "0x42df2a798f82289E177311362e8f5ccC45c1219c",
+      "runtimeCodeHash": "0x5de8480874faffefa539648f1a7d6c1e69b39da3fa34de22fc95eb7586aece03"
     },
     "ponsV2LaunchLocker": {
-      "address": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952"
+      "address": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952",
+      "runtimeCodeHash": "0x58455f80b3773871d601a025e56ec27c71ab3bbb8e2ca6b17828954450742025"
     },
     "ponsV2LaunchForwarder": {
-      "address": "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948"
+      "address": "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948",
+      "runtimeCodeHash": "0xed9065184519eaa24a22c2556403d5d8bbb230ff94dbc5c414cf5028e20e52e7"
     },
     "uniswapV4PoolManager": {
-      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951"
+      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+      "runtimeCodeHash": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626"
     },
     "uniswapV4PositionManager": {
-      "address": "0x58daec3116aae6D93017bAAea7749052E8a04fA7"
+      "address": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
+      "runtimeCodeHash": "0xc873e135dc9aaec88489cfbad146b4cb49d6a32e0d80326377784b7ba17670b2"
     },
     "uniswapV4UniversalRouter": {
-      "address": "0x8876789976dEcBfCbBbe364623C63652db8C0904"
+      "address": "0x8876789976dEcBfCbBbe364623C63652db8C0904",
+      "runtimeCodeHash": "0x2ce6aaaf9f4151f5e1cbf774668772f17f532ae11b15e9284fd0a072a8b0fbde"
     },
     "poolsTradeLiquidityLauncher": {
-      "address": "0x0000FffFBE8efE702c8703aE3477FF5dE3d319C0"
+      "address": "0x0000FffFBE8efE702c8703aE3477FF5dE3d319C0",
+      "runtimeCodeHash": "0x4a586d925c9d59ece13ce2239ebd7dea9ee725f9d33c6667e0fd16ae8d977d80"
     },
     "poolsTradeUERC20Factory": {
-      "address": "0x000000e200088D55C39a11F609E5F667729ad49b"
+      "address": "0x000000e200088D55C39a11F609E5F667729ad49b",
+      "runtimeCodeHash": "0x9f042af1533641f048ced56b55898d9e87b2ccb0ec6854292e2cd8ea733e6aeb"
     },
     "poolsTradeInstantStrategyCreatorFee": {
-      "address": "0x23f8209572b4a1C2AD88A42749E830791Fb027f1"
+      "address": "0x23f8209572b4a1C2AD88A42749E830791Fb027f1",
+      "runtimeCodeHash": "0x29df27cf43533e9b3708dcd2a2c0fd17a1a8796407e7d39375f47e5c809cffca"
     },
     "poolsTradeInstantStrategyNoFee": {
-      "address": "0xAD44D55E7f8337C3cE113fBb591486E85be104b2"
+      "address": "0xAD44D55E7f8337C3cE113fBb591486E85be104b2",
+      "runtimeCodeHash": "0x6944058fa8339bcf018c4a2ddc043d378b47516f8756db34202bdc6cf93a9a8e"
     },
     "poolsTradeFeeSplitterCreatorFee": {
-      "address": "0xeFF166AAf189323c58dc27eD1206EB2C37FaACDf"
+      "address": "0xeFF166AAf189323c58dc27eD1206EB2C37FaACDf",
+      "runtimeCodeHash": "0x8238e5106b3a895514083110d1f3b4e51be61148604f35113719af56ae325f42"
     },
     "poolsTradeFeeSplitterNoFee": {
-      "address": "0x222D6d4f1ce59b0d48D5505114eC8Addc90A4359"
+      "address": "0x222D6d4f1ce59b0d48D5505114eC8Addc90A4359",
+      "runtimeCodeHash": "0x8238e5106b3a895514083110d1f3b4e51be61148604f35113719af56ae325f42"
     },
     "poolsTradeBeneficiaryVault": {
-      "address": "0xd35E9CA72F64C7F93BE30fad67524323396B36D7"
+      "address": "0xd35E9CA72F64C7F93BE30fad67524323396B36D7",
+      "runtimeCodeHash": "0x725412bf002214373afc095b0b9e4c756b1d12ac37d5c7dfe1667db4385403b6"
     },
     "poolsTradeCompoundingClaimRecipient": {
-      "address": "0xf9526Dd3361fe0ba6b7a99533ed471D3E808E99a"
+      "address": "0xf9526Dd3361fe0ba6b7a99533ed471D3E808E99a",
+      "runtimeCodeHash": "0xb9b1a32990c06baedf12b01208967d6a8373afbf99b684ea81b07c7b99e5dbe9"
     },
     "poolsTradeLBPStrategy": {
-      "address": "0x05d552391067389EE44fec3924157ed33F976000"
+      "address": "0x05d552391067389EE44fec3924157ed33F976000",
+      "runtimeCodeHash": "0x6e822d6a2f634311363ec357109a691d86912414df5c211a2f6ac6de9a680d68"
     },
     "poolsTradeCCAFactory": {
-      "address": "0x000000001F26a0044BaA66024e7b6599c61963F8"
+      "address": "0x000000001F26a0044BaA66024e7b6599c61963F8",
+      "runtimeCodeHash": "0xa1d2a90564f4f63580b25de42efaff92505c254b00fc666f65ab38126cce5cfa"
     },
     "poolsTradeInitializerHook": {
-      "address": "0xD462a559337859369EF271814851A18F496ba000"
+      "address": "0xD462a559337859369EF271814851A18F496ba000",
+      "runtimeCodeHash": "0xbd115add5605cc659e68632d42884c67da58251c9ceb17d5019d0a85d36c2a2e"
     },
     "poolsTradeTokenSplitter": {
-      "address": "0x4F5E3FBb9745358A92Da5674305FAb8D2B8a73cE"
+      "address": "0x4F5E3FBb9745358A92Da5674305FAb8D2B8a73cE",
+      "runtimeCodeHash": "0x3373016823b274303947e411171478087acc3d1e844c649bc9b84e69de685d62"
     },
     "robinhoodStockBeacon": {
-      "address": "0xe10b6f6B275de231345c20D14Ab812db62151b00"
+      "address": "0xe10b6f6B275de231345c20D14Ab812db62151b00",
+      "runtimeCodeHash": "0x8b465c0b53a2ba499566e9b4ca67d8c90ed6131743df806a570d156956a7e90e",
+      "implementation": "0xb35490d6f9163DE4F80d88dc75c3516eb64C5aE2",
+      "implementationRuntimeCodeHash": "0xdc07e86ee482f99641bdafb9a0d772846b167401e094d90a666b94dbdcd1eec7",
+      "implementationBinding": {
+        "kind": "beacon"
+      }
     },
     "robinhoodStockImplementation": {
-      "address": "0xb35490d6f9163DE4F80d88dc75c3516eb64C5aE2"
+      "address": "0xb35490d6f9163DE4F80d88dc75c3516eb64C5aE2",
+      "runtimeCodeHash": "0xdc07e86ee482f99641bdafb9a0d772846b167401e094d90a666b94dbdcd1eec7"
     },
     "letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
-      "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5"
+      "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
+      "implementation": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
+      "implementationRuntimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+      "implementationBinding": {
+        "kind": "eip1967",
+        "slot": "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+      }
     },
     "letscash.factoryImplementation": {
       "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",

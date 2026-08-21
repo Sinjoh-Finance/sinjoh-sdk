@@ -10,7 +10,8 @@ export type ReadClient = Pick<PublicClient, "readContract">;
 export interface SinjohClient {
   chainId: number;
   public: PublicClient;
-  manifest: Pick<ChainManifest, "chainId" | "contracts">;
+  manifest: Pick<ChainManifest, "chainId" | "contracts">
+    & Partial<Pick<ChainManifest, "dependencies" | "roles">>;
   /** Compares recorded runtime code hashes against the live chain; run before trusting reads. */
   verify(keys?: readonly string[]): Promise<VerificationResult[]>;
 }
@@ -21,7 +22,8 @@ export interface CreateSinjohClientOptions {
   rpcUrl?: string;
   chainId?: 4663 | 46630;
   /** Defaults to the packaged mainnet manifest; supply your own of the same schema to pin. */
-  manifest?: Pick<ChainManifest, "chainId" | "contracts">;
+  manifest?: Pick<ChainManifest, "chainId" | "contracts">
+    & Partial<Pick<ChainManifest, "dependencies" | "roles">>;
 }
 
 /**

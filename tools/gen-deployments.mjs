@@ -22,50 +22,114 @@ function fail(message) {
 }
 
 if (raw.chainId !== 4663) fail(`unexpected chainId ${raw.chainId}`);
-for (const key of ["rpcUrl", "explorerUrl", "deployer", "governance", "status"]) {
+for (const key of ["rpcUrl", "explorerUrl", "status"]) {
   if (typeof raw[key] !== "string" || raw[key].length === 0) fail(`missing ${key}`);
 }
 
+function role(name) {
+  const value = raw[name];
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || typeof value.address !== "string" || !ADDRESS.test(value.address)
+    || value.kind !== "eoa" || value.runtimeCodeHash !== undefined
+    || value.implementation !== undefined || value.implementationRuntimeCodeHash !== undefined
+    || value.implementationBinding !== undefined) {
+    fail(`${name}: must be an address classified as eoa`);
+    return { address: "0x0000000000000000000000000000000000000000", kind: "eoa" };
+  }
+  return { address: getAddress(value.address), kind: "eoa" };
+}
+
+const deployerRole = role("deployer");
+const governanceRole = role("governance");
+
 /**
  * Walks a manifest section collecting deployment entries: any object with a valid `address`
- * becomes an entry keyed by its dotted path; bare address strings become address-only entries.
+ * becomes an entry keyed by its dotted path. Bare address strings are rejected so every
+ * trust-bearing address explicitly carries a runtime hash or an EOA classification.
  */
 function collect(section, prefix, into) {
   for (const [key, value] of Object.entries(section)) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (typeof value === "string") {
-      if (ADDRESS.test(value)) into[path] = { address: getAddress(value) };
+      if (ADDRESS.test(value)) fail(`${path}: address must declare runtimeCodeHash or kind eoa`);
+      else if (value.startsWith("0x") && !HASH32.test(value)) {
+        fail(`${path}: invalid hex value ${value}`);
+      }
       continue; // notes, dates, commit hashes
     }
     if (value === null || typeof value !== "object" || Array.isArray(value)) continue;
+    if (Object.hasOwn(value, "address") && typeof value.address !== "string") {
+      fail(`${path}: invalid address`);
+      continue;
+    }
     if (typeof value.address === "string") {
       if (!ADDRESS.test(value.address)) {
         fail(`${path}: invalid address ${value.address}`);
         continue;
       }
       const entry = { address: getAddress(value.address) };
+      if (value.kind !== undefined && value.kind !== "contract" && value.kind !== "eoa") {
+        fail(`${path}: invalid kind`);
+      } else if (value.kind !== undefined) {
+        entry.kind = value.kind;
+      }
       if (value.deploymentBlock !== undefined) {
         if (!Number.isInteger(value.deploymentBlock) || value.deploymentBlock < 0) {
           fail(`${path}: invalid deploymentBlock`);
         } else entry.deploymentBlock = value.deploymentBlock;
       }
-      if (typeof value.deploymentTransaction === "string") {
-        if (!HASH32.test(value.deploymentTransaction)) {
+      if (value.deploymentTransaction !== undefined) {
+        if (typeof value.deploymentTransaction !== "string"
+          || !HASH32.test(value.deploymentTransaction)) {
           fail(`${path}: invalid deploymentTransaction`);
         } else entry.deploymentTransaction = value.deploymentTransaction.toLowerCase();
       }
-      if (typeof value.runtimeCodeHash === "string") {
-        if (!HASH32.test(value.runtimeCodeHash)) fail(`${path}: invalid runtimeCodeHash`);
+      if (value.runtimeCodeHash !== undefined) {
+        if (typeof value.runtimeCodeHash !== "string" || !HASH32.test(value.runtimeCodeHash)) {
+          fail(`${path}: invalid runtimeCodeHash`);
+        }
         else entry.runtimeCodeHash = value.runtimeCodeHash.toLowerCase();
       }
-      if (typeof value.purpose === "string") entry.purpose = value.purpose;
-      if (typeof value.implementation === "string" && ADDRESS.test(value.implementation)) {
-        entry.implementation = getAddress(value.implementation);
+      if (value.kind === "eoa" && value.runtimeCodeHash !== undefined) {
+        fail(`${path}: eoa cannot carry runtimeCodeHash`);
       }
-      if (typeof value.implementationRuntimeCodeHash === "string"
-        && HASH32.test(value.implementationRuntimeCodeHash)) {
-        entry.implementationRuntimeCodeHash =
-          value.implementationRuntimeCodeHash.toLowerCase();
+      if (value.kind !== "eoa" && value.runtimeCodeHash === undefined) {
+        fail(`${path}: contract is missing runtimeCodeHash`);
+      }
+      if (typeof value.purpose === "string") entry.purpose = value.purpose;
+      if (value.implementation !== undefined) {
+        if (typeof value.implementation !== "string" || !ADDRESS.test(value.implementation)) {
+          fail(`${path}: invalid implementation`);
+        } else {
+          entry.implementation = getAddress(value.implementation);
+        }
+      }
+      if (value.implementationRuntimeCodeHash !== undefined) {
+        if (typeof value.implementationRuntimeCodeHash !== "string"
+          || !HASH32.test(value.implementationRuntimeCodeHash)) {
+          fail(`${path}: invalid implementationRuntimeCodeHash`);
+        } else {
+          entry.implementationRuntimeCodeHash =
+            value.implementationRuntimeCodeHash.toLowerCase();
+        }
+      }
+      if ((value.implementation === undefined)
+        !== (value.implementationRuntimeCodeHash === undefined)) {
+        fail(`${path}: implementation and implementationRuntimeCodeHash must be paired`);
+      }
+      if (value.implementationBinding !== undefined) {
+        const binding = value.implementationBinding;
+        if (!binding || typeof binding !== "object" || Array.isArray(binding)
+          || (binding.kind !== "beacon" && binding.kind !== "eip1967")
+          || (binding.kind === "eip1967"
+            && (typeof binding.slot !== "string" || !HASH32.test(binding.slot)))
+          || value.implementation === undefined) {
+          fail(`${path}: invalid implementationBinding`);
+        } else {
+          entry.implementationBinding = binding.kind === "beacon"
+            ? { kind: "beacon" }
+            : { kind: "eip1967", slot: binding.slot.toLowerCase() };
+        }
       }
       into[path] = entry;
       continue;
@@ -112,8 +176,9 @@ export const mainnet = {
   deployedAt: ${JSON.stringify(raw.deployedAt ?? null)},
   rpcUrl: ${JSON.stringify(raw.rpcUrl)},
   explorerUrl: ${JSON.stringify(raw.explorerUrl)},
-  deployer: ${JSON.stringify(getAddress(raw.deployer))},
-  governance: ${JSON.stringify(getAddress(raw.governance))},
+  deployer: ${JSON.stringify(deployerRole.address)},
+  governance: ${JSON.stringify(governanceRole.address)},
+  roles: ${literal({ deployer: deployerRole, governance: governanceRole }, 2)},
   contracts: ${literal(contracts, 2)},
   dependencies: ${literal(dependencies, 2)},
   notDeployed: ${literal(notDeployed, 2)}

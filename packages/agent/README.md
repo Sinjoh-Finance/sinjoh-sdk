@@ -45,6 +45,7 @@ Before acting on any manifest address, call `sinjoh_verify_manifest` and require
 | Tool | What it does |
 |---|---|
 | `sinjoh_api_capabilities` | Production API version, capacity, documentation, and route catalog |
+| `sinjoh_registry_health` | Reconcile and report indexed-versus-public launch coverage, including per-launchpad failures |
 | `sinjoh_discover` | Paginated contracts, launches, raffles, airdrops, liquidity, Funding Bands, revenue, or randomness |
 | `sinjoh_get` | One contract, launch, market, raffle, or protocol account |
 | `sinjoh_history` | Bounded market, raffle, airdrop, Funding Bands, or normalized event history |
@@ -53,7 +54,7 @@ Before acting on any manifest address, call `sinjoh_verify_manifest` and require
 | `sinjoh_verify_manifest` | Live runtime code-hash verification |
 | `sinjoh_router_snapshot` | A router's full immutable structure and binding state |
 | `sinjoh_plan_router_work` | Every eligible permissionless action, with contract-capped amounts, prepared calls, and exact guard-preflight inputs |
-| `sinjoh_preflight_guard` | Immutable swap floor with explicit oracle/interval/price states; accepts route hash and signed guard bytes |
+| `sinjoh_preflight_guard` | Immutable swap floor with explicit oracle/interval/price states and a distinct provider-unavailable result; accepts route hash and signed guard bytes |
 | `sinjoh_check_activation` | Launch wiring checklist incl. EIP-1167 clone verification |
 | `sinjoh_validate_config` | Offline validation + canonical encoding + configHash for router/raffle/sink configs |
 | `sinjoh_plan_ponsv2_launch` | The full predict/deploy/bind launch ordering as prepared calls with readbacks |
@@ -76,7 +77,10 @@ approval UX and transaction policy; Sinjoh checks the chain ID and simulates eac
 before asking it to sign. The execution tool is marked destructive and non-idempotent so MCP
 clients can require explicit confirmation. Treat the injected wallet's `sendTransaction`
 implementation as the final authorization boundary: enforce destination, value, session, and
-spending limits there.
+spending limits there, and honor the supplied `request.account` and `request.chainId` when
+submitting. Wallet execution requires
+a public client with an explicit chain matching the manifest; do not re-read mutable provider
+account or chain state inside the executor.
 Raw private keys never cross the Sinjoh interface. If receipt polling times out after submission,
 the tool returns `status: "submitted"` with the transaction hash so the agent can reconcile that
 hash instead of signing a duplicate transaction.

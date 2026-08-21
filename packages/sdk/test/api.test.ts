@@ -52,6 +52,46 @@ test("API client exposes registry parity and fee-router launch filtering", async
   ]);
 });
 
+test("registry health preserves a conforming diagnostic body on HTTP 503", async () => {
+  const diagnostic = {
+    chainId: 4663,
+    registry: {
+      ok: false,
+      indexed: 2,
+      registered: 1,
+      visible: 1,
+      suppressed: 0,
+      promoted: 0,
+      inserted: 0,
+      missing: 1,
+      missingSubjects: ["0x0000000000000000000000000000000000000001"],
+      failures: [],
+      indexedByLaunchpad: { flap: 2 },
+      visibleByLaunchpad: { flap: 1 },
+      supportedLaunchpads: ["flap"],
+    },
+  };
+  const api = createSinjohApiClient({
+    fetch: async () => Response.json(diagnostic, { status: 503 }),
+  });
+  assert.deepEqual(await api.getLaunchRegistryHealth(), diagnostic);
+});
+
+test("registry health rejects an unrelated middleware HTTP 503", async () => {
+  const api = createSinjohApiClient({
+    fetch: async () => Response.json(
+      { error: "rate_limit_unavailable", message: "capacity guard unavailable" },
+      { status: 503 },
+    ),
+  });
+  await assert.rejects(
+    () => api.getLaunchRegistryHealth(),
+    (error: unknown) => error instanceof SinjohApiError
+      && error.status === 503
+      && error.code === "rate_limit_unavailable",
+  );
+});
+
 test("API client returns stable structured errors", async () => {
   const api = createSinjohApiClient({
     fetch: async () => new Response(
@@ -78,5 +118,17 @@ test("API client rejects non-JSON upstream responses", async () => {
   await assert.rejects(
     () => api.index(),
     (error: unknown) => error instanceof SinjohApiError && error.code === "invalid_response",
+  );
+});
+
+test("API client wraps a null JSON error body", async () => {
+  const api = createSinjohApiClient({
+    fetch: async () => Response.json(null, { status: 503 }),
+  });
+  await assert.rejects(
+    () => api.index(),
+    (error: unknown) => error instanceof SinjohApiError
+      && error.status === 503
+      && error.code === "request_failed",
   );
 });

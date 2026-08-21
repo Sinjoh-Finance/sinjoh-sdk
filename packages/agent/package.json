@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/agent",
-  "version": "1.1.3",
+  "version": "2.0.0",
   "description": "MCP server for Sinjoh public data, contract planning, prepared calls, and optional host-wallet transaction execution.",
   "license": "Apache-2.0",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/Sinjoh-Finance/sinjoh-sdk.git",
     "directory": "packages/agent"
   },
-  "homepage": "https://github.com/Sinjoh-Finance/sinjoh-sdk/packages/agent#readme",
+  "homepage": "https://github.com/Sinjoh-Finance/sinjoh-sdk/tree/main/packages/agent#readme",
   "bugs": {
     "url": "https://github.com/Sinjoh-Finance/sinjoh-sdk/issues"
   },
@@ -42,12 +42,12 @@
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts && npm run build && node --input-type=module -e 'import(\"./dist/src/server.js\")'"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
-    "@sinjoh/deployments": "1.1.3",
-    "@sinjoh/sdk": "1.1.3",
+    "@sinjoh/deployments": "2.0.0",
+    "@sinjoh/sdk": "2.0.0",
     "viem": "2.55.10",
     "zod": "^4.4.3"
   },

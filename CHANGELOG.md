@@ -3,6 +3,38 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.0.0 - 2026-08-21
+
+This major release intentionally fails closed where 1.x accepted ambiguous API, wallet, or
+deployment state. Wallet embeddings must use a chain-bound client and honor the snapshotted
+account/chain passed to their executor. Custom manifests should classify authority roles and all
+contract dependencies; verification results now include EOA and active-implementation checks.
+
+### Added
+
+- Added MCP registry-health discovery and fee-router filtering, including structured API error
+  details that agents can branch on reliably.
+- Added dependency runtime verification to the default manifest safety check.
+- Added active-implementation binding checks for EIP-1967 and beacon dependencies.
+
+### Changed
+
+- Validate MCP simulation against a snapshotted chain and account, pass that binding to the
+  host executor, and report provider outages separately from on-chain guard reverts.
+- Wallet-enabled embeddings now require a chain-bound public client. Their executor must submit
+  with the supplied `request.account` and `request.chainId`; the host remains the final signing
+  and authorization boundary.
+- Expanded API types and OpenAPI discovery for dynamic launchpads and arbitrary event references.
+- Hardened immutable package releases by regenerating and diff-checking ABIs and deployments at
+  the tag being published.
+
+### Fixed
+
+- Made every MCP result JSON-safe before transport, including confirmed receipts with bigint
+  fields, so a submitted transaction always returns its hash instead of timing out after broadcast.
+- Preserved full registry-health diagnostics on HTTP 503 responses.
+- Rejected malformed deployment trust metadata instead of silently dropping it during generation.
+
 ## 1.1.3 - 2026-08-21
 
 ### Added

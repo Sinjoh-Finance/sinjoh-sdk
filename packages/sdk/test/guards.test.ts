@@ -56,12 +56,24 @@ test("typed guard reverts map to explicit states", async () => {
   }
 });
 
-test("an unrecognized failure reports reverted, never throws", async () => {
+test("a provider failure is distinguishable from an on-chain revert", async () => {
   const client = {
     readContract: async () => { throw new Error("boom"); }
   } as unknown as PublicClient;
   const result = await preflightMinimumOutput(client, ARGS);
-  assert.equal(result.status, "reverted");
+  assert.deepEqual(result, { status: "unavailable", message: "boom" });
+});
+
+test("an opaque contract revert remains an on-chain revert", async () => {
+  const reverted = new ContractFunctionRevertedError({
+    abi: [],
+    functionName: "minimumOutput",
+    data: "0xdeadbeef",
+  });
+  const client = {
+    readContract: async () => { throw new BaseError("execution reverted", { cause: reverted }); },
+  } as unknown as PublicClient;
+  assert.deepEqual(await preflightMinimumOutput(client, ARGS), { status: "reverted" });
 });
 
 test("quoteAtTwap passes through the guard's view", async () => {
