@@ -3,7 +3,12 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
-## 1.1.4 - 2026-08-21
+## 2.0.0 - 2026-08-21
+
+This major release intentionally fails closed where 1.x accepted ambiguous API, wallet, or
+deployment state. Wallet embeddings must use a chain-bound client and honor the snapshotted
+account/chain passed to their executor. Custom manifests should classify authority roles and all
+contract dependencies; verification results now include EOA and active-implementation checks.
 
 ### Added
 
