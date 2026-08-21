@@ -10,11 +10,15 @@ All notable changes to the Sinjoh SDK are documented here. This project follows
 - Added MCP registry-health discovery and fee-router filtering, including structured API error
   details that agents can branch on reliably.
 - Added dependency runtime verification to the default manifest safety check.
+- Added active-implementation binding checks for EIP-1967 and beacon dependencies.
 
 ### Changed
 
-- Bound MCP simulation and submission to the same chain and account, and report provider outages
-  separately from on-chain guard reverts.
+- Validate MCP simulation against a snapshotted chain and account, pass that binding to the
+  host executor, and report provider outages separately from on-chain guard reverts.
+- Wallet-enabled embeddings now require a chain-bound public client. Their executor must submit
+  with the supplied `request.account` and `request.chainId`; the host remains the final signing
+  and authorization boundary.
 - Expanded API types and OpenAPI discovery for dynamic launchpads and arbitrary event references.
 - Hardened immutable package releases by regenerating and diff-checking ABIs and deployments at
   the tag being published.

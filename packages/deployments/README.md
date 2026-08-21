@@ -32,10 +32,12 @@ const launchStaking = mainnet.contracts["launchStakingEngine"];
 if (!launchStaking) throw new Error("launch staking is absent from the manifest");
 ```
 
-A manifest is data, not a trust anchor. `verifyManifest` checks every selected contract with a
-recorded `runtimeCodeHash` and also checks a recorded implementation when the entry carries an
-`implementationRuntimeCodeHash`. Entries without a runtime hash are skipped rather than assumed
-valid. `allVerified([])` returns `false`.
+A manifest is data, not a trust anchor. `verifyManifest` checks every contract, dependency,
+implementation, and authority role. Contracts must match their recorded runtime hash; roles
+explicitly classified as EOAs must have no code. Missing or contradictory classification fails
+closed rather than being skipped. Upgradeable dependencies also verify their active EIP-1967
+slot or beacon `implementation()` binding, so a storage-only upgrade cannot pass on proxy bytecode
+alone. `allVerified([])` returns `false`.
 
 ## API
 

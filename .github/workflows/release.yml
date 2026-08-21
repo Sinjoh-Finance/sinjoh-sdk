@@ -43,7 +43,9 @@ jobs:
 
       - name: Verify tag and package versions
         run: |
-          git fetch origin main
+          git fetch origin main "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+          git show-ref --verify --quiet "refs/tags/${RELEASE_TAG}"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")"
           git merge-base --is-ancestor HEAD origin/main
           node tools/verify-release.mjs "${RELEASE_TAG}"
 

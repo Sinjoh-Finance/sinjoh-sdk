@@ -11,8 +11,12 @@ export function toJson(value: unknown): string {
 }
 
 /** Convert SDK values into the exact JSON-safe shape sent over MCP transports. */
-export function toJsonValue<T = unknown>(value: T): T {
-  return JSON.parse(toJson(value)) as T;
+export type JsonValue = null | boolean | number | string | JsonValue[] | {
+  [key: string]: JsonValue;
+};
+
+export function toJsonValue(value: unknown): JsonValue {
+  return JSON.parse(toJson(value)) as JsonValue;
 }
 
 /** A text-content MCP tool result. */
@@ -24,7 +28,7 @@ export function textResult(value: unknown): {
   return {
     content: [{ type: "text", text: JSON.stringify(normalized, null, 2) }],
     ...(typeof normalized === "object" && normalized !== null && !Array.isArray(normalized)
-      ? { structuredContent: normalized as Record<string, unknown> }
+      ? { structuredContent: normalized }
       : {}),
   };
 }
@@ -50,7 +54,7 @@ export function errorResult(error: unknown): {
   });
   return {
     content: [{ type: "text", text: message }],
-    structuredContent: details,
+    structuredContent: details as Record<string, unknown>,
     isError: true,
   };
 }

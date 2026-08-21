@@ -75,7 +75,14 @@ async function connectedClient(
         raffleFactory: {
           address: "0xD030064fB83d14C97c22A6B63bF376552eBA7112" as Address
         }
-      }
+      },
+      dependencies: {
+        weth: { address: WETH },
+      },
+      roles: {
+        deployer: { address: ZERO, kind: "eoa" },
+        governance: { address: SUBJECT, kind: "eoa" },
+      },
     },
     api: {
       index: async () => ({
@@ -164,7 +171,19 @@ test("manifest lookup returns entries and rejects unknown keys", async () => {
   const all = JSON.parse(text(await client.callTool({
     name: "sinjoh_manifest", arguments: {}
   })));
-  assert.deepEqual(all, { chainId: 4663, keys: ["raffleFactory"] });
+  assert.deepEqual(all, {
+    chainId: 4663,
+    keys: ["raffleFactory", "dependencies.weth", "roles.deployer", "roles.governance"],
+  });
+
+  const dependency = JSON.parse(text(await client.callTool({
+    name: "sinjoh_manifest", arguments: { key: "dependencies.weth" }
+  })));
+  assert.equal(dependency.address, WETH);
+  const role = JSON.parse(text(await client.callTool({
+    name: "sinjoh_manifest", arguments: { key: "roles.deployer" }
+  })));
+  assert.equal(role.kind, "eoa");
 
   const missing = await client.callTool({
     name: "sinjoh_manifest", arguments: { key: "nope" }

@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { getAddress, keccak256, type Address, type Hex } from "viem";
 import { mainnet } from "../src/generated/mainnet.js";
+import type { DeploymentEntry } from "../src/types.js";
 import { allVerified, verifyManifest, type CodeReader } from "../src/verify.js";
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
@@ -26,6 +27,18 @@ test("every contract entry is checksummed with well-formed metadata", () => {
     if (record.deploymentBlock !== undefined) {
       assert.ok(Number.isInteger(record.deploymentBlock) && record.deploymentBlock > 0,
         `${key} deploymentBlock`);
+    }
+  }
+  for (const [key, entry] of [
+    ...Object.entries(mainnet.contracts),
+    ...Object.entries(mainnet.dependencies).map(([key, entry]) => [`dependencies.${key}`, entry] as const),
+    ...Object.entries(mainnet.roles).map(([key, entry]) => [`roles.${key}`, entry] as const),
+  ]) {
+    const classified = entry as DeploymentEntry;
+    assert.ok(classified.runtimeCodeHash || classified.kind === "eoa",
+      `${key} must be contract-hashed or EOA`);
+    if (classified.kind === "eoa") {
+      assert.equal(classified.runtimeCodeHash, undefined, `${key} EOA hash`);
     }
   }
 });
@@ -73,7 +86,11 @@ test("verifyManifest compares live code hashes and flags mismatches", async () =
         runtimeCodeHash: keccak256(code),
         implementationRuntimeCodeHash: keccak256("0xbeef" as Hex)
       },
-      unhashed: { address: "0x4444444444444444444444444444444444444444" as Address }
+      unhashed: { address: "0x4444444444444444444444444444444444444444" as Address },
+      eoa: {
+        address: "0x8888888888888888888888888888888888888888" as Address,
+        kind: "eoa" as const,
+      }
     },
     dependencies: {
       upstream: {
@@ -85,13 +102,14 @@ test("verifyManifest compares live code hashes and flags mismatches", async () =
   const client: CodeReader = {
     getCode: async ({ address }) => {
       if (address === manifest.contracts.empty.address) return undefined;
+      if (address === manifest.contracts.eoa.address) return undefined;
       if (address === manifest.contracts.proxy.implementation) return "0xbeef";
       if (address === manifest.dependencies.upstream.address) return "0xbeef";
       return code;
     }
   };
   const results = await verifyManifest(client, manifest);
-  assert.equal(results.length, 6, "contracts, dependencies, and implementations are verified");
+  assert.equal(results.length, 8, "every address, dependency, and implementation is verified");
   const byKey = new Map(results.map((result) => [result.key, result]));
   assert.equal(byKey.get("good")?.ok, true);
   assert.equal(byKey.get("bad")?.ok, false);
@@ -100,10 +118,80 @@ test("verifyManifest compares live code hashes and flags mismatches", async () =
   assert.equal(byKey.get("proxy")?.ok, true);
   assert.equal(byKey.get("proxy.implementation")?.ok, true);
   assert.equal(byKey.get("dependencies.upstream")?.ok, false);
+  assert.equal(byKey.get("unhashed")?.expectedKind, "unclassified");
+  assert.equal(byKey.get("unhashed")?.ok, false);
+  assert.equal(byKey.get("eoa")?.expectedKind, "eoa");
+  assert.equal(byKey.get("eoa")?.ok, true);
   assert.equal(allVerified(results), false);
   assert.equal(allVerified([byKey.get("good")!]), true);
   assert.equal(allVerified([]), false, "empty verification never passes");
   await assert.rejects(
     verifyManifest(client, manifest, { keys: ["missing"] }), /no entry/
   );
+  await assert.rejects(
+    verifyManifest(client, {
+      contracts: {
+        contradictory: {
+          address: "0x9999999999999999999999999999999999999999" as Address,
+          kind: "eoa",
+          runtimeCodeHash: keccak256(code),
+        },
+      },
+    }),
+    /classified as eoa/,
+  );
+  await assert.rejects(
+    verifyManifest(client, {
+      contracts: {
+        incompleteProxy: {
+          address: "0x9999999999999999999999999999999999999999" as Address,
+          runtimeCodeHash: keccak256(code),
+          implementation: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as Address,
+        },
+      },
+    }),
+    /implementation address but no implementation hash/,
+  );
+});
+
+test("verifyManifest binds EIP-1967 proxies and beacons to their active implementations", async () => {
+  const code = "0x60016001" as Hex;
+  const implementation = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" as Address;
+  const word = `0x${"0".repeat(24)}${implementation.slice(2)}` as Hex;
+  const manifest = {
+    contracts: {
+      proxy: {
+        address: "0x1111111111111111111111111111111111111111" as Address,
+        runtimeCodeHash: keccak256(code),
+        implementation,
+        implementationRuntimeCodeHash: keccak256(code),
+        implementationBinding: { kind: "eip1967" as const, slot: `0x${"22".repeat(32)}` as Hex },
+      },
+      beacon: {
+        address: "0x2222222222222222222222222222222222222222" as Address,
+        runtimeCodeHash: keccak256(code),
+        implementation,
+        implementationRuntimeCodeHash: keccak256(code),
+        implementationBinding: { kind: "beacon" as const },
+      },
+    },
+  };
+  const client: CodeReader = {
+    getCode: async () => code,
+    getStorageAt: async () => word,
+    call: async () => ({ data: word }),
+  };
+  const results = await verifyManifest(client, manifest);
+  const bindings = results.filter((result) => result.expectedKind === "implementation-binding");
+  assert.equal(bindings.length, 2);
+  assert.ok(bindings.every((result) => result.ok));
+  assert.ok(allVerified(results));
+
+  const mismatched = await verifyManifest({
+    ...client,
+    call: async () => ({ data: `0x${"0".repeat(24)}${"cc".repeat(20)}` as Hex }),
+  }, manifest, { keys: ["beacon"] });
+  assert.equal(mismatched.at(-1)?.expectedKind, "implementation-binding");
+  assert.equal(mismatched.at(-1)?.ok, false);
+  assert.equal(allVerified(mismatched), false);
 });

@@ -64,6 +64,18 @@ test("a provider failure is distinguishable from an on-chain revert", async () =
   assert.deepEqual(result, { status: "unavailable", message: "boom" });
 });
 
+test("an opaque contract revert remains an on-chain revert", async () => {
+  const reverted = new ContractFunctionRevertedError({
+    abi: [],
+    functionName: "minimumOutput",
+    data: "0xdeadbeef",
+  });
+  const client = {
+    readContract: async () => { throw new BaseError("execution reverted", { cause: reverted }); },
+  } as unknown as PublicClient;
+  assert.deepEqual(await preflightMinimumOutput(client, ARGS), { status: "reverted" });
+});
+
 test("quoteAtTwap passes through the guard's view", async () => {
   const client = {
     readContract: async (args: { functionName: string }) => {

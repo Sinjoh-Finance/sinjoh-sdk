@@ -28,7 +28,8 @@ import { errorResult, textResult } from "./serialize.js";
 
 export interface SinjohAgentContext {
   client: PublicClient;
-  manifest: Pick<ChainManifest, "chainId" | "contracts"> & Partial<Pick<ChainManifest, "dependencies">>;
+  manifest: Pick<ChainManifest, "chainId" | "contracts">
+    & Partial<Pick<ChainManifest, "dependencies" | "roles">>;
   /** Defaults to the keyless production API client. */
   api?: SinjohApiClient;
   /** Optional host-owned wallet. When present, the server can simulate and submit calls. */
@@ -103,10 +104,21 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
       + "trust: run sinjoh_verify_manifest before acting on them.",
     inputSchema: { key: z.string().optional().describe("manifest key, e.g. raffleFactory") }
   }, async ({ key }) => {
+    const dependencies = manifest.dependencies ?? {};
+    const roles = manifest.roles ?? {};
+    const entries = {
+      ...manifest.contracts,
+      ...Object.fromEntries(Object.entries(dependencies).map(([name, entry]) => [
+        `dependencies.${name}`, entry,
+      ])),
+      ...Object.fromEntries(Object.entries(roles).map(([name, entry]) => [
+        `roles.${name}`, entry,
+      ])),
+    };
     if (key === undefined) {
-      return textResult({ chainId: manifest.chainId, keys: Object.keys(manifest.contracts) });
+      return textResult({ chainId: manifest.chainId, keys: Object.keys(entries) });
     }
-    const entry = manifest.contracts[key];
+    const entry = entries[key];
     return entry === undefined
       ? errorResult(new Error(`no manifest entry named ${key}`))
       : textResult({ key, ...entry });

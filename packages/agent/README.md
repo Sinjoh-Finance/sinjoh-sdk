@@ -76,7 +76,10 @@ approval UX and transaction policy; Sinjoh checks the chain ID and simulates eac
 before asking it to sign. The execution tool is marked destructive and non-idempotent so MCP
 clients can require explicit confirmation. Treat the injected wallet's `sendTransaction`
 implementation as the final authorization boundary: enforce destination, value, session, and
-spending limits there.
+spending limits there, and honor the supplied `request.account` and `request.chainId` when
+submitting. Wallet execution requires
+a public client with an explicit chain matching the manifest; do not re-read mutable provider
+account or chain state inside the executor.
 Raw private keys never cross the Sinjoh interface. If receipt polling times out after submission,
 the tool returns `status: "submitted"` with the transaction hash so the agent can reconcile that
 hash instead of signing a duplicate transaction.
