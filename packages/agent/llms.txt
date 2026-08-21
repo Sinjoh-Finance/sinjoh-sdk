@@ -51,9 +51,9 @@ which anyone may forward to its governance-selected processor.
 10. `sinjoh_plan_ponsv2_launch`, `sinjoh_plan_flap_launch`, and
     `sinjoh_plan_letscash_integration` — resolve each launchpad family's circular
     predict/deploy/bind ordering into prepared calls with expected readbacks. pools.trade has
-    no flow yet because its fork rehearsal does not exist. For letscash, complete the returned
-    registry-publication follow-up after activation; indexed events do not write the curated
-    `public_launches` registry.
+    no flow yet because its fork rehearsal does not exist. After any launch binds its subject,
+    platform reconciliation publishes it automatically; verify it through `GET /v1/launches/{subject}`
+    after normal confirmation and indexing lag. Never ask a builder for a manual registry handoff.
 11. `sinjoh_decode_error` — turn revert data into a named error plus operator guidance.
 12. `sinjoh_execute_transaction` — when and only when the MCP host injected a wallet,
     simulate a prepared call, then request signing/submission and optionally wait for its receipt.

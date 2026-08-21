@@ -9,7 +9,7 @@ Chain. It provides deterministic, side-effect-free building blocks for applicati
 keepers, and agents. The SDK prepares data and calls; it never holds keys, signs, or submits
 transactions.
 
-> Release status: stable `1.1.1` source and package metadata, licensed under
+> Release status: stable `1.1.2` source and package metadata, licensed under
 > Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
 > publishing, with build provenance, after all deterministic release gates pass.
 

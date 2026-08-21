@@ -177,7 +177,7 @@ test("exclusion builder is deterministic under duplicates", () => {
   assert.equal(list.length, 5);
 });
 
-test("planLetsCashIntegration stops at the adapter and hands off follow-ups", async () => {
+test("planLetsCashIntegration stops at the adapter and returns post-launch follow-ups", async () => {
   const plan = await planLetsCashIntegration(stubClient(), {
     creator: CREATOR,
     adapterFactory: ADAPTER_FACTORY,
@@ -200,14 +200,11 @@ test("planLetsCashIntegration stops at the adapter and hands off follow-ups", as
   assert.match(plan.followUps[0]!, /launchWithFeeSplit/);
   assert.match(plan.followUps[1]!, /feeRoutingIntact/);
   const registryFollowUp = plan.followUps[3]!;
-  assert.match(registryFollowUp, /registry publication is separate and not automatic/i);
-  assert.match(registryFollowUp, /public_launches/);
-  assert.match(registryFollowUp, /launch transaction hash/);
-  assert.match(registryFollowUp, /subject/);
-  assert.match(registryFollowUp, /poolId/);
-  assert.match(registryFollowUp, /configId/);
-  assert.match(registryFollowUp, new RegExp(ROUTER, "i"));
-  assert.match(registryFollowUp, new RegExp(ADAPTER, "i"));
+  assert.match(registryFollowUp, /registry publication is automatic/i);
+  assert.match(registryFollowUp, /api\.sinjoh\.com\/v1\/launches\/\{subject\}/);
+  assert.match(registryFollowUp, /confirmation and indexing lag/i);
+  assert.match(registryFollowUp, /no manual publication is required/i);
+  assert.doesNotMatch(registryFollowUp, /hand off|registry operator|public_launches/i);
 
   const deployRaffle = plan.steps.find((step) => step.id === "deploy-raffle");
   const config = deployRaffle!.call.args[1] as RaffleConfig;
@@ -299,7 +296,8 @@ test("omitting the raffle collapses letscash to two steps and three follow-ups",
   });
   assert.deepEqual(plan.steps.map((step) => step.id), ["deploy-router", "deploy-adapter"]);
   assert.equal(plan.followUps.length, 3);
-  assert.match(plan.followUps[2]!, /registry publication is separate and not automatic/i);
+  assert.match(plan.followUps[2]!, /registry publication is automatic/i);
+  assert.match(plan.followUps[2]!, /no manual publication is required/i);
   assert.equal(plan.predicted.raffle, undefined);
 });
 
