@@ -47,9 +47,20 @@ export interface SinjohWalletExecutor {
   }): Promise<Hex>;
 }
 
-const AGENT_VERSION = (JSON.parse(
-  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
-) as { version: string }).version;
+function agentVersion() {
+  for (const relative of ["../../package.json", "../package.json"]) {
+    try {
+      return (JSON.parse(readFileSync(new URL(relative, import.meta.url), "utf8")) as {
+        version: string;
+      }).version;
+    } catch (error) {
+      if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+    }
+  }
+  throw new Error("could not locate @sinjoh/agent package.json");
+}
+
+const AGENT_VERSION = agentVersion();
 
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/).describe("20-byte hex address");
 const hex = z.string().regex(/^0x[0-9a-fA-F]*$/).describe("hex bytes");

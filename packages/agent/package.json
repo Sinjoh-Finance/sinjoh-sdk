@@ -42,7 +42,7 @@
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts && npm run build && node --input-type=module -e 'import(\"./dist/src/server.js\")'"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
