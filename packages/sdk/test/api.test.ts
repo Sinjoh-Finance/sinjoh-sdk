@@ -33,6 +33,25 @@ test("API client encodes path segments", async () => {
   assert.equal(requested, "https://api.sinjoh.com/v1/launches/address%2Fwith%20spaces");
 });
 
+test("API client exposes registry parity and fee-router launch filtering", async () => {
+  const requests: string[] = [];
+  const api = createSinjohApiClient({
+    baseUrl: "https://example.test",
+    fetch: async (input) => {
+      requests.push(String(input));
+      return Response.json({ chainId: 4663, registry: { ok: true } });
+    },
+  });
+
+  await api.getLaunchRegistryHealth();
+  await api.listLaunches({ feeRouter: "0xabc", limit: 100 });
+
+  assert.deepEqual(requests, [
+    "https://example.test/v1/health/registry",
+    "https://example.test/v1/launches?feeRouter=0xabc&limit=100",
+  ]);
+});
+
 test("API client returns stable structured errors", async () => {
   const api = createSinjohApiClient({
     fetch: async () => new Response(

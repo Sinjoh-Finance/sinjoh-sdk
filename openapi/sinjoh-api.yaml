@@ -41,6 +41,16 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ServiceIndex" }
         default: { $ref: "#/components/responses/Error" }
+  /v1/health/registry:
+    get:
+      operationId: getLaunchRegistryHealth
+      tags: [Service, Launches]
+      summary: Verify indexed launches are visible in the public registry
+      responses:
+        "429": { $ref: "#/components/responses/Error" }
+        "200": { $ref: "#/components/responses/LaunchRegistryHealth" }
+        "503": { $ref: "#/components/responses/LaunchRegistryHealth" }
+        default: { $ref: "#/components/responses/Error" }
   /v1/contracts:
     get:
       operationId: listContracts
@@ -86,6 +96,9 @@ paths:
           in: query
           schema: { type: string }
         - name: creator
+          in: query
+          schema: { $ref: "#/components/schemas/Address" }
+        - name: feeRouter
           in: query
           schema: { $ref: "#/components/schemas/Address" }
       responses:
@@ -423,6 +436,42 @@ components:
           required: [raffle]
           properties:
             raffle: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+    LaunchRegistryFailure:
+      type: object
+      required: [subject, code]
+      properties:
+        subject: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        code:
+          type: string
+          enum: [missing_subject, malformed_address, malformed_config_hash, unsupported_launchpad, publication_failed]
+    LaunchRegistry:
+      type: object
+      required: [ok, indexed, registered, visible, suppressed, promoted, inserted, missing, missingSubjects, failures, indexedByLaunchpad, visibleByLaunchpad, supportedLaunchpads]
+      properties:
+        ok: { type: boolean }
+        error: { type: string, enum: [reconciliation_unavailable] }
+        indexed: { type: integer, minimum: 0 }
+        registered: { type: integer, minimum: 0 }
+        visible: { type: integer, minimum: 0 }
+        suppressed: { type: integer, minimum: 0 }
+        promoted: { type: integer, minimum: 0 }
+        inserted: { type: integer, minimum: 0 }
+        missing: { type: integer, minimum: 0 }
+        missingSubjects:
+          type: array
+          items: { $ref: "#/components/schemas/Address" }
+        failures:
+          type: array
+          items: { $ref: "#/components/schemas/LaunchRegistryFailure" }
+        indexedByLaunchpad:
+          type: object
+          additionalProperties: { type: integer, minimum: 0 }
+        visibleByLaunchpad:
+          type: object
+          additionalProperties: { type: integer, minimum: 0 }
+        supportedLaunchpads:
+          type: array
+          items: { type: string }
     Market:
       type: object
       required: [subject, launchpad, quoteAsset, totalQuote, tradeCount, updatedAtBlock, updatedAtTimestamp]
@@ -774,6 +823,16 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
+    LaunchRegistryHealth:
+      description: Indexed-to-public launch registry parity. HTTP 503 means publication is incomplete or reconciliation is unavailable.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [chainId, registry]
+            properties:
+              chainId: { type: integer, const: 4663 }
+              registry: { $ref: "#/components/schemas/LaunchRegistry" }
     ContractList:
       description: Deployment page
       content:

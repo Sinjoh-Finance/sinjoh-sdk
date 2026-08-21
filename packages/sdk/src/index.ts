@@ -94,6 +94,7 @@ export {
   type CreateSinjohApiClientOptions, type DeploymentRecord, type EvmAddress,
   type FundingBandRecord, type FundingBandsAccountRecord, type HexValue,
   type IndexedRecord, type JsonPrimitive, type JsonValue, type LaunchRecord,
+  type LaunchRegistryFailure, type LaunchRegistryHealth,
   type LiquidityAccountRecord, type MarketHourRecord, type MarketRecord,
   type MarketTradeRecord, type Page, type PageOptions, type ProtocolEventRecord,
   type RafflePrizeRecord, type RaffleRecord, type RaffleRoundRecord,

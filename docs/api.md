@@ -283,7 +283,13 @@ Errors have a stable machine slug and a human message:
 import { createSinjohApiClient } from "@sinjoh/sdk";
 
 const api = createSinjohApiClient();
-const { launches } = await api.listLaunches({ limit: 10 });
+const { registry } = await api.getLaunchRegistryHealth();
+if (!registry.ok) throw new Error("Launch registry is out of sync");
+
+const { launches } = await api.listLaunches({
+  feeRouter: "0x...",
+  limit: 10,
+});
 const raffle = await api.getRaffle(launches[0].subject);
 ```
 
