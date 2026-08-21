@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -41,7 +42,35 @@ jobs:
         run: npm ci
 
       - name: Verify tag and package versions
-        run: node tools/verify-release.mjs "${RELEASE_TAG}"
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          node tools/verify-release.mjs "${RELEASE_TAG}"
+
+      - name: Read ABI source commit
+        id: abi-source
+        run: |
+          commit="$(sed -n 's/export const abiSourceCommit = "\([0-9a-f]*\)";/\1/p' packages/abis/src/generated/meta.ts)"
+          test "${#commit}" -eq 40
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Sinjoh-Finance/sinjoh-contracts
+          ref: ${{ steps.abi-source.outputs.commit }}
+          path: .abi-contracts
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+
+      - name: Verify generated release sources
+        run: |
+          while IFS= read -r manifest; do
+            (cd "$(dirname "$manifest")" && forge build)
+          done < <(find .abi-contracts -mindepth 2 -maxdepth 2 -name foundry.toml -print | sort)
+          SINJOH_CONTRACTS_ROOT="$PWD/.abi-contracts" npm run generate:abis
+          npm run generate:deployments
+          git diff --exit-code -- packages/abis/src/generated packages/abis/src/index.ts packages/deployments/src/generated
 
       - name: Release gates
         run: |

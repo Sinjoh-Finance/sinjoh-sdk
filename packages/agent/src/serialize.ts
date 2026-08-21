@@ -10,15 +10,21 @@ export function toJson(value: unknown): string {
   );
 }
 
+/** Convert SDK values into the exact JSON-safe shape sent over MCP transports. */
+export function toJsonValue<T = unknown>(value: T): T {
+  return JSON.parse(toJson(value)) as T;
+}
+
 /** A text-content MCP tool result. */
 export function textResult(value: unknown): {
   content: { type: "text"; text: string }[];
   structuredContent?: Record<string, unknown>;
 } {
+  const normalized = toJsonValue(value);
   return {
-    content: [{ type: "text", text: toJson(value) }],
-    ...(typeof value === "object" && value !== null && !Array.isArray(value)
-      ? { structuredContent: value as Record<string, unknown> }
+    content: [{ type: "text", text: JSON.stringify(normalized, null, 2) }],
+    ...(typeof normalized === "object" && normalized !== null && !Array.isArray(normalized)
+      ? { structuredContent: normalized as Record<string, unknown> }
       : {}),
   };
 }
@@ -26,8 +32,25 @@ export function textResult(value: unknown): {
 /** An MCP error result carrying the failure as readable text. */
 export function errorResult(error: unknown): {
   content: { type: "text"; text: string }[];
+  structuredContent: Record<string, unknown>;
   isError: true;
 } {
   const message = error instanceof Error ? error.message : String(error);
-  return { content: [{ type: "text", text: message }], isError: true };
+  const record = typeof error === "object" && error !== null
+    ? error as Record<string, unknown>
+    : {};
+  const details = toJsonValue({
+    name: error instanceof Error ? error.name : "Error",
+    message,
+    ...(typeof record.status === "number" ? { status: record.status } : {}),
+    ...(typeof record.code === "string" ? { code: record.code } : {}),
+    ...(typeof record.requestId === "string" || record.requestId === null
+      ? { requestId: record.requestId }
+      : {}),
+  });
+  return {
+    content: [{ type: "text", text: message }],
+    structuredContent: details,
+    isError: true,
+  };
 }

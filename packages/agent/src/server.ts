@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/server";
+import { readFileSync } from "node:fs";
 import { z } from "zod";
 import type { Address, Hex, PublicClient } from "viem";
 import { allVerified, verifyManifest, type ChainManifest } from "@sinjoh/deployments";
@@ -27,7 +28,7 @@ import { errorResult, textResult } from "./serialize.js";
 
 export interface SinjohAgentContext {
   client: PublicClient;
-  manifest: Pick<ChainManifest, "chainId" | "contracts">;
+  manifest: Pick<ChainManifest, "chainId" | "contracts"> & Partial<Pick<ChainManifest, "dependencies">>;
   /** Defaults to the keyless production API client. */
   api?: SinjohApiClient;
   /** Optional host-owned wallet. When present, the server can simulate and submit calls. */
@@ -38,11 +39,17 @@ export interface SinjohWalletExecutor {
   account: Address;
   chainId: number;
   sendTransaction(request: {
+    account: Address;
+    chainId: number;
     to: Address;
     data: Hex;
     value: bigint;
   }): Promise<Hex>;
 }
+
+const AGENT_VERSION = (JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+) as { version: string }).version;
 
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/).describe("20-byte hex address");
 const hex = z.string().regex(/^0x[0-9a-fA-F]*$/).describe("hex bytes");
@@ -58,7 +65,7 @@ const READ_ONLY = {
 
 export function createSinjohAgentServer(context: SinjohAgentContext): McpServer {
   const server = new McpServer(
-    { name: "sinjoh", version: "1.0.0" },
+    { name: "sinjoh", version: AGENT_VERSION },
     {
       instructions: "Use API tools for discovery and indexed history. Use chain tools for "
         + "live verification, reads, planning, and prepared calls. Wallet activity is not a "
@@ -68,6 +75,13 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
   );
   const { client, manifest } = context;
   const api = context.api ?? createSinjohApiClient();
+  const clientChainId = client.chain?.id;
+  if (clientChainId !== undefined && clientChainId !== manifest.chainId) {
+    throw new Error(`client chain ${clientChainId} does not match manifest chain ${manifest.chainId}`);
+  }
+  if (context.wallet && clientChainId === undefined) {
+    throw new Error("wallet execution requires a public client bound to an explicit chain");
+  }
   if (context.wallet && context.wallet.chainId !== manifest.chainId) {
     throw new Error(`wallet chain ${context.wallet.chainId} does not match manifest chain ${manifest.chainId}`);
   }
@@ -458,6 +472,7 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
       limit,
       launchpad: z.string().optional().describe("launches only"),
       creator: address.optional().describe("launches only"),
+      feeRouter: address.optional().describe("launches only"),
       contractType: z.string().optional().describe("contracts only"),
     }),
     annotations: READ_ONLY,
@@ -478,6 +493,7 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
             ...paging,
             ...(args.launchpad === undefined ? {} : { launchpad: args.launchpad }),
             ...(args.creator === undefined ? {} : { creator: args.creator }),
+            ...(args.feeRouter === undefined ? {} : { feeRouter: args.feeRouter }),
           }));
         case "raffles": return textResult(await api.listRaffles(paging));
         case "airdrops": return textResult(await api.listAirdropAccounts(paging));
@@ -591,6 +607,19 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
     }
   });
 
+  server.registerTool("sinjoh_registry_health", {
+    description: "Reconcile the indexed launch projection with the public registry and return "
+      + "the full diagnostic body even when publication is currently unhealthy.",
+    inputSchema: z.object({}),
+    annotations: READ_ONLY,
+  }, async () => {
+    try {
+      return textResult(await api.getLaunchRegistryHealth());
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
   if (context.wallet) {
     const wallet = context.wallet;
     server.registerTool("sinjoh_execute_transaction", {
@@ -613,8 +642,10 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
         openWorldHint: true,
       },
     }, async (args) => {
+      const simulatedAccount = wallet.account;
+      const simulatedChainId = wallet.chainId;
       const request = {
-        account: wallet.account,
+        account: simulatedAccount,
         to: args.to as Address,
         data: args.data as Hex,
         value: BigInt(args.value),
@@ -624,15 +655,22 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
       } catch (error) {
         return errorResult(error);
       }
-      if (wallet.chainId !== manifest.chainId) {
+      if (wallet.chainId !== simulatedChainId || wallet.chainId !== manifest.chainId) {
         return errorResult(new Error(
           `wallet chain changed to ${wallet.chainId} after simulation; expected ${manifest.chainId}`,
+        ));
+      }
+      if (wallet.account.toLowerCase() !== simulatedAccount.toLowerCase()) {
+        return errorResult(new Error(
+          `wallet account changed to ${wallet.account} after simulation; expected ${simulatedAccount}`,
         ));
       }
 
       let transactionHash: Hex;
       try {
         transactionHash = await wallet.sendTransaction({
+          account: simulatedAccount,
+          chainId: simulatedChainId,
           to: request.to,
           data: request.data,
           value: request.value,
@@ -643,7 +681,7 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
 
       const submitted = {
         chainId: manifest.chainId,
-        account: wallet.account,
+        account: simulatedAccount,
         transactionHash,
       };
       if (!args.waitForReceipt) return textResult({ ...submitted, status: "submitted" });

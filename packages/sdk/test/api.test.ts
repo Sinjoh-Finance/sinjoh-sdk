@@ -52,6 +52,31 @@ test("API client exposes registry parity and fee-router launch filtering", async
   ]);
 });
 
+test("registry health preserves a conforming diagnostic body on HTTP 503", async () => {
+  const diagnostic = {
+    chainId: 4663,
+    registry: {
+      ok: false,
+      indexed: 2,
+      registered: 1,
+      visible: 1,
+      suppressed: 0,
+      promoted: 0,
+      inserted: 0,
+      missing: 1,
+      missingSubjects: ["0x0000000000000000000000000000000000000001"],
+      failures: [],
+      indexedByLaunchpad: { flap: 2 },
+      visibleByLaunchpad: { flap: 1 },
+      supportedLaunchpads: ["flap"],
+    },
+  };
+  const api = createSinjohApiClient({
+    fetch: async () => Response.json(diagnostic, { status: 503 }),
+  });
+  assert.deepEqual(await api.getLaunchRegistryHealth(), diagnostic);
+});
+
 test("API client returns stable structured errors", async () => {
   const api = createSinjohApiClient({
     fetch: async () => new Response(

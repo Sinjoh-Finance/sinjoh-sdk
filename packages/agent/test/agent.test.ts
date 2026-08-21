@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import type { Address, Hex, PublicClient } from "viem";
-import type { SinjohApiClient } from "@sinjoh/sdk";
+import { SinjohApiError, type SinjohApiClient } from "@sinjoh/sdk";
 import {
   createSinjohAgentServer,
   type SinjohWalletExecutor,
 } from "../src/server.js";
+import { errorResult } from "../src/serialize.js";
 
 const ROUTER = "0x00000000000000000000000000000000000000aa" as Address;
 const WETH = "0x00000000000000000000000000000000000000e1" as Address;
@@ -40,6 +41,7 @@ function stubChain(hooks: ChainHooks = {}): PublicClient {
     [`walletOwed:["${SUBJECT}","${WETH}"]`]: 0n
   };
   return {
+    chain: { id: 4663 },
     readContract: async (args: { functionName: string; args?: readonly unknown[] }) => {
       hooks.onRead?.(args);
       if (args.functionName === "minimumOutput") return [12n, 1234];
@@ -80,11 +82,16 @@ async function connectedClient(
         service: "sinjoh-api", version: "1.0.0", chainId: 4663,
         network: "Robinhood Chain mainnet", auth: "keyless", endpoints: {},
         docs: "https://example.test/docs", openapi: "https://example.test/openapi",
+        supportedLaunchpads: ["flap"],
       }),
       listLaunches: async () => ({
         chainId: 4663,
         launches: [],
         page: { number: 1, size: 25, hasMore: false },
+      }),
+      getLaunchRegistryHealth: async () => ({
+        chainId: 4663,
+        registry: { ok: true, indexed: 1 },
       }),
     } as unknown as SinjohApiClient,
     ...(wallet === undefined ? {} : { wallet }),
@@ -113,7 +120,7 @@ test("exposes the full read/plan/validate tool surface", async () => {
     "sinjoh_discover", "sinjoh_get", "sinjoh_history", "sinjoh_manifest",
     "sinjoh_plan_flap_launch", "sinjoh_plan_letscash_integration",
     "sinjoh_plan_ponsv2_launch", "sinjoh_plan_router_work", "sinjoh_preflight_guard",
-    "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest",
+    "sinjoh_registry_health", "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest",
     "sinjoh_wallet_activity"
   ]);
   for (const tool of tools) {
@@ -140,6 +147,18 @@ test("public API MCP tools return structured content", async () => {
   await client.close();
 });
 
+test("MCP errors preserve API status, code, and request identity", () => {
+  const result = errorResult(new SinjohApiError(429, "rate_limited", "slow down", "request-7"));
+  assert.deepEqual(result.structuredContent, {
+    name: "SinjohApiError",
+    message: "slow down",
+    status: 429,
+    code: "rate_limited",
+    requestId: "request-7",
+  });
+  assert.doesNotThrow(() => JSON.stringify(result));
+});
+
 test("manifest lookup returns entries and rejects unknown keys", async () => {
   const client = await connectedClient();
   const all = JSON.parse(text(await client.callTool({
@@ -154,15 +173,21 @@ test("manifest lookup returns entries and rejects unknown keys", async () => {
   await client.close();
 });
 
-test("plan_router_work serializes amounts as decimal strings", async () => {
+test("plan_router_work serializes amounts as decimal strings in every MCP payload", async () => {
   const client = await connectedClient();
-  const plan = JSON.parse(text(await client.callTool({
+  const result = await client.callTool({
     name: "sinjoh_plan_router_work", arguments: { router: ROUTER }
-  })));
+  });
+  const plan = JSON.parse(text(result));
   assert.equal(plan.actions.length, 1);
   assert.equal(plan.actions[0].kind, "sync");
   assert.equal(plan.actions[0].amount, "41", "bigint crossed the wire as a decimal string");
   assert.equal(plan.router.subject, SUBJECT);
+  assert.doesNotThrow(() => JSON.stringify(result), "the stdio transport can serialize structuredContent");
+  assert.equal(
+    (result.structuredContent as { actions: Array<{ amount: string }> }).actions[0]?.amount,
+    "41",
+  );
   await client.close();
 });
 
@@ -201,7 +226,9 @@ test("host wallet execution simulates before signing and can wait for a receipt"
   }, {
     account: SUBJECT,
     chainId: 4663,
-    sendTransaction: async ({ to, data, value }) => {
+    sendTransaction: async ({ account, chainId, to, data, value }) => {
+      assert.equal(account, SUBJECT);
+      assert.equal(chainId, 4663);
       assert.equal(to, ROUTER);
       assert.equal(data, "0x1234");
       assert.equal(value, 7n);
@@ -216,15 +243,85 @@ test("host wallet execution simulates before signing and can wait for a receipt"
   assert.equal(execute?.annotations?.destructiveHint, true);
   assert.equal(execute?.annotations?.idempotentHint, false);
 
-  const result = JSON.parse(text(await client.callTool({
+  const wireResult = await client.callTool({
     name: "sinjoh_execute_transaction",
     arguments: { to: ROUTER, data: "0x1234", value: "7", waitForReceipt: true },
-  })));
+  });
+  const result = JSON.parse(text(wireResult));
   assert.equal(result.transactionHash, hash);
   assert.equal(result.status, "confirmed");
   assert.equal(result.receipt.status, "success");
   assert.equal(result.receipt.blockNumber, "123");
+  assert.doesNotThrow(() => JSON.stringify(wireResult), "confirmed receipts are safe on stdio");
   assert.deepEqual(steps, ["simulate", "sign", "receipt"]);
+  await client.close();
+});
+
+test("wallet execution refuses account changes between simulation and signing", async () => {
+  let signed = false;
+  const wallet: SinjohWalletExecutor = {
+    account: SUBJECT,
+    chainId: 4663,
+    sendTransaction: async () => {
+      signed = true;
+      return `0x${"44".repeat(32)}` as Hex;
+    },
+  };
+  const client = await connectedClient({
+    onCall: () => { wallet.account = WETH; },
+  }, wallet);
+  const result = await client.callTool({
+    name: "sinjoh_execute_transaction",
+    arguments: { to: ROUTER, data: "0x1234" },
+  });
+  assert.equal(result.isError, true);
+  assert.equal(signed, false);
+  await client.close();
+});
+
+test("wallet execution rejects a public client bound to another chain", () => {
+  const client = stubChain();
+  Object.assign(client, { chain: { id: 999 } });
+  assert.throws(() => createSinjohAgentServer({
+    client,
+    manifest: { chainId: 4663, contracts: {} },
+    wallet: {
+      account: SUBJECT,
+      chainId: 4663,
+      sendTransaction: async () => `0x${"45".repeat(32)}` as Hex,
+    },
+  }), /client chain 999/);
+});
+
+test("registry health and fee-router filtering are exposed through MCP", async () => {
+  const feeRouter = ROUTER;
+  let seenFeeRouter: string | undefined;
+  const server = createSinjohAgentServer({
+    client: stubChain(),
+    manifest: { chainId: 4663, contracts: {} },
+    api: {
+      listLaunches: async (options: Parameters<SinjohApiClient["listLaunches"]>[0]) => {
+        seenFeeRouter = options?.feeRouter;
+        return { chainId: 4663, launches: [], page: { number: 1, size: 25, hasMore: false } };
+      },
+      getLaunchRegistryHealth: async () => ({
+        chainId: 4663,
+        registry: { ok: false, missing: 1 },
+      }),
+    } as unknown as SinjohApiClient,
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: "test", version: "0.0.1" });
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+  await client.callTool({
+    name: "sinjoh_discover",
+    arguments: { resource: "launches", feeRouter },
+  });
+  assert.equal(seenFeeRouter, feeRouter);
+  const health = JSON.parse(text(await client.callTool({
+    name: "sinjoh_registry_health", arguments: {},
+  })));
+  assert.equal(health.registry.ok, false);
   await client.close();
 });
 

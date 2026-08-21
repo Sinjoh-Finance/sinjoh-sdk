@@ -16,7 +16,8 @@ export type GuardPreflight =
   | { status: "ok"; minOut: bigint; validUntil: number }
   | { status: "oracle-not-ready" | "price-moved" | "interval-locked"; errorName: string;
     guidance?: string }
-  | { status: "reverted"; errorName?: string; guidance?: string };
+  | { status: "reverted"; errorName?: string; guidance?: string }
+  | { status: "unavailable"; message: string };
 
 export interface GuardPreflightInput {
   guard: Address;
@@ -46,7 +47,12 @@ function classify(error: unknown): GuardPreflight {
       }
     }
   }
-  if (errorName === undefined) return { status: "reverted" };
+  if (errorName === undefined) {
+    return {
+      status: "unavailable",
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
   const guidance = errorGuidance[errorName];
   const status = STATUS_BY_ERROR[errorName] ?? "reverted";
   return { status, errorName, ...(guidance === undefined ? {} : { guidance }) };

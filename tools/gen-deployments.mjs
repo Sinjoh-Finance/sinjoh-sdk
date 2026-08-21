@@ -35,6 +35,9 @@ function collect(section, prefix, into) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (typeof value === "string") {
       if (ADDRESS.test(value)) into[path] = { address: getAddress(value) };
+      else if (value.startsWith("0x") && value.length === 42) {
+        fail(`${path}: invalid address ${value}`);
+      }
       continue; // notes, dates, commit hashes
     }
     if (value === null || typeof value !== "object" || Array.isArray(value)) continue;
@@ -59,13 +62,21 @@ function collect(section, prefix, into) {
         else entry.runtimeCodeHash = value.runtimeCodeHash.toLowerCase();
       }
       if (typeof value.purpose === "string") entry.purpose = value.purpose;
-      if (typeof value.implementation === "string" && ADDRESS.test(value.implementation)) {
-        entry.implementation = getAddress(value.implementation);
+      if (value.implementation !== undefined) {
+        if (typeof value.implementation !== "string" || !ADDRESS.test(value.implementation)) {
+          fail(`${path}: invalid implementation`);
+        } else {
+          entry.implementation = getAddress(value.implementation);
+        }
       }
-      if (typeof value.implementationRuntimeCodeHash === "string"
-        && HASH32.test(value.implementationRuntimeCodeHash)) {
-        entry.implementationRuntimeCodeHash =
-          value.implementationRuntimeCodeHash.toLowerCase();
+      if (value.implementationRuntimeCodeHash !== undefined) {
+        if (typeof value.implementationRuntimeCodeHash !== "string"
+          || !HASH32.test(value.implementationRuntimeCodeHash)) {
+          fail(`${path}: invalid implementationRuntimeCodeHash`);
+        } else {
+          entry.implementationRuntimeCodeHash =
+            value.implementationRuntimeCodeHash.toLowerCase();
+        }
       }
       into[path] = entry;
       continue;

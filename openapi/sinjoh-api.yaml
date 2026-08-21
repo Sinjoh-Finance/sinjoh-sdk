@@ -440,10 +440,10 @@ components:
       type: object
       required: [subject, code]
       properties:
-        subject: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+        subject: { type: [string, "null"] }
         code:
           type: string
-          enum: [missing_subject, malformed_address, malformed_config_hash, unsupported_launchpad, publication_failed]
+          enum: [missing_subject, malformed_address, malformed_config_hash, unsupported_launchpad, empty_index_projection, publication_failed]
     LaunchRegistry:
       type: object
       required: [ok, indexed, registered, visible, suppressed, promoted, inserted, missing, missingSubjects, failures, indexedByLaunchpad, visibleByLaunchpad, supportedLaunchpads]
@@ -724,7 +724,7 @@ components:
         amount0: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
         amount1: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
         amount2: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
-        reference: { oneOf: [{ $ref: "#/components/schemas/Bytes32" }, { type: "null" }] }
+        reference: { type: [string, "null"] }
         success: { type: [boolean, "null"] }
         blockNumber: { $ref: "#/components/schemas/ExactInteger" }
         blockHash: { $ref: "#/components/schemas/Bytes32" }
@@ -788,7 +788,7 @@ components:
         fetchedAt: { type: string, format: date-time }
     ServiceIndex:
       type: object
-      required: [service, version, chainId, network, auth, capacity, endpoints, pagination, docs, openapi]
+      required: [service, version, chainId, network, auth, capacity, endpoints, pagination, docs, openapi, supportedLaunchpads]
       properties:
         service: { type: string, const: sinjoh-api }
         version: { type: string }
@@ -811,6 +811,9 @@ components:
         pagination: { type: string }
         docs: { type: string, format: uri }
         openapi: { type: string, format: uri }
+        supportedLaunchpads:
+          type: array
+          items: { type: string }
     Error:
       type: object
       required: [error, message]

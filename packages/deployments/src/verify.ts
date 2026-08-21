@@ -24,14 +24,23 @@ export interface VerificationResult {
  */
 export async function verifyManifest(
   client: CodeReader,
-  manifest: Pick<ChainManifest, "contracts">,
+  manifest: Pick<ChainManifest, "contracts"> & Partial<Pick<ChainManifest, "dependencies">>,
   options: { keys?: readonly string[] } = {}
 ): Promise<VerificationResult[]> {
-  const selected = options.keys ?? Object.keys(manifest.contracts);
+  const dependencies = manifest.dependencies ?? {};
+  const selected = options.keys ?? [
+    ...Object.keys(manifest.contracts),
+    ...Object.keys(dependencies).map((key) => `dependencies.${key}`),
+  ];
   const results: VerificationResult[] = [];
   for (const key of selected) {
-    const entry: DeploymentEntry | undefined = manifest.contracts[key];
+    const dependencyKey = key.startsWith("dependencies.") ? key.slice("dependencies.".length) : null;
+    const contractKey = key.startsWith("contracts.") ? key.slice("contracts.".length) : key;
+    const entry: DeploymentEntry | undefined = dependencyKey === null
+      ? manifest.contracts[contractKey]
+      : dependencies[dependencyKey];
     if (!entry) throw new Error(`manifest has no entry for ${key}`);
+    const resultPrefix = dependencyKey === null ? contractKey : `dependencies.${dependencyKey}`;
     const verifyAddress = async (resultKey: string, address: Address, expected: Hex) => {
       const code = await client.getCode({ address });
       const actual = code && code !== "0x" ? keccak256(code) : null;
@@ -44,14 +53,14 @@ export async function verifyManifest(
       });
     };
     if (entry.runtimeCodeHash) {
-      await verifyAddress(key, entry.address, entry.runtimeCodeHash);
+      await verifyAddress(resultPrefix, entry.address, entry.runtimeCodeHash);
     }
     if (entry.implementationRuntimeCodeHash && !entry.implementation) {
       throw new Error(`${key} has an implementation hash but no implementation address`);
     }
     if (entry.implementation && entry.implementationRuntimeCodeHash) {
       await verifyAddress(
-        `${key}.implementation`, entry.implementation, entry.implementationRuntimeCodeHash
+        `${resultPrefix}.implementation`, entry.implementation, entry.implementationRuntimeCodeHash
       );
     }
   }

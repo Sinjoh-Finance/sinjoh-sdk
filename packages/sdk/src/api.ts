@@ -32,6 +32,7 @@ export interface ApiIndex {
   pagination: string;
   docs: string;
   openapi: string;
+  supportedLaunchpads: string[];
 }
 
 export interface DeploymentRecord {
@@ -60,12 +61,13 @@ export interface LaunchRecord {
 }
 
 export interface LaunchRegistryFailure {
-  subject: `0x${string}` | null;
+  subject: string | null;
   code:
     | "missing_subject"
     | "malformed_address"
     | "malformed_config_hash"
     | "unsupported_launchpad"
+    | "empty_index_projection"
     | "publication_failed";
 }
 
@@ -363,7 +365,7 @@ export interface ProtocolEventRecord {
   amount0: string | null;
   amount1: string | null;
   amount2: string | null;
-  reference: HexValue | null;
+  reference: string | null;
   success: boolean | null;
   blockNumber: string;
   blockHash: HexValue;
@@ -456,7 +458,7 @@ export function createSinjohApiClient(
   const fetchFn = options.fetch ?? globalThis.fetch;
   if (typeof fetchFn !== "function") throw new Error("A Fetch API implementation is required.");
 
-  async function get<T>(path: string): Promise<T> {
+  async function get<T>(path: string, acceptedStatuses: readonly number[] = []): Promise<T> {
     const response = await fetchFn(`${baseUrl}${path}`, {
       method: "GET",
       ...(options.apiKey ? { headers: { "x-api-key": options.apiKey } } : {}),
@@ -468,7 +470,7 @@ export function createSinjohApiClient(
     } catch {
       throw new SinjohApiError(response.status, "invalid_response", "The Sinjoh API returned invalid JSON.", requestId);
     }
-    if (!response.ok) {
+    if (!response.ok && !acceptedStatuses.includes(response.status)) {
       const error = body as { error?: unknown; message?: unknown };
       throw new SinjohApiError(
         response.status,
@@ -482,7 +484,7 @@ export function createSinjohApiClient(
 
   return {
     index: () => get("/v1"),
-    getLaunchRegistryHealth: () => get("/v1/health/registry"),
+    getLaunchRegistryHealth: () => get("/v1/health/registry", [503]),
     listContracts: (value = {}) => get(`/v1/contracts${query(value)}`),
     getContract: (address) => get(`/v1/contracts/${segment(address)}`),
     listLaunches: (value = {}) => get(`/v1/launches${query(value)}`),

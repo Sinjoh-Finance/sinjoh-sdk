@@ -7,4 +7,4 @@ export {
   airdropSinkConfigFromWire, flapTokenParamsFromWire, liquiditySinkConfigFromWire,
   raffleConfigFromWire, resolvePlaceholders, routerConfigFromWire
 } from "./configs.js";
-export { textResult, toJson } from "./serialize.js";
+export { textResult, toJson, toJsonValue } from "./serialize.js";

@@ -3,6 +3,29 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.1.4 - 2026-08-21
+
+### Added
+
+- Added MCP registry-health discovery and fee-router filtering, including structured API error
+  details that agents can branch on reliably.
+- Added dependency runtime verification to the default manifest safety check.
+
+### Changed
+
+- Bound MCP simulation and submission to the same chain and account, and report provider outages
+  separately from on-chain guard reverts.
+- Expanded API types and OpenAPI discovery for dynamic launchpads and arbitrary event references.
+- Hardened immutable package releases by regenerating and diff-checking ABIs and deployments at
+  the tag being published.
+
+### Fixed
+
+- Made every MCP result JSON-safe before transport, including confirmed receipts with bigint
+  fields, so a submitted transaction always returns its hash instead of timing out after broadcast.
+- Preserved full registry-health diagnostics on HTTP 503 responses.
+- Rejected malformed deployment trust metadata instead of silently dropping it during generation.
+
 ## 1.1.3 - 2026-08-21
 
 ### Added
