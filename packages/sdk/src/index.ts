@@ -89,15 +89,25 @@ export {
 } from "./launch/letscash.js";
 
 export {
+  detectLaunchImageMimeType, inspectLaunchImage, launchImageAuthorizationTypedData,
+  launchImageBytes, MAX_LAUNCH_IMAGE_BYTES, MAX_LAUNCH_IMAGE_DIMENSION,
+  MAX_LAUNCH_IMAGE_PIXELS, prepareLaunchImageAuthorization,
+  validateLaunchImageAuthorization,
+  type LaunchImageAuthorization, type LaunchImageMimeType,
+  type PrepareLaunchImageAuthorizationInput
+} from "./images.js";
+
+export {
   createSinjohApiClient, SinjohApiError,
   type AirdropAccountRecord, type AirdropEpochRecord, type Amount, type ApiIndex,
   type CreateSinjohApiClientOptions, type DeploymentRecord, type EvmAddress,
   type FundingBandRecord, type FundingBandsAccountRecord, type HexValue,
-  type IndexedRecord, type JsonPrimitive, type JsonValue, type LaunchRecord,
+  type IndexedRecord, type JsonPrimitive, type JsonValue, type LaunchImageHealth,
+  type LaunchImageRecord, type LaunchRecord,
   type LaunchRegistryFailure, type LaunchRegistryHealth,
   type LiquidityAccountRecord, type MarketHourRecord, type MarketRecord,
   type MarketTradeRecord, type Page, type PageOptions, type ProtocolEventRecord,
   type RafflePrizeRecord, type RaffleRecord, type RaffleRoundRecord,
   type RaffleSnapshot, type RandomnessRequestRecord, type RevenueBalanceRecord,
-  type SinjohApiClient
+  type SinjohApiClient, type SinjohApiClientV2_1
 } from "./api.js";

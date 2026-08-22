@@ -1,7 +1,8 @@
 # Read Sinjoh protocol data in five minutes
 
 You will discover a live Sinjoh launch, inspect its protocol addresses, and read
-its raffle state. The API is public and read-only, so you need no wallet or key.
+its raffle state. These discovery routes are public and read-only, so you need no wallet or key;
+the separate artwork publication route requires a creator signature.
 
 ## What you need
 

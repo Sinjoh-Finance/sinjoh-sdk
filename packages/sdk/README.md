@@ -3,7 +3,8 @@
 The high-level TypeScript SDK for the immutable Sinjoh protocols on Robinhood Chain. It validates
 and encodes immutable configuration, verifies deployed code, reads live protocol state, plans
 launches and permissionless work, and returns prepared calls. It never holds keys, signs, or
-submits transactions.
+submits blockchain transactions. Its API client also supports an explicit creator-signed upload
+of canonical token artwork; no upload occurs unless the caller invokes that method.
 
 ## Install
 
@@ -68,6 +69,30 @@ import { createSinjohApiClient } from "@sinjoh/sdk";
 const api = createSinjohApiClient();
 const { launches } = await api.listLaunches({ limit: 10 });
 const history = await api.listEvents({ family: "raffle", limit: 25 });
+```
+
+To publish token artwork after the subject has been indexed, validate and hash the exact bytes,
+have the indexed creator sign the returned EIP-712 typed data, then upload those same bytes:
+
+```ts
+import {
+  createSinjohApiClient,
+  prepareLaunchImageAuthorization,
+} from "@sinjoh/sdk";
+
+const prepared = await prepareLaunchImageAuthorization({
+  chainId: 4663,
+  subject,
+  creator,
+  image,
+});
+const signature = await walletClient.signTypedData(prepared.typedData);
+await createSinjohApiClient().publishLaunchImage({
+  subject,
+  image: prepared.image,
+  authorization: prepared.authorization,
+  signature,
+});
 ```
 
 The API client needs no RPC provider. Use it for discovery, aggregates, and

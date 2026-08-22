@@ -1,8 +1,8 @@
 # Sinjoh API reference
 
-The Sinjoh API is a read-only JSON interface to public protocol data on
-Robinhood Chain mainnet. It combines live contract reads with indexed history.
-No API key is required.
+The Sinjoh API exposes public protocol data on Robinhood Chain mainnet plus one
+creator-signed write: canonical launch artwork publication. Reads combine live
+contract state with indexed history. No API key is required.
 
 ```text
 https://api.sinjoh.com
@@ -18,7 +18,7 @@ machine-readable contract is [OpenAPI 3.1](../openapi/sinjoh-api.yaml).
 | --- | --- |
 | Version | `v1` |
 | Chain | Robinhood Chain mainnet, chain ID `4663` |
-| Methods | `GET`, `OPTIONS` |
+| Methods | `GET`, creator-signed `POST`, `OPTIONS` |
 | Default access | 60 accepted requests per minute per IP |
 | Keyed access | Send a key only as `x-api-key` |
 | Pagination | `page` defaults to `1`; `limit` defaults to `25` and accepts `1`–`100` |
@@ -75,11 +75,65 @@ not need a separate registry handoff. Optional filters:
 | `page`, `limit` | Pagination |
 
 Each launch includes its subject token, creator, launchpad, fee router, adapter,
-deployment block, and feature addresses.
+deployment block, canonical `image` record (or `null`), and feature addresses.
+The image URL is content-addressed in Sinjoh-controlled storage; `sourceUrl` is
+provenance only and must not be used as a display fallback.
 
 ### `GET /v1/launches/{subject}`
 
 Returns the registered launch for a subject token address.
+
+### `POST /v1/launches/{subject}/image`
+
+Publishes PNG, JPEG, or WebP artwork after the indexed creator signs a short-lived
+EIP-712 authorization binding the subject, creator, SHA-256 hash, detected MIME type,
+byte length, and validity window. The server re-hashes the exact multipart bytes,
+checks file signatures and dimensions, verifies the signature (including contract
+wallets), then stores the image at an immutable Sinjoh-controlled path.
+
+Use the SDK instead of constructing the typed data by hand:
+
+```ts
+import {
+  createSinjohApiClient,
+  prepareLaunchImageAuthorization,
+} from "@sinjoh/sdk";
+
+const prepared = await prepareLaunchImageAuthorization({
+  chainId: 4663,
+  subject,
+  creator: account.address,
+  image: imageBytes,
+});
+const signature = await walletClient.signTypedData(prepared.typedData);
+const { image } = await createSinjohApiClient().publishLaunchImage({
+  subject,
+  image: prepared.image,
+  authorization: prepared.authorization,
+  signature,
+});
+```
+
+The launch must already be indexed, and the signer must match its indexed creator.
+A newer signed authorization may replace older artwork. Replays and automatic
+launchpad recovery cannot overwrite newer signed artwork. To bound immutable storage,
+each launch may publish at most ten distinct creator-authorized image revisions.
+
+### `GET /v1/health/images`
+
+Reports canonical image coverage without changing storage or registry state. `noSource` counts
+launches whose creator supplied no artwork at all; those are healthy and intentionally
+render with the client fallback. `failed` counts artwork that was supplied but could not
+be imported, and keeps the health response at HTTP 503 until repaired.
+
+### `POST /v1/images/reconcile`
+
+Sinjoh operations runs this authenticated, bounded, idempotent legacy recovery pass;
+it is not an integration endpoint. Recovery decodes
+the original Pons v1, Pons v2, Flap, letscash.fun, or pools.trade launch calldata,
+then copies allowlisted upstream artwork into Sinjoh storage. It exists for historical
+backfill and launchpads that predate signed publication; unsupported or unsafe sources
+remain explicit failures until the creator uses the universal signed upload.
 
 ## Markets
 

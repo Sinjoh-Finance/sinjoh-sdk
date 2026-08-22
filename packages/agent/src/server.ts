@@ -8,7 +8,8 @@ import {
   createSinjohApiClient,
   encodeAirdropSinkConfig, encodeLiquiditySinkConfig, encodeRaffleConfig, encodeRouterConfig,
   liquiditySinkConfigHash, planFlapLaunch, planLetsCashIntegration, planPonsV2Launch,
-  planRouterWork, preflightMinimumOutput, raffleConfigHash, readRouterSnapshot,
+  planRouterWork, preflightMinimumOutput, prepareLaunchImageAuthorization,
+  raffleConfigHash, readRouterSnapshot,
   routerConfigHash, validateAirdropSinkConfig, validateLiquiditySinkConfig,
   validateRaffleConfig, validateRouterConfig, type CodeReadClient,
   type SinjohApiClient
@@ -74,6 +75,29 @@ const READ_ONLY = {
   idempotentHint: true,
   openWorldHint: true,
 } as const;
+const launchImageAuthorization = z.object({
+  chainId: z.number().int().positive(),
+  subject: address,
+  creator: address,
+  imageSha256: bytes32,
+  imageMimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  imageBytes: z.number().int().min(1).max(2 * 1024 * 1024),
+  issuedAt: z.number().int().positive(),
+  expiresAt: z.number().int().positive(),
+});
+const imageBase64 = z.string().min(4).max(2_800_000)
+  .describe("base64-encoded PNG, JPEG, or WebP bytes; maximum decoded size 2 MB");
+
+function decodeImageBase64(value: string) {
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length % 4 !== 0) {
+    throw new Error("imageBase64 is not canonical base64");
+  }
+  const bytes = new Uint8Array(Buffer.from(value, "base64"));
+  if (Buffer.from(bytes).toString("base64") !== value) {
+    throw new Error("imageBase64 is not canonical base64");
+  }
+  return bytes;
+}
 
 export function createSinjohAgentServer(context: SinjohAgentContext): McpServer {
   const server = new McpServer(
@@ -469,6 +493,78 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
     }
   });
 
+  server.registerTool("sinjoh_prepare_launch_image", {
+    description: "Validate token artwork, hash its exact bytes, and return the short-lived "
+      + "creator-bound EIP-712 authorization that must be signed before publication. This "
+      + "does not upload or mutate anything.",
+    inputSchema: {
+      subject: address,
+      creator: address,
+      imageBase64,
+      issuedAt: z.number().int().positive().optional()
+        .describe("Unix seconds; defaults to the MCP host clock"),
+      lifetimeSeconds: z.number().int().min(30).max(600).default(300),
+    },
+    annotations: READ_ONLY,
+  }, async (args) => {
+    try {
+      const prepared = await prepareLaunchImageAuthorization({
+        chainId: manifest.chainId,
+        subject: args.subject,
+        creator: args.creator,
+        image: decodeImageBase64(args.imageBase64),
+        ...(args.issuedAt === undefined ? {} : { issuedAt: args.issuedAt }),
+        lifetimeSeconds: args.lifetimeSeconds,
+      });
+      return textResult({
+        authorization: prepared.authorization,
+        typedData: prepared.typedData,
+      });
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_publish_launch_image", {
+    description: "Upload exact token artwork to Sinjoh-controlled immutable storage after "
+      + "the indexed launch creator signs the authorization returned by "
+      + "sinjoh_prepare_launch_image. The API re-hashes and validates the image before writing.",
+    inputSchema: {
+      subject: address,
+      imageBase64,
+      authorization: launchImageAuthorization,
+      signature: hex.describe("creator EIP-712 signature over the returned typedData"),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  }, async (args) => {
+    try {
+      if (args.authorization.subject.toLowerCase() !== args.subject.toLowerCase()) {
+        throw new Error("authorization subject does not match the publication subject");
+      }
+      if (!("publishLaunchImage" in api) || typeof api.publishLaunchImage !== "function") {
+        throw new Error("The injected API client does not support launch image publication; use createSinjohApiClient() from SDK 2.1 or newer.");
+      }
+      return textResult(await api.publishLaunchImage({
+        subject: args.subject,
+        image: decodeImageBase64(args.imageBase64),
+        authorization: {
+          ...args.authorization,
+          subject: args.authorization.subject as Address,
+          creator: args.authorization.creator as Address,
+          imageSha256: args.authorization.imageSha256 as Hex,
+        },
+        signature: args.signature as Hex,
+      }));
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
   server.registerTool("sinjoh_api_capabilities", {
     description: "Discover the production Sinjoh API version, chain, capacity windows, "
       + "documentation, and complete endpoint catalog. Call this when choosing which public "
@@ -638,6 +734,22 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
   }, async () => {
     try {
       return textResult(await api.getLaunchRegistryHealth());
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_image_health", {
+    description: "Read canonical Sinjoh image coverage, missing subjects, and per-launchpad counts. "
+      + "This diagnostic does not run recovery or write state.",
+    inputSchema: z.object({}),
+    annotations: READ_ONLY,
+  }, async () => {
+    try {
+      if (!("getLaunchImageHealth" in api) || typeof api.getLaunchImageHealth !== "function") {
+        throw new Error("The injected API client does not support launch image health; use createSinjohApiClient() from SDK 2.1 or newer.");
+      }
+      return textResult(await api.getLaunchImageHealth());
     } catch (error) {
       return errorResult(error);
     }
