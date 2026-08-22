@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import type { Address, Hex, PublicClient } from "viem";
-import { SinjohApiError, type SinjohApiClient } from "@sinjoh/sdk";
+import { SinjohApiError, type SinjohApiClient, type SinjohApiClientV2_1 } from "@sinjoh/sdk";
 import {
   createSinjohAgentServer,
   type SinjohWalletExecutor,
@@ -66,6 +66,7 @@ function stubChain(hooks: ChainHooks = {}): PublicClient {
 async function connectedClient(
   hooks: ChainHooks = {},
   wallet?: SinjohWalletExecutor,
+  apiOverrides: Partial<SinjohApiClientV2_1> = {},
 ): Promise<Client> {
   const server = createSinjohAgentServer({
     client: stubChain(hooks),
@@ -100,6 +101,11 @@ async function connectedClient(
         chainId: 4663,
         registry: { ok: true, indexed: 1 },
       }),
+      getLaunchImageHealth: async () => ({
+        chainId: 4663,
+        images: { ok: true, registered: 1, canonical: 1, missing: 0 },
+      }),
+      ...apiOverrides,
     } as unknown as SinjohApiClient,
     ...(wallet === undefined ? {} : { wallet }),
   });
@@ -124,9 +130,11 @@ test("exposes the full read/plan/validate tool surface", async () => {
   const names = tools.map((tool) => tool.name).sort();
   assert.deepEqual(names, [
     "sinjoh_api_capabilities", "sinjoh_check_activation", "sinjoh_decode_error",
-    "sinjoh_discover", "sinjoh_get", "sinjoh_history", "sinjoh_manifest",
+    "sinjoh_discover", "sinjoh_get", "sinjoh_history", "sinjoh_image_health",
+    "sinjoh_manifest",
     "sinjoh_plan_flap_launch", "sinjoh_plan_letscash_integration",
     "sinjoh_plan_ponsv2_launch", "sinjoh_plan_router_work", "sinjoh_preflight_guard",
+    "sinjoh_prepare_launch_image", "sinjoh_publish_launch_image",
     "sinjoh_registry_health", "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest",
     "sinjoh_wallet_activity"
   ]);
@@ -137,6 +145,78 @@ test("exposes the full read/plan/validate tool surface", async () => {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.equal(tool?.annotations?.readOnlyHint, true, `${name} is annotated read-only`);
   }
+  await client.close();
+});
+
+test("MCP prepares and publishes the exact signed launch image payload", async () => {
+  let published: Parameters<SinjohApiClientV2_1["publishLaunchImage"]>[0] | undefined;
+  const client = await connectedClient({}, undefined, {
+    publishLaunchImage: async (input) => {
+      published = input;
+      return {
+        chainId: 4663,
+        subject: input.subject as Address,
+        image: {
+          url: "https://example.supabase.co/token.png",
+          sha256: input.authorization.imageSha256,
+          mimeType: input.authorization.imageMimeType,
+          bytes: input.authorization.imageBytes,
+          width: 32,
+          height: 32,
+          source: "signed",
+          sourceUrl: null,
+          launchpad: "pons-v2",
+          storedAt: "2026-08-22T12:00:00.000Z",
+        },
+      };
+    },
+  });
+  const png = Uint8Array.from(
+    atob("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAABAAAAAQBPJcTWAAAAEElEQVR4nGP8wwACLGCSAQANBAECv1AVswAAAABJRU5ErkJggg=="),
+    (value) => value.charCodeAt(0),
+  );
+  const image = Buffer.from(png).toString("base64");
+  const preparedResult = await client.callTool({
+    name: "sinjoh_prepare_launch_image",
+    arguments: {
+      subject: SUBJECT,
+      creator: ROUTER,
+      imageBase64: image,
+      issuedAt: 1_800_000_000,
+      lifetimeSeconds: 300,
+    },
+  });
+  const prepared = JSON.parse(text(preparedResult));
+  assert.equal(prepared.authorization.subject.toLowerCase(), SUBJECT.toLowerCase());
+  assert.equal(prepared.authorization.creator.toLowerCase(), ROUTER.toLowerCase());
+  assert.equal(prepared.authorization.imageMimeType, "image/png");
+  assert.equal(prepared.typedData.primaryType, "LaunchImageAuthorization");
+
+  const signature = `0x${"11".repeat(65)}`;
+  const publishedResult = await client.callTool({
+    name: "sinjoh_publish_launch_image",
+    arguments: {
+      subject: SUBJECT,
+      imageBase64: image,
+      authorization: prepared.authorization,
+      signature,
+    },
+  });
+  assert.equal(publishedResult.isError, undefined);
+  assert.equal(published?.subject, SUBJECT);
+  assert.equal(published?.signature, signature);
+  assert.equal(published?.authorization.imageSha256, prepared.authorization.imageSha256);
+  await client.close();
+});
+
+test("MCP fails clearly when an injected 2.0 API client lacks image capabilities", async () => {
+  const client = await connectedClient({}, undefined, {
+    getLaunchImageHealth: undefined,
+    publishLaunchImage: undefined,
+  } as unknown as Partial<SinjohApiClientV2_1>);
+  const result = await client.callTool({ name: "sinjoh_image_health", arguments: {} });
+  assert.equal(result.isError, true);
+  assert.match(text(result), /does not support launch image health/);
   await client.close();
 });
 

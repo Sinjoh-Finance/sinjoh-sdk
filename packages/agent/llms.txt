@@ -33,32 +33,37 @@ which anyone may forward to its governance-selected processor.
    capacity windows before choosing a data tool.
 2. `sinjoh_registry_health` — reconcile indexed launches against the public registry and
    inspect missing subjects or per-launchpad failures before depending on discovery coverage.
-3. `sinjoh_discover`, `sinjoh_get`, and `sinjoh_history` — query contracts, launches,
+3. `sinjoh_image_health` — read Sinjoh-controlled artwork coverage without mutating state and
+   distinguish deliberate no-artwork subjects from actual per-launchpad recovery failures.
+4. `sinjoh_discover`, `sinjoh_get`, and `sinjoh_history` — query contracts, launches,
    markets, raffles, airdrops, liquidity, Funding Bands, revenue, randomness, and normalized
    history. Use these for discovery and lists, not transaction authorization.
-4. `sinjoh_wallet_activity` — return wallet-attributed history. Never describe it as
+5. `sinjoh_wallet_activity` — return wallet-attributed history. Never describe it as
    claimable rewards; pending Merkle entitlements and delivery state require different proofs.
-5. `sinjoh_manifest` / `sinjoh_verify_manifest` — resolve deployed addresses, then prove the
+6. `sinjoh_manifest` / `sinjoh_verify_manifest` — resolve deployed addresses, then prove the
    live runtime code matches the recorded hashes. Never act on an unverified address.
-6. `sinjoh_router_snapshot` — read a router's immutable structure and binding state.
-7. `sinjoh_plan_router_work` — enumerate currently eligible permissionless actions with
+7. `sinjoh_router_snapshot` — read a router's immutable structure and binding state.
+8. `sinjoh_plan_router_work` — enumerate currently eligible permissionless actions with
    contract-capped amounts and prepared calls. Guarded actions carry the exact
    `guardPreflight` object required by the next step.
-8. `sinjoh_preflight_guard` — ask the immutable guard for the swap floor; explicit
+9. `sinjoh_preflight_guard` — ask the immutable guard for the swap floor; explicit
    oracle-not-ready / price-moved / interval-locked states replace blind reverts, while
    `unavailable` means the provider failed and must not be reported as an on-chain rejection. Forward
    the plan's route hash and guard data unchanged; signed guards bind them.
-9. `sinjoh_check_activation` — run the launch wiring checklist; show active only when all pass.
-10. `sinjoh_validate_config` — validate and canonically encode router, raffle, and sink configs
+10. `sinjoh_check_activation` — run the launch wiring checklist; show active only when all pass.
+11. `sinjoh_validate_config` — validate and canonically encode router, raffle, and sink configs
    offline; the returned configHash is the on-chain identity.
-11. `sinjoh_plan_ponsv2_launch`, `sinjoh_plan_flap_launch`, and
+12. `sinjoh_plan_ponsv2_launch`, `sinjoh_plan_flap_launch`, and
     `sinjoh_plan_letscash_integration` — resolve each launchpad family's circular
     predict/deploy/bind ordering into prepared calls with expected readbacks. pools.trade has
     no flow yet because its fork rehearsal does not exist. After any launch binds its subject,
     platform reconciliation publishes it automatically; verify it through `GET /v1/launches/{subject}`
     after normal confirmation and indexing lag. Never ask a builder for a manual registry handoff.
-12. `sinjoh_decode_error` — turn revert data into a named error plus operator guidance.
-13. `sinjoh_execute_transaction` — when and only when the MCP host injected a wallet,
+13. `sinjoh_prepare_launch_image` / `sinjoh_publish_launch_image` — hash the exact PNG/JPEG/WebP
+    bytes, have the indexed creator sign the returned short-lived EIP-712 typed data, then publish
+    those unchanged bytes to content-addressed Sinjoh storage. Recovery never overwrites signed art.
+14. `sinjoh_decode_error` — turn revert data into a named error plus operator guidance.
+15. `sinjoh_execute_transaction` — when and only when the MCP host injected a wallet,
     simulate a prepared call, then request signing/submission and optionally wait for its receipt.
 
 Prepared calls are portable data. A host without an injected wallet hands them to whatever wallet
@@ -81,6 +86,8 @@ merely because receipt polling timed out.
   missed window is a skipped round, never a reason to reuse a stale snapshot.
 - Upstream launchpads can repoint future fees away from Sinjoh; monitor redirects and label
   integrations inactive immediately. Value already received stays governed by Sinjoh.
+- A remote launchpad image URL is provenance, not a durable display URL. Require the canonical
+  `launch.image.url` or complete the signed image flow; never treat a gateway URL as stored.
 - Attestor commits, quote-floor signing, governance, and the ECVRF prover key are outside
   this surface by design. Do not attempt them.
 

@@ -5,11 +5,11 @@
 [![npm](https://img.shields.io/npm/v/@sinjoh/sdk.svg)](https://www.npmjs.com/package/@sinjoh/sdk)
 
 TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood
-Chain. It provides deterministic, side-effect-free building blocks for applications,
-keepers, and agents. The SDK prepares data and calls; it never holds keys, signs, or submits
-transactions.
+Chain. It provides deterministic planning and validation building blocks for applications,
+keepers, and agents, plus an explicit creator-authorized API upload for canonical token artwork.
+It never holds keys, signs, or submits blockchain transactions.
 
-> Release status: stable `1.1.3` source and package metadata, licensed under
+> Release status: stable `2.1.0` source and package metadata, licensed under
 > Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
 > publishing, with build provenance, after all deterministic release gates pass.
 
@@ -72,10 +72,10 @@ remain explicit in application UI.
 
 ## Public API and documentation
 
-The read-only Sinjoh API is live at [`https://api.sinjoh.com/v1`](https://api.sinjoh.com/v1).
+The Sinjoh API is live at [`https://api.sinjoh.com/v1`](https://api.sinjoh.com/v1).
 It covers contracts, launches, markets, raffles, airdrops, liquidity, Funding Bands,
-revenue, randomness, normalized events, and wallet-attributed history. No key is
-required for normal use.
+revenue, randomness, normalized events, wallet-attributed history, and creator-signed
+canonical launch artwork. No key is required for normal use.
 
 - [Five-minute tutorial](./docs/getting-started.md)
 - [Task recipes](./docs/how-to-query-sinjoh.md)

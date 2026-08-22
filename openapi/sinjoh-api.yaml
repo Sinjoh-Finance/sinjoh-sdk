@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Sinjoh API
-  version: 1.0.0
-  description: Read-only protocol data for Sinjoh on Robinhood Chain mainnet.
+  version: 1.2.0
+  description: Protocol data plus creator-signed launch image publication for Sinjoh on Robinhood Chain mainnet.
   license:
     name: Apache-2.0
     identifier: Apache-2.0
@@ -57,6 +57,39 @@ paths:
                 oneOf:
                   - { $ref: "#/components/schemas/LaunchRegistryHealthEnvelope" }
                   - { $ref: "#/components/schemas/Error" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/health/images:
+    get:
+      operationId: getLaunchImageHealth
+      tags: [Service, Launches]
+      summary: Read canonical launch image coverage without mutating state
+      responses:
+        "200": { $ref: "#/components/responses/LaunchImageHealth" }
+        "429": { $ref: "#/components/responses/Error" }
+        "503":
+          description: Image coverage is incomplete or recovery is unavailable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/LaunchImageHealthEnvelope" }
+                  - { $ref: "#/components/schemas/Error" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/images/reconcile:
+    post:
+      operationId: reconcileLaunchImages
+      tags: [Service, Launches]
+      summary: Run a bounded chain-derived legacy artwork recovery pass
+      description: This operations-only, idempotent maintenance write never accepts arbitrary image bytes; it imports only allowlisted launchpad metadata sources. New integrations should use creator-signed publication.
+      parameters:
+        - name: x-sinjoh-operations-secret
+          in: header
+          required: true
+          schema: { type: string, minLength: 32 }
+      responses:
+        "200": { $ref: "#/components/responses/LaunchImageHealth" }
+        "403": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
         default: { $ref: "#/components/responses/Error" }
   /v1/contracts:
     get:
@@ -129,6 +162,49 @@ paths:
                 required: [launch]
                 properties:
                   launch: { $ref: "#/components/schemas/Launch" }
+        default: { $ref: "#/components/responses/Error" }
+  /v1/launches/{subject}/image:
+    post:
+      operationId: publishLaunchImage
+      tags: [Launches]
+      summary: Publish creator-signed artwork to canonical Sinjoh storage
+      description: The API independently verifies the indexed creator, EIP-712 signature, exact byte hash, MIME signature, dimensions, and authorization lifetime.
+      parameters: [{ $ref: "#/components/parameters/Subject" }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, authorization, signature]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PNG, JPEG, or WebP; maximum 2 MB and 4096x4096.
+                authorization:
+                  type: string
+                  description: JSON-encoded LaunchImageAuthorization signed as EIP-712 typed data.
+                signature: { type: string, pattern: "^0x[0-9a-fA-F]+$" }
+      responses:
+        "200":
+          description: Canonical image record
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [chainId, subject, image]
+                properties:
+                  chainId: { type: integer, const: 4663 }
+                  subject: { $ref: "#/components/schemas/Address" }
+                  image: { $ref: "#/components/schemas/LaunchImage" }
+        "400": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "413": { $ref: "#/components/responses/Error" }
+        "415": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
         default: { $ref: "#/components/responses/Error" }
   /v1/markets/{subject}:
     get:
@@ -426,7 +502,7 @@ components:
         explorerUrl: { type: string, format: uri }
     Launch:
       type: object
-      required: [chainId, name, symbol, subject, creator, launchpad, feeRouter, adapter, deploymentBlock, features]
+      required: [chainId, name, symbol, subject, creator, launchpad, feeRouter, adapter, deploymentBlock, image, features]
       properties:
         id: { type: string, format: uuid }
         chainId: { type: integer, const: 4663 }
@@ -438,11 +514,75 @@ components:
         feeRouter: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
         adapter: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
         deploymentBlock: { oneOf: [{ $ref: "#/components/schemas/ExactInteger" }, { type: "null" }] }
+        image: { oneOf: [{ $ref: "#/components/schemas/LaunchImage" }, { type: "null" }] }
         features:
           type: object
           required: [raffle]
           properties:
             raffle: { oneOf: [{ $ref: "#/components/schemas/Address" }, { type: "null" }] }
+    LaunchImage:
+      type: object
+      required: [url, sha256, mimeType, bytes, width, height, source, sourceUrl, launchpad, storedAt]
+      properties:
+        url: { type: string, format: uri, pattern: "^https://" }
+        sha256: { $ref: "#/components/schemas/Bytes32" }
+        mimeType: { type: string, enum: [image/png, image/jpeg, image/webp] }
+        bytes: { type: integer, minimum: 1, maximum: 2097152 }
+        width: { type: integer, minimum: 1, maximum: 4096 }
+        height: { type: integer, minimum: 1, maximum: 4096 }
+        source: { type: string, enum: [signed, recovered] }
+        sourceUrl: { type: [string, "null"], format: uri }
+        launchpad: { type: string }
+        storedAt: { type: string, format: date-time }
+        authorization:
+          type: object
+          required: [creator, issuedAt, expiresAt]
+          properties:
+            creator: { $ref: "#/components/schemas/Address" }
+            issuedAt: { type: integer, minimum: 1 }
+            expiresAt: { type: integer, minimum: 1 }
+    LaunchImageHealth:
+      type: object
+      required: [ok, registered, canonical, missing, noSource, failed, repaired, missingSubjects, noSourceSubjects, failures, byLaunchpad]
+      properties:
+        ok: { type: boolean }
+        error: { type: string, enum: [image_health_unavailable] }
+        registered: { type: integer, minimum: 0 }
+        canonical: { type: integer, minimum: 0 }
+        missing: { type: integer, minimum: 0 }
+        noSource: { type: integer, minimum: 0, description: Launches for which no artwork was supplied by the creator. }
+        failed: { type: integer, minimum: 0 }
+        repaired: { type: integer, minimum: 0 }
+        missingSubjects:
+          type: array
+          items: { $ref: "#/components/schemas/Address" }
+        noSourceSubjects:
+          type: array
+          items: { $ref: "#/components/schemas/Address" }
+        failures:
+          type: array
+          items:
+            type: object
+            required: [subject, code]
+            properties:
+              subject: { $ref: "#/components/schemas/Address" }
+              code: { type: string }
+        byLaunchpad:
+          type: object
+          additionalProperties:
+            type: object
+            required: [registered, canonical, missing, noSource]
+            properties:
+              registered: { type: integer, minimum: 0 }
+              canonical: { type: integer, minimum: 0 }
+              missing: { type: integer, minimum: 0 }
+              noSource: { type: integer, minimum: 0 }
+    LaunchImageHealthEnvelope:
+      type: object
+      required: [chainId, images]
+      properties:
+        chainId: { type: integer, const: 4663 }
+        images: { $ref: "#/components/schemas/LaunchImageHealth" }
     LaunchRegistryFailure:
       type: object
       required: [subject, code]
@@ -844,6 +984,11 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/LaunchRegistryHealthEnvelope" }
+    LaunchImageHealth:
+      description: Canonical Sinjoh-hosted launch image coverage and recovery diagnostics.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/LaunchImageHealthEnvelope" }
     ContractList:
       description: Deployment page
       content:

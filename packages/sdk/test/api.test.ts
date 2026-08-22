@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createSinjohApiClient, SinjohApiError } from "../src/api.js";
+import { prepareLaunchImageAuthorization } from "../src/images.js";
 
 test("API client builds encoded, bounded public routes", async () => {
   const requests: Array<{ url: string; init?: RequestInit }> = [];
@@ -92,6 +93,37 @@ test("registry health rejects an unrelated middleware HTTP 503", async () => {
   );
 });
 
+test("image health preserves conforming 503 diagnostics but rejects unrelated failures", async () => {
+  const diagnostic = {
+    chainId: 4663,
+    images: {
+      ok: false,
+      registered: 2,
+      canonical: 1,
+      missing: 1,
+      noSource: 0,
+      failed: 1,
+      repaired: 0,
+      missingSubjects: ["0x0000000000000000000000000000000000000001"],
+      noSourceSubjects: [],
+      failures: [{ subject: "0x0000000000000000000000000000000000000001", code: "recovery_failed" }],
+      byLaunchpad: { flap: { registered: 2, canonical: 1, missing: 1, noSource: 0 } },
+    },
+  };
+  const diagnosticsApi = createSinjohApiClient({
+    fetch: async () => Response.json(diagnostic, { status: 503 }),
+  });
+  assert.deepEqual(await diagnosticsApi.getLaunchImageHealth(), diagnostic);
+
+  const unrelatedApi = createSinjohApiClient({
+    fetch: async () => Response.json({ error: "rate_limit_unavailable" }, { status: 503 }),
+  });
+  await assert.rejects(
+    () => unrelatedApi.getLaunchImageHealth(),
+    (error: unknown) => error instanceof SinjohApiError && error.code === "rate_limit_unavailable",
+  );
+});
+
 test("API client returns stable structured errors", async () => {
   const api = createSinjohApiClient({
     fetch: async () => new Response(
@@ -131,4 +163,47 @@ test("API client wraps a null JSON error body", async () => {
       && error.status === 503
       && error.code === "request_failed",
   );
+});
+
+test("API client publishes creator-signed artwork as multipart data", async () => {
+  let requested = "";
+  let requestInit: RequestInit | undefined;
+  const api = createSinjohApiClient({
+    baseUrl: "https://example.test",
+    apiKey: "key-1",
+    fetch: async (input, init) => {
+      requested = String(input);
+      requestInit = init;
+      return Response.json({ chainId: 4663, subject: "0x1", image: { url: "https://cdn.test/image.png" } });
+    },
+  });
+  const image = Uint8Array.from(
+    atob("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAABAAAAAQBPJcTWAAAAEElEQVR4nGP8wwACLGCSAQANBAECv1AVswAAAABJRU5ErkJggg=="),
+    (value) => value.charCodeAt(0),
+  );
+  const identity = {
+    chainId: 4663,
+    subject: "0x0000000000000000000000000000000000000001" as const,
+    creator: "0x0000000000000000000000000000000000000002" as const,
+    issuedAt: 1_800_000_000,
+  };
+  const { authorization } = await prepareLaunchImageAuthorization({
+    ...identity,
+    image,
+    lifetimeSeconds: 300,
+  });
+  await api.publishLaunchImage({
+    subject: authorization.subject,
+    image,
+    authorization,
+    signature: `0x${"22".repeat(65)}`,
+  });
+  assert.equal(requested, `https://example.test/v1/launches/${authorization.subject}/image`);
+  assert.equal(requestInit?.method, "POST");
+  assert.deepEqual(requestInit?.headers, { "x-api-key": "key-1" });
+  assert.ok(requestInit?.body instanceof FormData);
+  const form = requestInit.body as FormData;
+  assert.equal(form.get("signature"), `0x${"22".repeat(65)}`);
+  assert.deepEqual(JSON.parse(String(form.get("authorization"))), authorization);
+  assert.ok(form.get("file") instanceof Blob);
 });

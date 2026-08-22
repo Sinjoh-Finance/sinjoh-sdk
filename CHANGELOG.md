@@ -3,6 +3,22 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.1.0 - 2026-08-22
+
+### Added
+
+- Added creator-signed launch-artwork preparation and publication in the SDK and MCP, using
+  short-lived EIP-712 authorization over the exact image hash, type, and byte count.
+- Added canonical image records to launch responses and image-reconciliation health diagnostics,
+  including a separate state for launches whose creator intentionally supplied no artwork.
+
+### Changed
+
+- Validate PNG, JPEG, and WebP structure and dimensions before requesting a creator signature;
+  immutable publication remains limited to 2 MB and 4096 by 4096 pixels.
+- Documented automatic launchpad-specific recovery into Sinjoh-controlled content-addressed
+  storage and the UI fallback contract for launches without artwork.
+
 ## 2.0.0 - 2026-08-21
 
 This major release intentionally fails closed where 1.x accepted ambiguous API, wallet, or

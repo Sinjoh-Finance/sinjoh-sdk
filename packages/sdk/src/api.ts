@@ -57,7 +57,42 @@ export interface LaunchRecord {
   feeRouter: `0x${string}` | null;
   adapter: `0x${string}` | null;
   deploymentBlock: string | null;
+  /** Present on API 1.1+; optional in the SDK type so 2.0 object literals remain source-compatible. */
+  image?: LaunchImageRecord | null;
   features: { raffle: `0x${string}` | null };
+}
+
+export interface LaunchImageRecord {
+  url: string;
+  sha256: HexValue;
+  mimeType: "image/png" | "image/jpeg" | "image/webp";
+  bytes: number;
+  width: number;
+  height: number;
+  source: "signed" | "recovered";
+  sourceUrl: string | null;
+  launchpad: string;
+  storedAt: string;
+  authorization?: {
+    creator: EvmAddress;
+    issuedAt: number;
+    expiresAt: number;
+  };
+}
+
+export interface LaunchImageHealth {
+  ok: boolean;
+  error?: "image_health_unavailable";
+  registered: number;
+  canonical: number;
+  missing: number;
+  noSource: number;
+  failed: number;
+  repaired: number;
+  missingSubjects: EvmAddress[];
+  noSourceSubjects: EvmAddress[];
+  failures: Array<{ subject: EvmAddress; code: string }>;
+  byLaunchpad: Record<string, { registered: number; canonical: number; missing: number; noSource: number }>;
 }
 
 export interface LaunchRegistryFailure {
@@ -390,7 +425,7 @@ export class SinjohApiError extends Error {
 }
 
 export interface CreateSinjohApiClientOptions {
-  /** Defaults to the production, read-only Sinjoh API. */
+  /** Defaults to production; discovery is read-only and artwork publication is creator-signed. */
   baseUrl?: string;
   /** Optional higher-rate key. It is sent only in the x-api-key header. */
   apiKey?: string;
@@ -439,6 +474,17 @@ export interface SinjohApiClient {
   }>;
 }
 
+/** Image capabilities added in 2.1 without widening the injectable 2.0 client contract. */
+export interface SinjohApiClientV2_1 extends SinjohApiClient {
+  getLaunchImageHealth(): Promise<{ chainId: number; images: LaunchImageHealth }>;
+  publishLaunchImage(input: {
+    subject: string;
+    image: Blob | Uint8Array | ArrayBuffer;
+    authorization: import("./images.js").LaunchImageAuthorization;
+    signature: HexValue;
+  }): Promise<{ chainId: number; subject: EvmAddress; image: LaunchImageRecord }>;
+}
+
 function query(options: object = {}) {
   const values = new URLSearchParams();
   for (const [key, value] of Object.entries(options) as Array<[string, unknown]>) {
@@ -482,9 +528,33 @@ function isLaunchRegistryHealthEnvelope(value: unknown): value is {
     && registry.supportedLaunchpads.every((launchpad) => typeof launchpad === "string");
 }
 
+function isLaunchImageHealthEnvelope(value: unknown): value is {
+  chainId: number;
+  images: LaunchImageHealth;
+} {
+  if (!isRecord(value) || !Number.isInteger(value.chainId) || !isRecord(value.images)) return false;
+  const images = value.images;
+  const counts = [images.registered, images.canonical, images.missing, images.noSource, images.failed, images.repaired];
+  const validAddressList = (candidate: unknown) => Array.isArray(candidate)
+    && candidate.every((subject) => typeof subject === "string");
+  const validLaunchpadCounts = (candidate: unknown) => isRecord(candidate)
+    && Object.values(candidate).every((countsValue) => isRecord(countsValue)
+      && [countsValue.registered, countsValue.canonical, countsValue.missing, countsValue.noSource]
+        .every((count) => Number.isInteger(count) && Number(count) >= 0));
+  return typeof images.ok === "boolean"
+    && counts.every((count) => Number.isInteger(count) && Number(count) >= 0)
+    && validAddressList(images.missingSubjects)
+    && validAddressList(images.noSourceSubjects)
+    && Array.isArray(images.failures)
+    && images.failures.every((failure) => isRecord(failure)
+      && typeof failure.subject === "string"
+      && typeof failure.code === "string")
+    && validLaunchpadCounts(images.byLaunchpad);
+}
+
 export function createSinjohApiClient(
   options: CreateSinjohApiClientOptions = {},
-): SinjohApiClient {
+): SinjohApiClientV2_1 {
   const baseUrl = (options.baseUrl ?? "https://api.sinjoh.com").replace(/\/+$/, "");
   const fetchFn = options.fetch ?? globalThis.fetch;
   if (typeof fetchFn !== "function") throw new Error("A Fetch API implementation is required.");
@@ -516,16 +586,58 @@ export function createSinjohApiClient(
     return body as T;
   }
 
+  async function postForm<T>(path: string, form: FormData): Promise<T> {
+    const headers = options.apiKey ? { "x-api-key": options.apiKey } : undefined;
+    const response = await fetchFn(`${baseUrl}${path}`, {
+      method: "POST",
+      ...(headers === undefined ? {} : { headers }),
+      body: form,
+    });
+    const requestId = response.headers.get("x-request-id");
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch {
+      throw new SinjohApiError(response.status, "invalid_response", "The Sinjoh API returned invalid JSON.", requestId);
+    }
+    if (!response.ok) {
+      const error = isRecord(body) ? body : {};
+      throw new SinjohApiError(
+        response.status,
+        typeof error.error === "string" ? error.error : "request_failed",
+        typeof error.message === "string" ? error.message : `Sinjoh API request failed with HTTP ${response.status}.`,
+        requestId,
+      );
+    }
+    return body as T;
+  }
+
   return {
     index: () => get("/v1"),
     getLaunchRegistryHealth: () => get(
       "/v1/health/registry",
       (status, body) => status === 503 && isLaunchRegistryHealthEnvelope(body),
     ),
+    getLaunchImageHealth: () => get(
+      "/v1/health/images",
+      (status, body) => status === 503 && isLaunchImageHealthEnvelope(body),
+    ),
     listContracts: (value = {}) => get(`/v1/contracts${query(value)}`),
     getContract: (address) => get(`/v1/contracts/${segment(address)}`),
     listLaunches: (value = {}) => get(`/v1/launches${query(value)}`),
     getLaunch: (subject) => get(`/v1/launches/${segment(subject)}`),
+    publishLaunchImage: async (input) => {
+      const { validateLaunchImageAuthorization } = await import("./images.js");
+      if (input.authorization.subject.toLowerCase() !== input.subject.toLowerCase()) {
+        throw new Error("Launch image authorization belongs to a different subject.");
+      }
+      const bytes = await validateLaunchImageAuthorization(input.image, input.authorization);
+      const form = new FormData();
+      form.set("file", new Blob([bytes], { type: input.authorization.imageMimeType }), "token-image");
+      form.set("authorization", JSON.stringify(input.authorization));
+      form.set("signature", input.signature);
+      return postForm(`/v1/launches/${segment(input.subject)}/image`, form);
+    },
     getMarket: (subject, value = {}) => get(`/v1/markets/${segment(subject)}${query(value)}`),
     listMarketTrades: (subject, value = {}) => get(`/v1/markets/${segment(subject)}/trades${query(value)}`),
     listRaffles: (value = {}) => get(`/v1/raffles${query(value)}`),

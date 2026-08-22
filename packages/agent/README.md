@@ -3,8 +3,8 @@
 An MCP server exposing Sinjoh public data plus the SDK's verify, read, plan,
 preflight, validate, prepare, and optional transaction-execution surface to agents.
 The standalone server holds no keys. Embedded hosts may inject a wallet executor;
-when they do, the server exposes a simulate-first signing tool. API tools remain
-explicitly read-only and return structured content.
+when they do, the server exposes a simulate-first signing tool. Discovery tools are
+explicitly read-only; creator-signed image publication is a separate idempotent write.
 
 ## Run
 
@@ -46,6 +46,7 @@ Before acting on any manifest address, call `sinjoh_verify_manifest` and require
 |---|---|
 | `sinjoh_api_capabilities` | Production API version, capacity, documentation, and route catalog |
 | `sinjoh_registry_health` | Reconcile and report indexed-versus-public launch coverage, including per-launchpad failures |
+| `sinjoh_image_health` | Read canonical image coverage, deliberate no-artwork launches, recovery failures, and per-launchpad counts without writing state |
 | `sinjoh_discover` | Paginated contracts, launches, raffles, airdrops, liquidity, Funding Bands, revenue, or randomness |
 | `sinjoh_get` | One contract, launch, market, raffle, or protocol account |
 | `sinjoh_history` | Bounded market, raffle, airdrop, Funding Bands, or normalized event history |
@@ -60,6 +61,8 @@ Before acting on any manifest address, call `sinjoh_verify_manifest` and require
 | `sinjoh_plan_ponsv2_launch` | The full predict/deploy/bind launch ordering as prepared calls with readbacks |
 | `sinjoh_plan_flap_launch` | The Flap launch ordering, with the vanity token salt verified against the deployed implementation |
 | `sinjoh_plan_letscash_integration` | The Sinjoh side of a letscash integration, with post-launch activate, bind, and registry-publication follow-ups |
+| `sinjoh_prepare_launch_image` | Validate and hash PNG/JPEG/WebP bytes and return creator-bound EIP-712 typed data |
+| `sinjoh_publish_launch_image` | Publish the exact signed bytes to immutable Sinjoh-controlled storage after indexing |
 | `sinjoh_decode_error` | Revert data to named error plus operator guidance |
 | `sinjoh_execute_transaction` | Simulate, then sign and submit through a host-injected wallet; available only when a wallet is configured |
 
@@ -84,6 +87,23 @@ account or chain state inside the executor.
 Raw private keys never cross the Sinjoh interface. If receipt polling times out after submission,
 the tool returns `status: "submitted"` with the transaction hash so the agent can reconcile that
 hash instead of signing a duplicate transaction.
+
+## Token artwork
+
+After a launch is confirmed and appears in `sinjoh_get { resource: "launch" }`, pass the exact
+PNG, JPEG, or WebP bytes (base64, at most 2 MB) to `sinjoh_prepare_launch_image`. Have the indexed
+creator sign the returned EIP-712 `typedData`, then pass the unchanged bytes, authorization, and
+signature to `sinjoh_publish_launch_image`. The API independently checks the signature, creator,
+subject, byte hash, MIME signature, dimensions, and authorization lifetime before copying the image
+to a content-addressed `token-logos` path. A newer creator signature can replace an older image;
+replays and launchpad recovery cannot overwrite newer signed artwork, and each launch is capped
+at ten distinct creator-authorized image revisions.
+
+Launchpad recovery is a safety net, not the primary publication flow. Sinjoh's authenticated
+operations pass decodes the original Pons v1, Pons v2, Flap, letscash.fun, or pools.trade launch
+transaction and copies allowlisted upstream artwork into storage. `sinjoh_image_health` only reads
+the resulting coverage. Missing or invalid upstream metadata stays visible as a health failure
+until the creator completes the signed flow.
 
 ## Conventions
 
