@@ -52,6 +52,7 @@ jobs:
 
       - name: Check generated deployment manifest
         run: |
+          npm run release:validate-promotions
           npm run generate:deployments
           git diff --exit-code -- packages/deployments/src/generated
 

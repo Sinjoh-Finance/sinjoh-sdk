@@ -76,6 +76,7 @@ jobs:
 
       - name: Release gates
         run: |
+          npm run release:validate-promotions -- --require-active
           npm run typecheck
           npm test
           npm run openapi:lint
