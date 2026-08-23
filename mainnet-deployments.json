@@ -1,6 +1,6 @@
 {
   "status": "core-infrastructure-deployed",
-  "releaseCandidate": true,
+  "releaseCandidate": false,
   "chainId": 4663,
   "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
   "explorerUrl": "https://robinhoodchain.blockscout.com",
@@ -354,14 +354,23 @@
       "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca",
       "deploymentBlock": 23492626,
       "runtimeCodeHash": "0x3c8f93001da484e96c32e697572fceb65a88ff6f8cc4f65c0a5f280cd2630840",
-      "purpose": "Deploys per-launch Pons v1 adapters. Pinned to mainnet Pons locker and WETH."
+      "status": "historical-only",
+      "purpose": "Retained for fee collection and indexing of historical Pons v1 launches. Upstream Pons v1 new launches are disabled.",
+      "verified": {
+        "upstreamLaunchFactory": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
+        "upstreamLaunchesEnabled": false,
+        "ponsLocker": "0x736D76699C26D0d966744cAe304C000d471f7F35",
+        "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+        "deploymentChainId": 4663
+      }
     },
     "ponsAdapterImplementation": {
       "address": "0x488b1068D10FBcd49b96A06F7f76A1D2853001A6",
       "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca",
       "deploymentBlock": 23492626,
       "runtimeCodeHash": "0x1524070efa0fec4165da0d894d849925f4e38de401eff724362462201caecd23",
-      "purpose": "SinjohPonsV1Adapter implementation, self-deployed by the adapter factory constructor."
+      "status": "historical-only",
+      "purpose": "SinjohPonsV1Adapter implementation retained for historical Pons v1 launch fee collection."
     },
     "ponsV2AdapterFactory": {
       "address": "0x6b3862cd05478355e0230eeDBa71a321f0c776bD",

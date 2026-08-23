@@ -5,7 +5,7 @@
 export const mainnet = {
   chainId: 4663,
   status: "core-infrastructure-deployed",
-  releaseCandidate: true,
+  releaseCandidate: false,
   deployedAt: "2026-07-30",
   rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
   explorerUrl: "https://robinhoodchain.blockscout.com",
@@ -241,14 +241,14 @@ export const mainnet = {
       "deploymentBlock": 23492626,
       "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca",
       "runtimeCodeHash": "0x3c8f93001da484e96c32e697572fceb65a88ff6f8cc4f65c0a5f280cd2630840",
-      "purpose": "Deploys per-launch Pons v1 adapters. Pinned to mainnet Pons locker and WETH."
+      "purpose": "Retained for fee collection and indexing of historical Pons v1 launches. Upstream Pons v1 new launches are disabled."
     },
     "ponsAdapterImplementation": {
       "address": "0x488b1068D10FBcd49b96A06F7f76A1D2853001A6",
       "deploymentBlock": 23492626,
       "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca",
       "runtimeCodeHash": "0x1524070efa0fec4165da0d894d849925f4e38de401eff724362462201caecd23",
-      "purpose": "SinjohPonsV1Adapter implementation, self-deployed by the adapter factory constructor."
+      "purpose": "SinjohPonsV1Adapter implementation retained for historical Pons v1 launch fee collection."
     },
     "ponsV2AdapterFactory": {
       "address": "0x6b3862cd05478355e0230eeDBa71a321f0c776bD",

@@ -21,6 +21,8 @@
     "packages/*"
   ],
   "scripts": {
+    "release:import": "node tools/import-promotion.mjs",
+    "release:validate-promotions": "node tools/validate-promotions.mjs",
     "generate": "npm run generate:abis && npm run generate:deployments",
     "generate:abis": "node tools/harvest-abis.mjs",
     "generate:deployments": "node tools/gen-deployments.mjs",

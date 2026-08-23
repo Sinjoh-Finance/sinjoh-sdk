@@ -1,5 +1,9 @@
 # Mainnet Deployment Provenance
 
+Cross-repository candidate and active release locks are imported from the
+attested `sinjoh-contracts` promotion artifact. CI rejects any lock whose source
+deployment-manifest digest differs from this repository's registry.
+
 Verified: 2026-08-20
 
 Network: Robinhood Chain mainnet (`chainId` 4663)
