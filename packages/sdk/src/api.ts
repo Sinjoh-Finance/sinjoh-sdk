@@ -59,7 +59,27 @@ export interface LaunchRecord {
   deploymentBlock: string | null;
   /** Present on API 1.1+; optional in the SDK type so 2.0 object literals remain source-compatible. */
   image?: LaunchImageRecord | null;
-  features: { raffle: `0x${string}` | null };
+  features: {
+    raffle: `0x${string}` | null;
+    /** Canonical Project V2 identity and module addresses, present only for Project launches. */
+    projectV2?: ProjectV2LaunchFeature | null;
+  };
+}
+
+export interface ProjectV2LaunchFeature {
+  projectId: HexValue;
+  launchConfigHash: HexValue;
+  controller: EvmAddress;
+  governanceMode: number;
+  voteSource: EvmAddress;
+  tokenGovernor: EvmAddress;
+  tokenTimelock: EvmAddress;
+  multisigAccount: EvmAddress;
+  treasury: EvmAddress;
+  stakingPool: EvmAddress;
+  airdrop: EvmAddress;
+  raffle: EvmAddress;
+  enabledModules: string;
 }
 
 export interface LaunchImageRecord {

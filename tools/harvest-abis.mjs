@@ -2,7 +2,7 @@
 // packages/abis/src/generated/. Only artifacts whose compilation target lives under a
 // package's src/ are included: tests, scripts, mocks, and vendored libraries never ship.
 // Run `forge build` in every package first; never edit the generated files by hand.
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
@@ -100,11 +100,24 @@ if (conflicts.length > 0) {
 
 let sourceCommit = "unknown";
 try {
-  sourceCommit = execSync("git rev-parse HEAD", {
-    cwd: projectV2Root ?? contractsRoot,
-  }).toString().trim();
+  const sourceRoot = projectV2Root ?? contractsRoot;
+  const requestedCommit = process.env.SINJOH_ABI_SOURCE_COMMIT?.trim();
+  if (requestedCommit) {
+    sourceCommit = execFileSync("git", ["rev-parse", `${requestedCommit}^{commit}`], {
+      cwd: sourceRoot,
+    }).toString().trim();
+    execFileSync("git", [
+      "diff", "--quiet", sourceCommit, "--", ...PACKAGES.map((pkg) => `${pkg}/src`),
+    ], {
+      cwd: sourceRoot,
+    });
+  } else {
+    sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: sourceRoot,
+    }).toString().trim();
+  }
 } catch {
-  // generated meta records "unknown" outside a git checkout
+  throw new Error("ABI source commit is unavailable or does not match the harvested source trees");
 }
 
 rmSync(outDir, { recursive: true, force: true });

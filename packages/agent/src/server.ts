@@ -5,17 +5,21 @@ import type { Address, Hex, PublicClient } from "viem";
 import { allVerified, verifyManifest, type ChainManifest } from "@sinjoh/deployments";
 import {
   airdropSinkConfigHash, checkPonsV2Activation, decodeSinjohError,
+  assemblePonsProjectLaunchTransaction,
   createSinjohApiClient,
   encodeAirdropSinkConfig, encodeLiquiditySinkConfig, encodeRaffleConfig, encodeRouterConfig,
   liquiditySinkConfigHash, planFlapLaunch, planLetsCashIntegration, planPonsV2Launch,
   planRouterWork, preflightMinimumOutput, prepareLaunchImageAuthorization,
-  raffleConfigHash, readRouterSnapshot,
+  predictExistingTokenLaunch, predictLaunch, projectRecord,
+  raffleConfigHash, readRouterSnapshot, simulatePonsProjectLaunchTransaction,
   routerConfigHash, validateAirdropSinkConfig, validateLiquiditySinkConfig,
+  validateExistingTokenLaunchConfig, validateLaunchConfig,
   validateRaffleConfig, validateRouterConfig, type CodeReadClient,
   type SinjohApiClient
 } from "@sinjoh/sdk";
 import {
   airdropSinkConfigFromWire, flapTokenParamsFromWire, liquiditySinkConfigFromWire,
+  ponsProjectLaunchRequestFromWire, projectLaunchConfigFromWire,
   raffleConfigFromWire, resolvePlaceholders, routerConfigFromWire
 } from "./configs.js";
 import { errorResult, textResult } from "./serialize.js";
@@ -294,6 +298,85 @@ export function createSinjohAgentServer(context: SinjohAgentContext): McpServer 
           });
         }
       }
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_project_preview", {
+    description: "Validate and predict a Project V2 launch against the canonical launcher. "
+      + "For a Pons or other launchpad-created token, pass existingSubject. The complete nested "
+      + "config uses decimal strings for uint64+ values. This is read-only and submits nothing.",
+    inputSchema: {
+      launcher: address,
+      config: z.record(z.string(), z.unknown()),
+      existingSubject: address.optional(),
+    },
+    annotations: READ_ONLY,
+  }, async (args) => {
+    try {
+      const config = projectLaunchConfigFromWire(args.config);
+      const launcher = args.launcher as Address;
+      if (args.existingSubject !== undefined) {
+        const subject = args.existingSubject as Address;
+        const [validated, predicted] = await Promise.all([
+          validateExistingTokenLaunchConfig(client, launcher, config, subject),
+          predictExistingTokenLaunch(client, launcher, config, subject),
+        ]);
+        return textResult({ kind: "existing-token", validated, predicted });
+      }
+      const [validated, predicted] = await Promise.all([
+        validateLaunchConfig(client, launcher, config),
+        predictLaunch(client, launcher, config),
+      ]);
+      return textResult({ kind: "project-token", validated, predicted });
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_project_record", {
+    description: "Read the complete canonical Project V2 Registry record by projectId.",
+    inputSchema: { registry: address, projectId: bytes32 },
+    annotations: READ_ONLY,
+  }, async (args) => {
+    try {
+      return textResult(await projectRecord(
+        client, args.registry as Address, args.projectId as Hex,
+      ));
+    } catch (error) {
+      return errorResult(error);
+    }
+  });
+
+  server.registerTool("sinjoh_prepare_pons_project_launch", {
+    description: "Assemble and simulate the exact atomic Pons + Project V2 launch transaction. "
+      + "The adapter, curve, locker, and PoolManager custody exclusions are verified before "
+      + "simulation. Returns wallet-ready calldata but never signs or submits it.",
+    inputSchema: {
+      account: address,
+      adapter: address,
+      request: z.record(z.string(), z.unknown()),
+      graduationCustody: z.object({ curve: address, locker: address, poolManager: address }),
+      value: z.string().regex(/^\d+$/),
+    },
+    annotations: READ_ONLY,
+  }, async (args) => {
+    try {
+      const request = ponsProjectLaunchRequestFromWire(args.request);
+      const graduationCustody = {
+        curve: args.graduationCustody.curve as Address,
+        locker: args.graduationCustody.locker as Address,
+        poolManager: args.graduationCustody.poolManager as Address,
+      };
+      const transaction = assemblePonsProjectLaunchTransaction({
+        adapter: args.adapter as Address,
+        request,
+        graduationCustody,
+        value: BigInt(args.value),
+      });
+      await simulatePonsProjectLaunchTransaction(client, args.account as Address, transaction);
+      return textResult({ simulated: true, transaction });
     } catch (error) {
       return errorResult(error);
     }

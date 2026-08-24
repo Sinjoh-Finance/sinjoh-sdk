@@ -1,7 +1,9 @@
 import type { Address, Hex } from "viem";
 import type {
-  AirdropSinkConfig, FlapTokenInputParams, LiquiditySinkConfig, RaffleConfig, RouterConfig
+  AirdropSinkConfig, FlapTokenInputParams, LiquiditySinkConfig, PonsProjectLaunchRequest,
+  ProjectLaunchConfig, RaffleConfig, RouterConfig
 } from "@sinjoh/sdk";
+import { projectLauncherV2Abi, sinjohPonsV2ProjectAdapterAbi } from "@sinjoh/abis";
 
 /**
  * Wire-format converters: configurations arrive over MCP as JSON, so every bigint field is a
@@ -10,6 +12,77 @@ import type {
  */
 
 type Json = Record<string, unknown>;
+
+type AbiParameterShape = {
+  name?: string;
+  type: string;
+  components?: readonly AbiParameterShape[];
+};
+
+function fromAbiWire(parameter: AbiParameterShape, value: unknown, field: string): unknown {
+  const array = parameter.type.match(/^(.*)\[([0-9]*)\]$/);
+  if (array) {
+    if (!Array.isArray(value)) throw new Error(`${field} must be an array`);
+    const expected = array[2] === "" ? undefined : Number(array[2]);
+    if (expected !== undefined && value.length !== expected) {
+      throw new Error(`${field} must contain exactly ${expected} values`);
+    }
+    return value.map((item, index) => fromAbiWire(
+      { ...parameter, type: array[1]! }, item, `${field}[${index}]`,
+    ));
+  }
+  if (parameter.type === "tuple") {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error(`${field} must be an object`);
+    }
+    const record = value as Record<string, unknown>;
+    return Object.fromEntries((parameter.components ?? []).map((component) => {
+      if (!component.name) throw new Error(`${field} contains an unnamed tuple field`);
+      if (!(component.name in record)) throw new Error(`${field}.${component.name} is required`);
+      return [
+        component.name,
+        fromAbiWire(component, record[component.name], `${field}.${component.name}`),
+      ];
+    }));
+  }
+  const integer = parameter.type.match(/^u?int([0-9]*)$/);
+  if (integer) {
+    const bits = integer[1] === "" ? 256 : Number(integer[1]);
+    if (bits <= 48) {
+      const parsed = typeof value === "number" ? value : Number(value);
+      if (!Number.isSafeInteger(parsed) || parsed < 0) {
+        throw new Error(`${field} must be a non-negative safe integer`);
+      }
+      return parsed;
+    }
+    return big(value, field);
+  }
+  return value;
+}
+
+function functionInput(
+  abi: readonly unknown[], functionName: string, inputIndex: number,
+): AbiParameterShape {
+  const fn = abi.find((item) => {
+    const candidate = item as { type?: string; name?: string };
+    return candidate.type === "function" && candidate.name === functionName;
+  }) as { inputs?: readonly AbiParameterShape[] } | undefined;
+  const input = fn?.inputs?.[inputIndex];
+  if (!input) throw new Error(`ABI input ${functionName}[${inputIndex}] is unavailable`);
+  return input;
+}
+
+export function projectLaunchConfigFromWire(wire: Json): ProjectLaunchConfig {
+  return fromAbiWire(
+    functionInput(projectLauncherV2Abi, "validateLaunchConfig", 0), wire, "config",
+  ) as ProjectLaunchConfig;
+}
+
+export function ponsProjectLaunchRequestFromWire(wire: Json): PonsProjectLaunchRequest {
+  return fromAbiWire(
+    functionInput(sinjohPonsV2ProjectAdapterAbi, "launch", 0), wire, "request",
+  ) as PonsProjectLaunchRequest;
+}
 
 function big(value: unknown, field: string): bigint {
   if (typeof value === "bigint") return value;
