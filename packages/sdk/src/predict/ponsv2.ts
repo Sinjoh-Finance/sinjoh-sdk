@@ -1,5 +1,6 @@
 import {
-  encodeFunctionData, getAddress, parseAbi, type Address, type Hex, type PublicClient
+  encodeAbiParameters, encodeFunctionData, getAddress, parseAbi,
+  type Address, type Hex, type PublicClient
 } from "viem";
 
 /**
@@ -42,7 +43,8 @@ export const ponsV2MemeHookAbi = parseAbi([
 ]);
 
 export const ponsV2LaunchDeployerAbi = parseAbi([
-  "function predictLaunchAddresses((address pairToken,address creatorFeeRecipient,address originalDeployer,address feePolicy,(address protocolFeeRecipient,uint16 protocolFeeShareBps,uint16 buybackBurnBps,uint16 hookFeeBps,uint16 maxInternalPriceImpactBps) policy,address feeEscrow,address buybackVault,uint256 phantomQuote,uint256 curveFeeBps,uint256 creatorTaxBps,bool buybackEnabled,uint256 graduationThreshold,uint256 supply,bytes32 salt,string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials) params) view returns (address token,address curve)"
+  "function predictLaunchAddresses((address pairToken,address creatorFeeRecipient,address originalDeployer,address feePolicy,(address protocolFeeRecipient,uint16 protocolFeeShareBps,uint16 buybackBurnBps,uint16 hookFeeBps,uint16 maxInternalPriceImpactBps) policy,address feeEscrow,address buybackVault,uint256 phantomQuote,uint256 curveFeeBps,uint256 creatorTaxBps,bool buybackEnabled,uint256 graduationThreshold,uint256 supply,bytes32 salt,string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials) params) view returns (address token,address curve)",
+  "function predictProjectLaunchAddresses((address pairToken,address creatorFeeRecipient,address originalDeployer,address feePolicy,(address protocolFeeRecipient,uint16 protocolFeeShareBps,uint16 buybackBurnBps,uint16 hookFeeBps,uint16 maxInternalPriceImpactBps) policy,address feeEscrow,address buybackVault,uint256 phantomQuote,uint256 curveFeeBps,uint256 creatorTaxBps,bool buybackEnabled,uint256 graduationThreshold,uint256 supply,bytes32 salt,string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials) params,bytes projectTokenData) view returns (address token,address curve)"
 ]);
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
@@ -95,6 +97,13 @@ export interface PonsV2LaunchDeployment {
   logo: string;
   description: string;
   socials: PonsV2Socials;
+}
+
+export interface PonsV2ProjectTokenDeploymentData {
+  tokenFactory: Address;
+  registry: Address;
+  votingExclusionConfigurator: Address;
+  votingExclusions: readonly Address[];
 }
 
 /**
@@ -196,6 +205,47 @@ export async function predictLaunchAddresses(client: PublicClient, args: {
     args: [deployment],
   });
   return { token, curve, deployment };
+}
+
+/** Predicts the canonical Project-token variant used by the atomic Pons Project V2 adapter. */
+export async function predictProjectLaunchAddresses(client: PublicClient, args: {
+  factory: Address;
+  params: PonsV2TokenParams;
+  launchConfigId: bigint;
+  pairToken: Address;
+  originalDeployer: Address;
+  project: PonsV2ProjectTokenDeploymentData;
+}): Promise<{
+  token: Address;
+  curve: Address;
+  deployment: PonsV2LaunchDeployment;
+  projectTokenData: Hex;
+}> {
+  const deployment = await assembleLaunchDeployment(client, args);
+  const launchDeployer = await client.readContract({
+    address: args.factory,
+    abi: ponsV2FactoryPredictionAbi,
+    functionName: "launchDeployer",
+  });
+  const projectTokenData = encodeAbiParameters(
+    [{
+      type: "tuple",
+      components: [
+        { name: "tokenFactory", type: "address" },
+        { name: "registry", type: "address" },
+        { name: "votingExclusionConfigurator", type: "address" },
+        { name: "votingExclusions", type: "address[]" },
+      ],
+    }],
+    [args.project],
+  );
+  const [token, curve] = await client.readContract({
+    address: launchDeployer,
+    abi: ponsV2LaunchDeployerAbi,
+    functionName: "predictProjectLaunchAddresses",
+    args: [deployment, projectTokenData],
+  });
+  return { token, curve, deployment, projectTokenData };
 }
 
 /**

@@ -12,6 +12,9 @@ const sdkRoot = join(here, "..");
 const contractsRoot = resolve(
   process.env.SINJOH_CONTRACTS_ROOT ?? join(sdkRoot, "..", "sinjoh-contracts"),
 );
+const projectV2Root = process.env.SINJOH_PROJECT_V2_ROOT
+  ? resolve(process.env.SINJOH_PROJECT_V2_ROOT)
+  : null;
 const outDir = join(sdkRoot, "packages", "abis", "src", "generated");
 
 const PACKAGES = [
@@ -25,7 +28,8 @@ const PACKAGES = [
   "sinjoh-treasury-vault",
   "sinjoh-protocol-upgrade",
   "sinjoh-pons-v1-adapter",
-  "sinjoh-launchpad-adapters"
+  "sinjoh-launchpad-adapters",
+  "sinjoh-contracts-v2"
 ];
 
 function camel(name) {
@@ -41,7 +45,10 @@ const contracts = new Map();
 const conflicts = [];
 
 for (const pkg of PACKAGES) {
-  const artifactRoot = join(contractsRoot, pkg, "out");
+  const packageRoot = projectV2Root && (
+    pkg === "sinjoh-launchpad-adapters" || pkg === "sinjoh-contracts-v2"
+  ) ? projectV2Root : contractsRoot;
+  const artifactRoot = join(packageRoot, pkg, "out");
   let sourceDirs;
   try {
     sourceDirs = readdirSync(artifactRoot, { withFileTypes: true });
@@ -93,7 +100,9 @@ if (conflicts.length > 0) {
 
 let sourceCommit = "unknown";
 try {
-  sourceCommit = execSync("git rev-parse HEAD", { cwd: contractsRoot }).toString().trim();
+  sourceCommit = execSync("git rev-parse HEAD", {
+    cwd: projectV2Root ?? contractsRoot,
+  }).toString().trim();
 } catch {
   // generated meta records "unknown" outside a git checkout
 }

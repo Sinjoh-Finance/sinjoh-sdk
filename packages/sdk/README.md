@@ -1,5 +1,10 @@
 # @sinjoh/sdk
 
+Project Launcher V2 profiles keep platform-reviewed policy separate from project identity.
+`ProjectLaunchPreset` is the versioned policy template; `buildLaunchFromPreset` injects the
+creator, token supply and allocations, multisig signers, guardians, and attestors supplied for
+the individual project before validation or wallet submission.
+
 The high-level TypeScript SDK for the immutable Sinjoh protocols on Robinhood Chain. It validates
 and encodes immutable configuration, verifies deployed code, reads live protocol state, plans
 launches and permissionless work, and returns prepared calls. It never holds keys, signs, or
