@@ -254,7 +254,13 @@ test("materializes creator-bound SEND route placeholders", () => {
 });
 
 test("verifies the exact assembled canonical adapter payload", () => {
-  const config = buildExistingTokenLaunchFromPreset(
+  const adapter = "0x0000000000000000000000000000000000008000" as Address;
+  const graduationCustody = {
+    curve: "0x0000000000000000000000000000000000008100",
+    locker: "0x0000000000000000000000000000000000008200",
+    poolManager: "0x0000000000000000000000000000000000008300",
+  } as const;
+  const baseConfig = buildExistingTokenLaunchFromPreset(
     participantPreset({ staking: false, airdrop: false, raffle: false }),
     {
       creator: "0x0000000000000000000000000000000000001000",
@@ -269,6 +275,18 @@ test("verifies the exact assembled canonical adapter payload", () => {
       ],
     },
   );
+  const config = {
+    ...baseConfig,
+    launchProfile: {
+      ...baseConfig.launchProfile,
+      additionalCustodyExclusions: [
+        adapter,
+        graduationCustody.curve,
+        graduationCustody.locker,
+        graduationCustody.poolManager,
+      ],
+    },
+  } as ProjectLaunchConfig;
   const request = {
     token: {
       name: "Project",
@@ -291,21 +309,43 @@ test("verifies the exact assembled canonical adapter payload", () => {
     launchpadApprovalProof: [],
   } as const;
   const transaction = assemblePonsProjectLaunchTransaction({
-    adapter: "0x0000000000000000000000000000000000008000",
+    adapter,
     request,
+    graduationCustody,
     value: 1n,
   });
   assert.doesNotThrow(() => verifyPonsProjectLaunchTransaction(transaction, {
-    adapter: "0x0000000000000000000000000000000000008000",
+    adapter,
     request,
+    graduationCustody,
     value: 1n,
   }));
   assert.throws(() => verifyPonsProjectLaunchTransaction(
     { ...transaction, value: 2n },
     {
-      adapter: "0x0000000000000000000000000000000000008000",
+      adapter,
       request,
+      graduationCustody,
       value: 1n,
     },
   ), /value changed/);
+  assert.throws(() => assemblePonsProjectLaunchTransaction({
+    adapter,
+    request: {
+      ...request,
+      project: {
+        ...config,
+        launchProfile: {
+          ...config.launchProfile,
+          additionalCustodyExclusions: [
+            adapter,
+            graduationCustody.curve,
+            graduationCustody.locker,
+          ],
+        },
+      },
+    },
+    graduationCustody,
+    value: 1n,
+  }), /Missing Pons custody exclusion 0x0000000000000000000000000000000000008300/);
 });

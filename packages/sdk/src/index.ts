@@ -138,11 +138,13 @@ export {
 } from "./project-v2.js";
 
 export {
+  assertPonsGraduationCustodyExclusions,
   assemblePonsProjectLaunchTransaction,
   simulatePonsProjectLaunchTransaction,
   sinjohPonsV2AdapterFactoryAbi,
   sinjohPonsV2ProjectAdapterAbi,
   verifyPonsProjectLaunchTransaction,
+  type PonsGraduationCustody,
   type PonsProjectLaunchRequest,
   type PonsProjectLaunchTransaction,
 } from "./pons-project-v2.js";
