@@ -7,7 +7,10 @@ import { test } from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 
-async function runGenerator(dependencies: Record<string, unknown>) {
+async function runGenerator(
+  dependencies: Record<string, unknown>,
+  currentInfrastructure: Record<string, unknown> = {},
+) {
   const root = await mkdtemp(join(tmpdir(), "sinjoh-deployment-generator-"));
   const script = join(root, "tools", "gen-deployments.mjs");
   await mkdir(dirname(script), { recursive: true });
@@ -21,7 +24,7 @@ async function runGenerator(dependencies: Record<string, unknown>) {
     deployer: { address: "0x1111111111111111111111111111111111111111", kind: "eoa" },
     governance: { address: "0x2222222222222222222222222222222222222222", kind: "eoa" },
     status: "test",
-    currentInfrastructure: {},
+    currentInfrastructure,
     dependencies,
   }));
   return spawnSync(process.execPath, [script], { encoding: "utf8" });
@@ -50,6 +53,21 @@ test("deployment generation rejects malformed or unclassified trust metadata", a
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, expected);
   }
+});
+
+test("deployment generation accepts the canonical companion-hash manifest shape", async () => {
+  const currentInfrastructure = Object.fromEntries(Array.from({ length: 30 }, (_, index) => [
+    `contract${index}`,
+    {
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
+      runtimeCodeHash: `0x${(index + 1).toString(16).padStart(64, "0")}`,
+    },
+  ]));
+  const result = await runGenerator({
+    factory: "0x3333333333333333333333333333333333333333",
+    factoryRuntimeCodeHash: `0x${"11".repeat(32)}`,
+  }, currentInfrastructure);
+  assert.equal(result.status, 0, result.stderr);
 });
 
 test("deployment generation rejects contradictory authority role metadata", async () => {

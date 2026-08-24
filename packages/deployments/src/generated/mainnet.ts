@@ -251,17 +251,17 @@ export const mainnet = {
       "purpose": "SinjohPonsV1Adapter implementation retained for historical Pons v1 launch fee collection."
     },
     "ponsV2AdapterFactory": {
-      "address": "0x6b3862cd05478355e0230eeDBa71a321f0c776bD",
-      "deploymentBlock": 37220639,
-      "deploymentTransaction": "0xab6a6af02ebba8de8f818dd43bc39fbe5686fa63fc81801d7877f83165d26e01",
-      "runtimeCodeHash": "0xdbc65e168692f0b13e64deb9287f6418daf737322cd68b8ded9c8f01f2ddbc28",
+      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41",
+      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
       "purpose": "Deploys deterministic per-launch SinjohPonsV2Adapter clones and atomically escrows configured first-buy inventory for Funding Bands."
     },
     "ponsV2AdapterImplementation": {
-      "address": "0xD6105319e1a92E28184EF42B225dbA35181C847f",
-      "deploymentBlock": 37220639,
-      "deploymentTransaction": "0xab6a6af02ebba8de8f818dd43bc39fbe5686fa63fc81801d7877f83165d26e01",
-      "runtimeCodeHash": "0xa405d093ff68caf9db6a58d7020398c24d2e82a00599635758c039ffd326a5f9",
+      "address": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41",
+      "runtimeCodeHash": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
       "purpose": "SinjohPonsV2Adapter implementation, initialized and self-deployed by the adapter factory constructor."
     },
     "ponsV2BuybackAdapter": {
@@ -404,6 +404,114 @@ export const mainnet = {
     "rafflePriceGuards.guard10000": {
       "address": "0xf81d21e0b51A7DD815f44682B63b7e732E0b4803",
       "runtimeCodeHash": "0xd99afa61854a819bd0adcd593bbc8c3a9a278e5fe29cd2b6f150efe9cdc8b74d"
+    },
+    "projectV2.raffleImplementation": {
+      "address": "0xaf4E45a4BC6f7F14E97cA87333A6be4A0d5c3e95",
+      "deploymentBlock": 45137533,
+      "deploymentTransaction": "0x89b94fd22c6ad525fd475b5017b15879fcf20f083411667fe3398eef95a991d3",
+      "runtimeCodeHash": "0xba22d4e2aa622933541cb231f6ab8eca670539c748c8507e21742125157a0010"
+    },
+    "projectV2.fundingBandV3IntegrationFactory": {
+      "address": "0x30B80bb9bE611EEd0535beA0A382163ba91B2859",
+      "deploymentBlock": 45137603,
+      "deploymentTransaction": "0x4884d438e23907a30fb756a4b9d251ae7ce14025d63b513735e5cbea09af6bf6",
+      "runtimeCodeHash": "0x42af7b6fdbaab808c06db8761a7a91578a1e07cc75ce40551b9d6e010c71dcb3"
+    },
+    "projectV2.fundingBandQuoteUsdOracle": {
+      "address": "0x79c9152a8C9f3e609e9c9989ae0a46a57d4faaEa",
+      "deploymentBlock": 45137662,
+      "deploymentTransaction": "0xdf0cdc5823df7ae99599e8885910af12680b4c1b66def9fe4f5ae2c43bd96587",
+      "runtimeCodeHash": "0x6bde18fbfb602edfb4e5554b44ae9fe1f7b2d47ccbe35a7311b0936134a66efd"
+    },
+    "projectV2.projectV3PriceGuard500": {
+      "address": "0x0A6e4CE76163Cda15a5549d0436570De8a931Ba9",
+      "deploymentBlock": 45137718,
+      "deploymentTransaction": "0xc970850a74a59e9343f04d2b69c95cb3ef228315e524a094c559497c65dd5e73",
+      "runtimeCodeHash": "0xa1eb83fbcd5959e18a125614d807969eae7cde0c718670e5aaecbe089797be4f"
+    },
+    "projectV2.projectV3PriceGuard3000": {
+      "address": "0x82d830f603D437ea9dAbdD3a6de0b33100c01158",
+      "deploymentBlock": 45137778,
+      "deploymentTransaction": "0x3ecc33e9a6caf9b088e291de8d40ad9e2875968c8619195042d05d5110f235e0",
+      "runtimeCodeHash": "0x0ccd2e844de8f5ee2dccdeca6140189a3e75c791a2a9d1969976f1447b495872"
+    },
+    "projectV2.projectV3PriceGuard10000": {
+      "address": "0x58214C993A406eaC8C9eA26707dAE716fFf4D827",
+      "deploymentBlock": 45137837,
+      "deploymentTransaction": "0x6d715b4ed97b1d53e0bd5ffdb34c73e6807a89e35270b2a7640ff8fb3aa55bc8",
+      "runtimeCodeHash": "0x6ad1162bbc16e7298069e52ae6d2313aabf751733f92c1e833e3ce8a54bcbd63"
+    },
+    "projectV2.ponsProjectAdapterFactory": {
+      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41",
+      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5"
+    },
+    "projectV2.ponsProjectAdapterImplementation": {
+      "address": "0x3943b7f46b201CFe5033367Ae2E102555e0ea50F",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0xc9121126ed8dae4812802ddc23b68fea872d7bfce68947258a24ea6cede2edbd",
+      "runtimeCodeHash": "0xd61178a140dc8f8df8a0ae4987dc93b7063334496591c10e81aee660d1d916e6"
+    },
+    "projectV2.poolsInstantProjectAdapterFactory": {
+      "address": "0xc13238cdF673eE82704255C14C6224fC7AfA9C36",
+      "deploymentBlock": 45030114,
+      "deploymentTransaction": "0xc23d1390ff4926fbbd3c0102fe63ed2bb53f24e42a50a34e3175302adc1c273f",
+      "runtimeCodeHash": "0xccaf8d43bf0d0da6d4a7dd2e539c7d0f2d71c470546c0dc8b1df6e3f96e25428"
+    },
+    "projectV2.poolsInstantNoFeeProjectAdapterFactory": {
+      "address": "0x990A008705c115eF1cb779B73D20F2BcA865f03A",
+      "deploymentBlock": 45030114,
+      "deploymentTransaction": "0xf61df3840e52ead2d51529c5cc1f3f09447face5801604bd86c21acadacb49a5",
+      "runtimeCodeHash": "0x81e78639a3c06cb115f800feceba601a5eb06e756ef2fec48abfb2376251579c"
+    },
+    "projectV2.poolsLbpProjectAdapterFactory": {
+      "address": "0x00ed429B6810281784372B6Bf610541670815A60",
+      "deploymentBlock": 45030115,
+      "deploymentTransaction": "0x249176abceb321e4afde8d03a5a799ddffa77816393931248266b385e1a1e99d",
+      "runtimeCodeHash": "0x33329edabc21310bac6d6b90c462ba63c139f9937ad9cec6f8bdacda0d86b30b"
+    },
+    "projectV2.poolsProjectRegistrationHelper": {
+      "address": "0x570CFbE42720d96bcEaa592D2D110EF7211E7FA9",
+      "deploymentBlock": 45030115,
+      "deploymentTransaction": "0xbbd9770f51027978def144646037548747232e859c4427e98da9ea702ddc3cf4",
+      "runtimeCodeHash": "0xde1b2a2c36ea4734ffca677dbb588ede4fc96b1e243b07632e9f1efbb56e7f49"
+    },
+    "projectV2.ponsProjectTokenFactory": {
+      "address": "0x42A7883275912256780A8689F9B29a426fB2C0BA",
+      "deploymentBlock": 45137953,
+      "deploymentTransaction": "0x0aa079a523de5f6330587ed27b2425f5f6e0b31f0bc8e8c7f75fccbfab924d3d",
+      "runtimeCodeHash": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c"
+    },
+    "projectV2.launchpadProjectTokenFactory": {
+      "address": "0xefC203F86299Ac9113Bf746328C58d647d22E004",
+      "deploymentBlock": 45138009,
+      "deploymentTransaction": "0xe44b5b34a9d31b5e16b03716f26e2091d21e7dd51a35dfb1c26826c890a919be",
+      "runtimeCodeHash": "0xb03c479677d6d7da6f4e65ff10864f2f64f8a471c2b6abf259ec73b696a4240f"
+    },
+    "projectV2.registry": {
+      "address": "0xb10f8350264315850D3aa8b9794f34F496F6d0Cf",
+      "deploymentBlock": 45138065,
+      "deploymentTransaction": "0xaa8258c49b72d63ce0f7366802904ad5c15f16bb9992c7a9fb901b16a87b2226",
+      "runtimeCodeHash": "0x4317d73c13f1c9706677709ef42fa4cf4b03202ed130230c363eb2e10082ffe6"
+    },
+    "projectV2.deploymentEngine": {
+      "address": "0x92EBaC0139001Face632aA25Bf6EC19Dc3a5747e",
+      "deploymentBlock": 45138129,
+      "deploymentTransaction": "0x31cc7ba558ebe23677dadb7b7e5a683ce4d5d7984aa1774ca4c982dfd73bf590",
+      "runtimeCodeHash": "0x4b84e29376fa6ab3363fb7256057e30741b41dd22356d7d5ea7be6ea82edf128"
+    },
+    "projectV2.launchValidator": {
+      "address": "0x2502C08433f239123CCd4D31479B63646213cbC0",
+      "deploymentBlock": 45138186,
+      "deploymentTransaction": "0xaad785d1bdd5324c8654bdeff551f95347e085cf4bf2b248f90c0cdd5a29c4b3",
+      "runtimeCodeHash": "0x4ce85e7a26197e230d09f76f1af51f14b64009ec9fe1fac8440a7664114395a9"
+    },
+    "projectV2.launcher": {
+      "address": "0x87B67dfFf09363AA75f4BEf1a43ae7d90C8f497B",
+      "deploymentBlock": 45138244,
+      "deploymentTransaction": "0x0ed96cfdcb1a484bcfad83756f26f865489689a53fe8233744a612ec8906ae90",
+      "runtimeCodeHash": "0x86b7c7f88e40538022f80f00cad22469d622cbfb45a66c8d39577560e6ac5131"
     }
   },
   dependencies: {
@@ -432,32 +540,32 @@ export const mainnet = {
       "runtimeCodeHash": "0x6f36c378e272c6324c48f045182bcb54bd8ad654cf9ebd42e8893d52c4cb25dc"
     },
     "ponsV2LaunchFactory": {
-      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
-      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
+      "address": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
+      "runtimeCodeHash": "0x3392f4e9040deec97e49bf05fc3a696f295b79806ef83910d84943d431d05e83"
     },
     "ponsV2LaunchDeployer": {
-      "address": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42",
-      "runtimeCodeHash": "0xeade22566c766377f6adfb99534f2772251efad9568642c0704a7051418e624c"
+      "address": "0xa0bc05240f1cD1f3Df7FEfA35e48C19ffF4c6ACe",
+      "runtimeCodeHash": "0x1a02242a68ae3b615880e87cba298a208fe991a7a6f87cbc9b34e596e9518fc7"
     },
     "ponsV2FeeEscrow": {
       "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
       "runtimeCodeHash": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1"
     },
     "ponsV2MemeHook": {
-      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
-      "runtimeCodeHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db"
+      "address": "0xE9Ec0Ffc7d5bEF33f815D7b0cDd15A7c5Dc1e044",
+      "runtimeCodeHash": "0x5f3bc01971cffe8dea490d70f123c25c01ae2c3579b68d40109c3ac68e1461eb"
     },
     "ponsV2BuybackVault": {
-      "address": "0x42df2a798f82289E177311362e8f5ccC45c1219c",
-      "runtimeCodeHash": "0x5de8480874faffefa539648f1a7d6c1e69b39da3fa34de22fc95eb7586aece03"
+      "address": "0xA61f18568d3B817bbb95450D42F7403e871Ce0a1",
+      "runtimeCodeHash": "0x99fd213fd5cccddc5bb26e9ab9763a69bd17f7286333f93ae9c3b96817f8f904"
     },
     "ponsV2LaunchLocker": {
-      "address": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952",
-      "runtimeCodeHash": "0x58455f80b3773871d601a025e56ec27c71ab3bbb8e2ca6b17828954450742025"
+      "address": "0x1006fA85294A9c38AA4214d52c86CC970Ddc5647",
+      "runtimeCodeHash": "0x5304631acb89c64e75397509c745337b6ddb3e7f529e2297a335114049bcff7d"
     },
     "ponsV2LaunchForwarder": {
-      "address": "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948",
-      "runtimeCodeHash": "0xed9065184519eaa24a22c2556403d5d8bbb230ff94dbc5c414cf5028e20e52e7"
+      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
+      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5"
     },
     "uniswapV4PoolManager": {
       "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",

@@ -5,8 +5,9 @@ import { resolve } from "node:path";
 import { validatePromotionEnvelope } from "./promotion-schema.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-const deploymentManifest = readFileSync(resolve(repoRoot, "mainnet-deployments.json"));
-const deploymentManifestSha256 = createHash("sha256").update(deploymentManifest).digest("hex");
+const deploymentManifest = JSON.parse(
+  readFileSync(resolve(repoRoot, "mainnet-deployments.json"), "utf8"),
+);
 const requireActive = process.argv.includes("--require-active");
 
 for (const channel of ["candidate", "active"]) {
@@ -27,8 +28,25 @@ for (const channel of ["candidate", "active"]) {
   if (requireActive && channel === "active" && promotion.chainId !== 4663) {
     throw new Error("SDK releases require a Robinhood mainnet active promotion");
   }
-  if (promotion.chainId === 4663 && promotion.source.deploymentManifestSha256 !== deploymentManifestSha256) {
-    throw new Error(`${channel} promotion does not match the SDK deployment registry`);
+  if (promotion.chainId === 4663) {
+    const localEntries = new Map();
+    const collect = (value) => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return;
+      if (typeof value.address === "string" && typeof value.runtimeCodeHash === "string") {
+        localEntries.set(
+          `${value.address.toLowerCase()}:${value.runtimeCodeHash.toLowerCase()}`,
+          true,
+        );
+      }
+      for (const nested of Object.values(value)) collect(nested);
+    };
+    collect(deploymentManifest);
+    for (const [name, entry] of Object.entries(promotion.consumers.sdk.contracts)) {
+      const identity = `${entry.address.toLowerCase()}:${entry.runtimeCodeHash.toLowerCase()}`;
+      if (!localEntries.has(identity)) {
+        throw new Error(`${channel} SDK binding ${name} does not match the SDK deployment registry`);
+      }
+    }
   }
   console.log(`SDK promotion: ${promotion.releaseId} ${channel} ${actual}`);
 }

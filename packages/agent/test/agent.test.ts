@@ -134,7 +134,8 @@ test("exposes the full read/plan/validate tool surface", async () => {
     "sinjoh_manifest",
     "sinjoh_plan_flap_launch", "sinjoh_plan_letscash_integration",
     "sinjoh_plan_ponsv2_launch", "sinjoh_plan_router_work", "sinjoh_preflight_guard",
-    "sinjoh_prepare_launch_image", "sinjoh_publish_launch_image",
+    "sinjoh_prepare_launch_image", "sinjoh_prepare_pons_project_launch",
+    "sinjoh_project_preview", "sinjoh_project_record", "sinjoh_publish_launch_image",
     "sinjoh_registry_health", "sinjoh_router_snapshot", "sinjoh_validate_config", "sinjoh_verify_manifest",
     "sinjoh_wallet_activity"
   ]);

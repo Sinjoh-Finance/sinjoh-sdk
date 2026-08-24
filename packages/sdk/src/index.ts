@@ -21,9 +21,10 @@ export {
 export {
   assembleLaunchDeployment, encodePredictionCall, ponsV2FactoryPredictionAbi,
   ponsV2LaunchDeployerAbi, ponsV2MemeHookAbi, predictLaunchAddresses,
+  predictProjectLaunchAddresses,
   raffleExclusionsForLaunch, ZERO_ADDRESS,
-  type PonsV2FeePolicySnapshot, type PonsV2LaunchDeployment, type PonsV2Socials,
-  type PonsV2TokenParams
+  type PonsV2FeePolicySnapshot, type PonsV2LaunchDeployment,
+  type PonsV2ProjectTokenDeploymentData, type PonsV2Socials, type PonsV2TokenParams
 } from "./predict/ponsv2.js";
 
 export { expectedCloneRuntime } from "./predict/clones.js";
@@ -111,3 +112,39 @@ export {
   type RaffleSnapshot, type RandomnessRequestRecord, type RevenueBalanceRecord,
   type SinjohApiClient, type SinjohApiClientV2_1
 } from "./api.js";
+
+export {
+  buildExistingTokenLaunchFromPreset,
+  buildLaunchFromPreset,
+  buildProjectLaunchManifest,
+  launchErrorMessage,
+  predictExistingTokenLaunch,
+  predictLaunch,
+  projectLaunchManifestHash,
+  projectLauncherV2Abi,
+  projectRecord,
+  projectRegistryV2Abi,
+  serializeProjectLaunchManifest,
+  validateExistingTokenLaunchConfig,
+  validateLaunchConfig,
+  type CreatorExistingTokenLaunchChoices,
+  type CreatorLaunchChoices,
+  type ProjectLaunchConfig,
+  type ProjectLaunchManifestV1,
+  type ProjectLaunchPreset,
+  type ProjectLaunchPreview,
+  type ProjectRecord,
+  type ProjectReleaseReference,
+} from "./project-v2.js";
+
+export {
+  assertPonsGraduationCustodyExclusions,
+  assemblePonsProjectLaunchTransaction,
+  simulatePonsProjectLaunchTransaction,
+  sinjohPonsV2AdapterFactoryAbi,
+  sinjohPonsV2ProjectAdapterAbi,
+  verifyPonsProjectLaunchTransaction,
+  type PonsGraduationCustody,
+  type PonsProjectLaunchRequest,
+  type PonsProjectLaunchTransaction,
+} from "./pons-project-v2.js";

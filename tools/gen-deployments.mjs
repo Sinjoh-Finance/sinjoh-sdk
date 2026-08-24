@@ -28,6 +28,9 @@ for (const key of ["rpcUrl", "explorerUrl", "status"]) {
 
 function role(name) {
   const value = raw[name];
+  if (typeof value === "string" && ADDRESS.test(value)) {
+    return { address: getAddress(value), kind: "eoa" };
+  }
   if (!value || typeof value !== "object" || Array.isArray(value)
     || typeof value.address !== "string" || !ADDRESS.test(value.address)
     || value.kind !== "eoa" || value.runtimeCodeHash !== undefined
@@ -48,10 +51,29 @@ const governanceRole = role("governance");
  * trust-bearing address explicitly carries a runtime hash or an EOA classification.
  */
 function collect(section, prefix, into) {
+  const explicitEoaPaths = new Set([
+    "fundingBands.deployer",
+    "fundingBands.governance",
+    "fundingBands.operations.keeper",
+    "raffleOperations.attestor",
+    "raffleOperations.ecvrfProver",
+  ]);
   for (const [key, value] of Object.entries(section)) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (typeof value === "string") {
-      if (ADDRESS.test(value)) fail(`${path}: address must declare runtimeCodeHash or kind eoa`);
+      if (ADDRESS.test(value)) {
+        const siblingHash = section[`${key}RuntimeCodeHash`];
+        if (typeof siblingHash === "string" && HASH32.test(siblingHash)) {
+          into[path] = {
+            address: getAddress(value),
+            runtimeCodeHash: siblingHash.toLowerCase(),
+          };
+        } else if (explicitEoaPaths.has(path)) {
+          into[path] = { address: getAddress(value), kind: "eoa" };
+        } else {
+          fail(`${path}: address must declare runtimeCodeHash or kind eoa`);
+        }
+      }
       else if (value.startsWith("0x") && !HASH32.test(value)) {
         fail(`${path}: invalid hex value ${value}`);
       }

@@ -14,3 +14,4 @@ export * from "./generated/treasuryVault.js";
 export * from "./generated/protocolUpgrade.js";
 export * from "./generated/ponsV1Adapter.js";
 export * from "./generated/launchpadAdapters.js";
+export * from "./generated/contractsV2.js";
