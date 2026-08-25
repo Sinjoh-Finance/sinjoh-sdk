@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { decodeAbiParameters, type Address, type Hex } from "viem";
+import { decodeAbiParameters, decodeFunctionData, type Address, type Hex } from "viem";
 import {
   assemblePonsProjectLaunchTransaction,
   buildExistingTokenLaunchFromPreset,
@@ -11,7 +11,11 @@ import {
   ProjectRouterActionType,
   predictProjectModuleAddress,
   projectLauncherV2Abi,
+  projectLiquidVotesDeposit,
+  projectLiquidVotesWithdraw,
+  projectLiquidVotesWrapperV2Abi,
   projectRegistryV2Abi,
+  sinjohPonsV2ProjectAdapterAbi,
   verifyPonsProjectLaunchTransaction,
   type ProjectLaunchConfig,
 } from "../src/index.js";
@@ -29,7 +33,7 @@ function participantPreset(modules: { staking: boolean; airdrop: boolean; raffle
       totalSupply: 0n,
       salt: `0x${"00".repeat(32)}`,
       governanceMode: 0,
-      voteSource: 0,
+      voteSource: modules.staking ? 1 : 0,
       modules: {
         treasury: false,
         router: true,
@@ -397,6 +401,13 @@ test("verifies the exact assembled canonical adapter payload", () => {
     snipeTaxExemptions: [],
     project: config,
     launchpadApprovalProof: [],
+    fundingBands: {
+      escrow: zero,
+      profileId: 0,
+      inventoryBps: 0,
+      configs: [],
+      allocationBps: [],
+    },
   } as const;
   const transaction = assemblePonsProjectLaunchTransaction({
     adapter,
@@ -438,4 +449,165 @@ test("verifies the exact assembled canonical adapter payload", () => {
     graduationCustody,
     value: 1n,
   }), /Missing Pons custody exclusion 0x0000000000000000000000000000000000008300/);
+});
+
+test("preserves the exact IssaDAO staked-governance and Funding Bands payload", () => {
+  const adapter = "0x0000000000000000000000000000000000008000" as Address;
+  const graduationCustody = {
+    curve: "0x0000000000000000000000000000000000008100",
+    locker: "0x0000000000000000000000000000000000008200",
+    poolManager: "0x0000000000000000000000000000000000008300",
+  } as const;
+  const issaPreset = participantPreset({ staking: true, airdrop: false, raffle: false });
+  issaPreset.config.modules.treasury = true;
+  issaPreset.config.modules.router = false;
+  issaPreset.config.governance.tokenGovernance = {
+    votingDelay: 10_800,
+    votingPeriod: 86_400,
+    proposalThresholdBps: 1_000,
+    quorumBps: 3_000,
+    timelockDelay: 86_400,
+    referenceSupply: 0n,
+  };
+  const baseConfig = buildExistingTokenLaunchFromPreset(
+    issaPreset,
+    {
+      creator: "0xe4605138e185FBeE40ff6193A044aa0BE2909216",
+      name: "IssaDAO",
+      symbol: "ISSA",
+      totalSupply: 1_000_000_000n,
+      salt: `0x${"99".repeat(32)}`,
+      multisigSigners: [
+        "0xe4605138e185FBeE40ff6193A044aa0BE2909216",
+        "0x0000000000000000000000000000000000002000",
+        "0x0000000000000000000000000000000000003000",
+      ],
+      stakingGuardian: zero,
+    },
+  );
+  const project = {
+    ...baseConfig,
+    launchProfile: {
+      ...baseConfig.launchProfile,
+      additionalCustodyExclusions: [
+        adapter,
+        graduationCustody.curve,
+        graduationCustody.locker,
+        graduationCustody.poolManager,
+      ],
+    },
+  } as ProjectLaunchConfig;
+  assert.deepEqual(project.modules, {
+    treasury: true,
+    router: false,
+    staking: true,
+    airdrop: false,
+    basket: false,
+    fundingBands: false,
+    raffle: false,
+    liquidity: false,
+  });
+  assert.deepEqual(project.governance.tokenGovernance, {
+    votingDelay: 10_800,
+    votingPeriod: 86_400,
+    proposalThresholdBps: 1_000,
+    quorumBps: 3_000,
+    timelockDelay: 86_400,
+    referenceSupply: 1_000_000_000n,
+  });
+  assert.equal(project.voteSource, 1);
+
+  const request = {
+    token: {
+      name: "IssaDAO",
+      symbol: "ISSA",
+      logo: "",
+      description: "",
+      socials: { twitter: "", telegram: "", discord: "", website: "", farcaster: "" },
+      creatorFeeRecipient: adapter,
+      creatorTaxBps: 400,
+      buybackEnabled: false,
+      expectedEconomics: `0x${"88".repeat(32)}` as Hex,
+      salt: `0x${"99".repeat(32)}` as Hex,
+    },
+    launchConfigId: 0n,
+    pairToken: zero,
+    developerBuy: 10_000_000_000_000_000n,
+    minTokensOut: 1n,
+    snipeTaxExemptions: [],
+    project,
+    launchpadApprovalProof: [],
+    fundingBands: {
+      escrow: "0x0000000000000000000000000000000000009000" as Address,
+      profileId: 0,
+      inventoryBps: 5_000,
+      configs: [
+        {
+          lowerMarketCapUsdE8: 52_000_00000000n,
+          upperMarketCapUsdE8: 55_000_00000000n,
+          destination: 1,
+          feeRouter: "0x0000000000000000000000000000000000009100" as Address,
+        },
+        {
+          lowerMarketCapUsdE8: 55_000_00000000n,
+          upperMarketCapUsdE8: 60_000_00000000n,
+          destination: 1,
+          feeRouter: "0x0000000000000000000000000000000000009100" as Address,
+        },
+      ],
+      allocationBps: [5_000, 5_000],
+    },
+  } as const;
+  const transaction = assemblePonsProjectLaunchTransaction({
+    adapter,
+    request,
+    graduationCustody,
+    value: 10_000_000_000_000_001n,
+  });
+  const decoded = decodeFunctionData({
+    abi: sinjohPonsV2ProjectAdapterAbi,
+    data: transaction.data,
+  });
+  assert.equal(decoded.functionName, "launch");
+  const decodedRequest = decoded.args[0];
+  assert.equal(decodedRequest.token.name, "IssaDAO");
+  assert.equal(decodedRequest.token.symbol, "ISSA");
+  assert.equal(decodedRequest.token.creatorTaxBps, 400);
+  assert.equal(decodedRequest.developerBuy, 10_000_000_000_000_000n);
+  assert.equal(decodedRequest.project.modules.staking, true);
+  assert.equal(decodedRequest.project.modules.airdrop, false);
+  assert.equal(decodedRequest.project.modules.raffle, false);
+  assert.equal(decodedRequest.project.voteSource, 1);
+  assert.equal(decodedRequest.fundingBands.escrow, request.fundingBands.escrow);
+  assert.equal(decodedRequest.fundingBands.inventoryBps, 5_000);
+  assert.deepEqual(decodedRequest.fundingBands.allocationBps, [5_000, 5_000]);
+  assert.deepEqual(
+    decodedRequest.fundingBands.configs.map((band) => [
+      band.lowerMarketCapUsdE8,
+      band.upperMarketCapUsdE8,
+      band.feeRouter,
+    ]),
+    [
+      [52_000_00000000n, 55_000_00000000n, request.fundingBands.configs[0]!.feeRouter],
+      [55_000_00000000n, 60_000_00000000n, request.fundingBands.configs[1]!.feeRouter],
+    ],
+  );
+});
+
+test("prepares executable one-to-one liquid vote wrapper deposit and withdrawal calls", () => {
+  const wrapper = "0x0000000000000000000000000000000000009400" as Address;
+  const holder = "0xe4605138e185FBeE40ff6193A044aa0BE2909216" as Address;
+  const amount = 123_456_789n;
+
+  const deposit = projectLiquidVotesDeposit(wrapper, holder, amount);
+  assert.equal(deposit.address, wrapper);
+  assert.equal(deposit.abi, projectLiquidVotesWrapperV2Abi);
+  assert.equal(deposit.functionName, "depositFor");
+  assert.deepEqual(deposit.args, [holder, amount]);
+
+  const withdrawal = projectLiquidVotesWithdraw(wrapper, holder, amount);
+  assert.equal(withdrawal.address, wrapper);
+  assert.equal(withdrawal.abi, projectLiquidVotesWrapperV2Abi);
+  assert.equal(withdrawal.functionName, "withdrawTo");
+  assert.deepEqual(withdrawal.args, [holder, amount]);
 });

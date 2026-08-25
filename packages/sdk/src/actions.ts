@@ -2,7 +2,8 @@ import { parseAbi, type Abi, type Address, type Hex } from "viem";
 import {
   sinjohAirdropDistributorAbi, sinjohEcvrfRandomnessAbi,
   sinjohFeeRouterAbi, sinjohLiquidityManagerAbi, sinjohRaffleRewardsAbi,
-  sinjohRevenueCollectorAbi, sinjohLaunchStakingEngineAbi
+  sinjohRevenueCollectorAbi, sinjohLaunchStakingEngineAbi,
+  projectLiquidVotesWrapperV2Abi
 } from "@sinjoh/abis";
 
 /** The `ISinjohLaunchpadAdapter` seam — a copied convention shared by every adapter family. */
@@ -228,6 +229,28 @@ export function launchStakingSweepUnclaimed(
     address: engine, abi: sinjohLaunchStakingEngineAbi as Abi,
     functionName: "sweepUnclaimed", args: [accountId, epochId],
     description: "Sweep an expired epoch remainder to its immutable destination"
+  };
+}
+
+// -- Project liquid votes ----------------------------------------------------
+
+export function projectLiquidVotesDeposit(
+  wrapper: Address, recipient: Address, amount: bigint
+): PreparedCall {
+  return {
+    address: wrapper, abi: projectLiquidVotesWrapperV2Abi as Abi,
+    functionName: "depositFor", args: [recipient, amount],
+    description: "Deposit project tokens into the liquid one-token-to-one-vote wrapper"
+  };
+}
+
+export function projectLiquidVotesWithdraw(
+  wrapper: Address, recipient: Address, amount: bigint
+): PreparedCall {
+  return {
+    address: wrapper, abi: projectLiquidVotesWrapperV2Abi as Abi,
+    functionName: "withdrawTo", args: [recipient, amount],
+    description: "Withdraw underlying project tokens from the liquid-votes wrapper"
   };
 }
 
