@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/abis",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Generated, viem-typed ABIs for the Sinjoh contracts, harvested from Foundry build output at a pinned source commit.",
   "license": "Apache-2.0",
   "repository": {
