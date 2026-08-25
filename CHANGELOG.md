@@ -3,7 +3,7 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
-## 2.2.0 - 2026-08-25
+## 2.2.1 - 2026-08-25
 
 ### Added
 
