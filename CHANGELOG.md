@@ -3,6 +3,21 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.2 - 2026-08-25
+
+### Fixed
+
+- Promoted the gas-bounded Project V2 Launcher and Registry release so full Project launches can
+  register every selected governed module within the production transaction gas cap.
+- Updated the generated Project V2 ABIs and production deployment bindings to source commit
+  `3d6dd815ff326a40bee04caa833b5ccd61de0f44`, while preserving the prior production generation
+  under its historical deployment keys.
+
+### Tests
+
+- Pinned the successor Launcher, Registry, deployment engine, and launch validator addresses in
+  the deployment-manifest regression suite.
+
 ## 2.2.1 - 2026-08-25
 
 ### Added

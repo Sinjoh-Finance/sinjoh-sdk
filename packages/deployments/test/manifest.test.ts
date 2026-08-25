@@ -54,6 +54,23 @@ test("core infrastructure is present under stable keys", () => {
   assert.ok("weth" in mainnet.dependencies, "missing weth dependency");
 });
 
+test("Project V2 uses the gas-bounded production generation", () => {
+  assert.equal(mainnet.contracts["projectV2.launcher"]?.address,
+    "0x2260655205Ad66D1034d3C8afA46E6168C9C48Ff");
+  assert.equal(mainnet.contracts["projectV2.registry"]?.address,
+    "0x7658B8a558a9A5F2bF8d4E247D02d756F55a6d4d");
+  assert.equal(mainnet.contracts["projectV2.deploymentEngine"]?.address,
+    "0x8C79a8fC9fb0A817D9eB12a40Dd1aE8806FC2B73");
+  assert.equal(mainnet.contracts["projectV2.launchValidator"]?.address,
+    "0xc7C6D0CB3EEeaf8fb693504cA73063Fb5E01fA41");
+  assert.equal(
+    mainnet.contracts[
+      "projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.launcher"
+    ]?.address,
+    "0x4b748848f16DAA81D09d8743Ced4A9604bc7de69",
+  );
+});
+
 test("launch staking pins the reviewed multi-token deployment", () => {
   const entry = mainnet.contracts.launchStakingEngine;
   assert.equal(entry.address, "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b");
