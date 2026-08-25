@@ -3,6 +3,17 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.4 - 2026-08-25
+
+### Fixed
+
+- Promoted the coherent ordinary Pons V2 buyback generation: adapter
+  `0x1BE0E8F04221329FDfea34f41a1832a80c2c147c` and price guard
+  `0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED` now occupy the canonical deployment
+  keys used by integrations.
+- Preserved the prior indexed-factory adapter and price guard under the historical-generation
+  deployment keys so existing integrations can continue to verify earlier launches.
+
 ## 2.2.3 - 2026-08-25
 
 ### Fixed

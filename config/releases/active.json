@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "releaseId": "project-v2-raffle-validator-20260825-80c2854",
+  "releaseId": "ordinary-pons-v2-current-20260825-72a54c3",
   "channel": "active",
   "chainId": 4663,
   "network": "robinhood-mainnet",
   "source": {
     "repository": "Sinjoh-Finance/sinjoh-contracts",
-    "commit": "80c2854a5b1647f1d4362a21259aa17af1b2374c",
-    "releaseManifestSha256": "735440999e0f2a62b2c5f4eb7d93935269166cd5e3291762e98fe08f7753aa73",
+    "commit": "72a54c393f4b23e2f33be880fd597104a137d9a7",
+    "releaseManifestSha256": "13adf3410240c80937830d2de4e292935c2517368c67d7d85852a93612867dd8",
     "deploymentManifest": "mainnet-deployments.json",
-    "deploymentManifestSha256": "2328381a3c190b1159a87764bdec5b4547e861fa0c8ec4a8d0f964b4e0c586dc"
+    "deploymentManifestSha256": "b1ea7b54155da0e08d510fc95172bd9ebb5bbabcc5a8e50064bd92f8ace37082"
   },
-  "generatedAt": "2026-08-25T15:05:48.888Z",
+  "generatedAt": "2026-08-25T19:47:15.806Z",
   "contracts": {
     "contracts.launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
@@ -243,12 +243,28 @@
       "deploymentTransaction": "0x1106c5cc370d27162e23d9f6c5ec3d8131d1259d8cc6ad497c38a3c8efd8d4d8"
     },
     "contracts.ponsV2PairBuybackAdapter": {
+      "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+      "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
+      "deploymentBlock": 45666464,
+      "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
+    },
+    "contracts.ponsV2PairBuybackPriceGuard": {
+      "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
+      "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
+      "deploymentBlock": 45666468,
+      "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
+    },
+    "contracts.ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.launchFactory": {
+      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
+    },
+    "contracts.ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.adapter": {
       "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
       "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
       "deploymentBlock": 28126079,
       "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
     },
-    "contracts.ponsV2PairBuybackPriceGuard": {
+    "contracts.ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.priceGuard": {
       "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
       "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
       "deploymentBlock": 28126079,
@@ -938,16 +954,16 @@
           "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
         },
         "ponsV2PairBuybackAdapter": {
-          "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
-          "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
-          "deploymentBlock": 28126079,
-          "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
+          "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+          "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
+          "deploymentBlock": 45666464,
+          "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
         },
         "ponsV2PairBuybackPriceGuard": {
-          "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
-          "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
-          "deploymentBlock": 28126079,
-          "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
+          "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
+          "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
+          "deploymentBlock": 45666468,
+          "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
         },
         "ponsV2BuybackAdapter": {
           "address": "0x39217172A3F07E827557093989039F968A571D43",
@@ -1103,6 +1119,8 @@
         "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
         "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
         "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
+        "NEXT_PUBLIC_PROJECT_V2_AIRDROP_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
+        "NEXT_PUBLIC_PROJECT_V2_RAFFLE_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_FACTORY": "0x81f50D1695eeB6976b53f5dCc9E785Ff06C183DC",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_FACTORY_CODEHASH": "0xd5e2b73d1464ba5d8912ec7f999893e7369456a8b64f97160e9097969f02cac3",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_IMPLEMENTATION": "0x0B825f7d00adB6bF03A7c7853F670F192D742cC4",

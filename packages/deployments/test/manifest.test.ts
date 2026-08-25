@@ -81,6 +81,25 @@ test("Project V2 uses the raffle-route-validated production generation", () => {
   );
 });
 
+test("ordinary Pons V2 uses one coherent current buyback generation", () => {
+  assert.equal(mainnet.contracts.ponsV2PairBuybackAdapter?.address,
+    "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c");
+  assert.equal(mainnet.contracts.ponsV2PairBuybackPriceGuard?.address,
+    "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED");
+  assert.equal(
+    mainnet.contracts[
+      "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.adapter"
+    ]?.address,
+    "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+  );
+  assert.equal(
+    mainnet.contracts[
+      "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.priceGuard"
+    ]?.address,
+    "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+  );
+});
+
 test("launch staking pins the reviewed multi-token deployment", () => {
   const entry = mainnet.contracts.launchStakingEngine;
   assert.equal(entry.address, "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b");
