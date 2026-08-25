@@ -3,6 +3,21 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.3 - 2026-08-25
+
+### Fixed
+
+- Promoted the Project V2 launch validator that rejects raffle funding routes when the routed
+  output asset differs from the immutable raffle prize asset.
+- Updated generated Project V2 ABIs and production deployment bindings to source commit
+  `41dbce2d050abe958e604c236c0346e69be231ff`, while preserving both prior production
+  generations under their historical deployment keys.
+
+### Tests
+
+- Pinned the successor Launcher, Registry, deployment engine, launch validator, and Pons Project
+  adapter addresses in the deployment-manifest regression suite.
+
 ## 2.2.2 - 2026-08-25
 
 ### Fixed

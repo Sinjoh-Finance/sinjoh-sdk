@@ -9,7 +9,7 @@ Chain. It provides deterministic planning and validation building blocks for app
 keepers, and agents, plus an explicit creator-authorized API upload for canonical token artwork.
 It never holds keys, signs, or submits blockchain transactions.
 
-> Release status: stable `2.2.2` source and package metadata, licensed under
+> Release status: stable `2.2.3` source and package metadata, licensed under
 > Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
 > publishing, with build provenance, after all deterministic release gates pass.
 

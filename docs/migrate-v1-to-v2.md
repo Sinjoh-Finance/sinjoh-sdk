@@ -1,7 +1,7 @@
 # v1 to v2 migration changelog
 
 This is the short migration checklist for an application built against Sinjoh `1.1.3` and moving
-to `2.2.2`. The API keeps its `/v1` URL; the package major changes because wallet execution and
+to `2.2.3`. The API keeps its `/v1` URL; the package major changes because wallet execution and
 deployment verification now fail closed when chain, account, or implementation state is ambiguous.
 
 ## Upgrade
@@ -10,11 +10,11 @@ Upgrade every Sinjoh package your application uses together:
 
 ```sh
 npm install \
-  @sinjoh/abis@2.2.2 \
-  @sinjoh/agent@2.2.2 \
-  @sinjoh/deployments@2.2.2 \
-  @sinjoh/merkle@2.2.2 \
-  @sinjoh/sdk@2.2.2 \
+  @sinjoh/abis@2.2.3 \
+  @sinjoh/agent@2.2.3 \
+  @sinjoh/deployments@2.2.3 \
+  @sinjoh/merkle@2.2.3 \
+  @sinjoh/sdk@2.2.3 \
   viem@^2.55.10
 ```
 
@@ -52,7 +52,7 @@ Remove packages from the command if your application does not import them.
 ## Breaking-change checklist
 
 - [ ] Runtime is Node.js 22+, ESM, with viem 2.55.10+ in major version 2.
-- [ ] All installed `@sinjoh/*` packages use the same `2.2.2` release line.
+- [ ] All installed `@sinjoh/*` packages use the same `2.2.3` release line.
 - [ ] Packaged or custom deployments pass the stricter live verification.
 - [ ] An embedded wallet executor submits with the supplied account and chain ID.
 - [ ] API decoding accepts `ProtocolEventRecord.reference` as `string | null`.

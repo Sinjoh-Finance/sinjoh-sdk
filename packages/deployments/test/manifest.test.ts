@@ -54,15 +54,25 @@ test("core infrastructure is present under stable keys", () => {
   assert.ok("weth" in mainnet.dependencies, "missing weth dependency");
 });
 
-test("Project V2 uses the gas-bounded production generation", () => {
+test("Project V2 uses the raffle-route-validated production generation", () => {
   assert.equal(mainnet.contracts["projectV2.launcher"]?.address,
-    "0x2260655205Ad66D1034d3C8afA46E6168C9C48Ff");
+    "0x0281eC255Da0405cA581c630eB537F79ab4092B8");
   assert.equal(mainnet.contracts["projectV2.registry"]?.address,
-    "0x7658B8a558a9A5F2bF8d4E247D02d756F55a6d4d");
+    "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC");
   assert.equal(mainnet.contracts["projectV2.deploymentEngine"]?.address,
-    "0x8C79a8fC9fb0A817D9eB12a40Dd1aE8806FC2B73");
+    "0x9BBEc7F7709daBf1b828c982e29e31Ae89AF42E9");
   assert.equal(mainnet.contracts["projectV2.launchValidator"]?.address,
-    "0xc7C6D0CB3EEeaf8fb693504cA73063Fb5E01fA41");
+    "0x44B45869B4a6750e80c5cd104040d93f698a4856");
+  assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterFactory"]?.address,
+    "0x31D0C4E74aD63406C6B06F014832261733AF5415");
+  assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterImplementation"]?.address,
+    "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7");
+  assert.equal(
+    mainnet.contracts[
+      "projectV2Generations.project-v2-gascap-20260825-3d6dd81.launcher"
+    ]?.address,
+    "0x2260655205Ad66D1034d3C8afA46E6168C9C48Ff",
+  );
   assert.equal(
     mainnet.contracts[
       "projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.launcher"
