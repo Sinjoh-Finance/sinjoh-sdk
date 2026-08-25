@@ -1,6 +1,6 @@
 {
   "name": "sinjoh-sdk",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "description": "TypeScript SDK workspace for the immutable Sinjoh protocols on Robinhood Chain.",
   "license": "Apache-2.0",
