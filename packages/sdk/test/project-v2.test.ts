@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Address } from "viem";
+import { decodeAbiParameters, type Address, type Hex } from "viem";
 import {
   assemblePonsProjectLaunchTransaction,
   buildExistingTokenLaunchFromPreset,
   buildLaunchFromPreset,
+  encodeProjectRouterSwapAndFundConfig,
+  encodeProjectRouterSwapConfig,
+  ProjectModuleKey,
+  ProjectRouterActionType,
+  predictProjectModuleAddress,
   projectLauncherV2Abi,
   projectRegistryV2Abi,
   verifyPonsProjectLaunchTransaction,
@@ -103,6 +108,91 @@ function participantPreset(modules: { staking: boolean; airdrop: boolean; raffle
 test("public SDK exports the canonical Project V2 launch and Registry ABIs", () => {
   assert.equal(projectLauncherV2Abi.some((item) => item.type === "function" && item.name === "launch"), true);
   assert.equal(projectRegistryV2Abi.some((item) => item.type === "function" && item.name === "project"), true);
+});
+
+test("exports immutable Project module keys and complete Router action values", () => {
+  assert.match(ProjectModuleKey.ROUTER, /^0x[0-9a-f]{64}$/);
+  assert.equal(ProjectRouterActionType.FUND_TREASURY, 6);
+  assert.equal(ProjectRouterActionType.SWAP_AND_FUND_TREASURY, 8);
+  assert.equal(ProjectRouterActionType.SWAP_AND_FUND_AIRDROP, 9);
+  assert.equal(ProjectRouterActionType.SWAP_AND_FUND_RAFFLE, 10);
+  assert.equal(ProjectRouterActionType.NORMALIZE_TO_ROUTE, 11);
+});
+
+test("encodes Solidity-identical Project Router swap configurations", () => {
+  const outputAsset = "0x0000000000000000000000000000000000009000" as Address;
+  const proof = `0x${"12".repeat(32)}` as Hex;
+  const swap = encodeProjectRouterSwapConfig({
+    outputAsset,
+    routeData: "0xaabb",
+    approvalProof: [proof],
+  });
+  const [decodedSwap] = decodeAbiParameters(
+    [{
+      type: "tuple",
+      components: [
+        { name: "outputAsset", type: "address" },
+        { name: "routeData", type: "bytes" },
+        { name: "approvalProof", type: "bytes32[]" },
+      ],
+    }],
+    swap,
+  );
+  assert.equal(decodedSwap.outputAsset, outputAsset);
+  assert.equal(decodedSwap.routeData, "0xaabb");
+  assert.deepEqual(decodedSwap.approvalProof, [proof]);
+
+  const swapAndFund = encodeProjectRouterSwapAndFundConfig({
+    outputAsset,
+    routeData: "0xaabb",
+    approvalProof: [proof],
+    fundingConfig: "0xccdd",
+  });
+  const [decodedSwapAndFund] = decodeAbiParameters(
+    [{
+      type: "tuple",
+      components: [
+        { name: "outputAsset", type: "address" },
+        { name: "routeData", type: "bytes" },
+        { name: "approvalProof", type: "bytes32[]" },
+        { name: "fundingConfig", type: "bytes" },
+      ],
+    }],
+    swapAndFund,
+  );
+  assert.equal(decodedSwapAndFund.outputAsset, outputAsset);
+  assert.equal(decodedSwapAndFund.fundingConfig, "0xccdd");
+});
+
+test("predicts a Project module through the canonical Launcher view", async () => {
+  const calls: unknown[] = [];
+  const expected = "0x0000000000000000000000000000000000007000" as Address;
+  const client = {
+    readContract: async (call: unknown) => {
+      calls.push(call);
+      return expected;
+    },
+  } as unknown as Parameters<typeof predictProjectModuleAddress>[0];
+  const launcher = "0x0000000000000000000000000000000000007100" as Address;
+  const creator = "0x0000000000000000000000000000000000007200" as Address;
+  const salt = `0x${"34".repeat(32)}` as Hex;
+
+  assert.equal(
+    await predictProjectModuleAddress(
+      client,
+      launcher,
+      creator,
+      salt,
+      ProjectModuleKey.ROUTER,
+    ),
+    expected,
+  );
+  assert.deepEqual(calls, [{
+    address: launcher,
+    abi: projectLauncherV2Abi,
+    functionName: "predictModuleAddress",
+    args: [creator, salt, ProjectModuleKey.ROUTER],
+  }]);
 });
 
 test("materializes project participants from choices instead of platform policy", () => {

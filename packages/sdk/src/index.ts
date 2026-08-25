@@ -117,9 +117,14 @@ export {
   buildExistingTokenLaunchFromPreset,
   buildLaunchFromPreset,
   buildProjectLaunchManifest,
+  encodeProjectRouterSwapAndFundConfig,
+  encodeProjectRouterSwapConfig,
   launchErrorMessage,
   predictExistingTokenLaunch,
+  predictProjectModuleAddress,
   predictLaunch,
+  ProjectModuleKey,
+  ProjectRouterActionType,
   projectLaunchManifestHash,
   projectLauncherV2Abi,
   projectRecord,
@@ -135,6 +140,8 @@ export {
   type ProjectLaunchPreview,
   type ProjectRecord,
   type ProjectReleaseReference,
+  type ProjectRouterSwapAndFundConfig,
+  type ProjectRouterSwapConfig,
 } from "./project-v2.js";
 
 export {

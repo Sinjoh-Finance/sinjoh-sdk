@@ -46,6 +46,14 @@ lifecycle, plus governance-only recovery for non-deposit tokens received outside
 harvest. `feeRouterV2Abi` exposes per-route escrow balances, permissionless retry, and governed
 recovery so one paused or reverting destination does not freeze unrelated fee routes.
 
+Project V2 exports include `projectLauncherV2Abi`, `projectLaunchValidatorV2Abi`,
+`projectRegistryV2Abi`, `projectRouterV2Abi`, `projectTreasuryVaultV2Abi`,
+`projectAirdropV2Abi`, `projectStakingPoolV2Abi`, and the remaining governed module ABIs.
+`projectRouterV2Abi` is the complete routed-asset surface: one route may execute ordered direct
+sends, swaps, buyback-and-burn, Treasury funding, Airdrop funding, Raffle funding, liquidity,
+and project-sink actions. Generated ABI values remain the source of truth for action tuple shapes
+and callable signatures.
+
 `sinjohLaunchStakingEngineAbi` is the production platform surface for new launches that opt into
 staking-required airdrops. It is a shared multi-token contract: every launched token is its own
 staking subject, one staked token is one reward unit, and unstaking is immediate. Reward accounts

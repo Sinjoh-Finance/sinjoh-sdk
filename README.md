@@ -9,7 +9,7 @@ Chain. It provides deterministic planning and validation building blocks for app
 keepers, and agents, plus an explicit creator-authorized API upload for canonical token artwork.
 It never holds keys, signs, or submits blockchain transactions.
 
-> Release status: stable `2.1.0` source and package metadata, licensed under
+> Release status: stable `2.2.1` source and package metadata, licensed under
 > Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
 > publishing, with build provenance, after all deterministic release gates pass.
 
@@ -63,12 +63,17 @@ its successful preflight floor has replaced the structural placeholder.
 | [`@sinjoh/deployments`](./packages/deployments) | Typed chain manifests generated from `mainnet-deployments.json`, plus runtime code-hash verification for deployed entries and their recorded implementations. |
 | [`@sinjoh/merkle`](./packages/merkle) | Deterministic Merkle-sum trees (airdrop epochs, raffle ticket intervals) and winning-index derivation, pinned to Solidity-generated golden fixtures. Proof verification requires the tree domain parameters and recomputes the leaf preimage. |
 | [`@sinjoh/agent`](./packages/agent) | MCP server exposing public data and the SDK's read/plan/preflight/validate/prepare surface (`sinjoh-mcp`, stdio), plus simulate-first submission when an embedding host injects its wallet. The standalone command holds no keys. Ships `llms.txt`, the protocol digest an agent loads alongside the tools. |
-| [`@sinjoh/sdk`](./packages/sdk) | Core SDK: the typed public API client, byte-exact configuration codecs (router, raffle, airdrop/liquidity sinks) with initializer-level validation, launch prediction, clone verification, error decoding, chain-bound clients, live reads, guard preflights, prepared lifecycle calls, work planning, and activation checks. The SDK never signs or submits. |
+| [`@sinjoh/sdk`](./packages/sdk) | Core SDK: the typed public API client, byte-exact configuration codecs (router, raffle, airdrop/liquidity sinks) with initializer-level validation, Project V2 preset hydration and launch verification, launch prediction, clone verification, error decoding, chain-bound clients, live reads, guard preflights, prepared lifecycle calls, work planning, and activation checks. The SDK never signs or submits. |
 
 High-level launch planners currently cover Pons v2, Flap, and letscash.fun. Pons v1 and
 pools.trade contracts are available through the generated ABIs and deployment manifest, but do
 not yet have equivalent end-to-end launch planners. This distinction is intentional and should
 remain explicit in application UI.
+
+Project V2 launch builders support complete multi-step routes, including direct delivery,
+buyback-and-burn, token conversion, Treasury, Airdrop, Raffle, liquidity, and project-sink
+funding. The package encodes every action with its exact adapter proof and validates the complete
+configuration through the deployed Launcher before a wallet is asked to sign.
 
 ## Public API and documentation
 
@@ -139,7 +144,7 @@ the exact subject, assets, amount, route hash, and guard bytes to pass to
 replace it with the successful preflight floor and simulate immediately before signing.
 
 See [`SDK_PLAN.md`](./SDK_PLAN.md) for the historical delivery plan and explicitly deferred
-coverage. The code, tests, package READMEs, and this README define the supported v1 surface.
+coverage. The code, tests, package READMEs, and this README define the supported public surface.
 
 ## Contributing and license
 

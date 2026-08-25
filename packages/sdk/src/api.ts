@@ -76,9 +76,16 @@ export interface ProjectV2LaunchFeature {
   tokenTimelock: EvmAddress;
   multisigAccount: EvmAddress;
   treasury: EvmAddress;
+  /** Present on API 1.3+ metadata written by complete-routing Project launches. */
+  router?: EvmAddress;
   stakingPool: EvmAddress;
+  posNft?: EvmAddress;
   airdrop: EvmAddress;
   raffle: EvmAddress;
+  liquidityManager?: EvmAddress;
+  fundingBands?: EvmAddress;
+  basketManager?: EvmAddress;
+  primaryBasketId?: string;
   enabledModules: string;
 }
 
