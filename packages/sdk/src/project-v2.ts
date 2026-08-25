@@ -44,6 +44,7 @@ export const ProjectRouterActionType = {
   SWAP_AND_FUND_TREASURY: 8,
   SWAP_AND_FUND_AIRDROP: 9,
   SWAP_AND_FUND_RAFFLE: 10,
+  NORMALIZE_TO_ROUTE: 11,
 } as const;
 
 export interface ProjectRouterSwapConfig {

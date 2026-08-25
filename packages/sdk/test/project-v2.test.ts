@@ -116,6 +116,7 @@ test("exports immutable Project module keys and complete Router action values", 
   assert.equal(ProjectRouterActionType.SWAP_AND_FUND_TREASURY, 8);
   assert.equal(ProjectRouterActionType.SWAP_AND_FUND_AIRDROP, 9);
   assert.equal(ProjectRouterActionType.SWAP_AND_FUND_RAFFLE, 10);
+  assert.equal(ProjectRouterActionType.NORMALIZE_TO_ROUTE, 11);
 });
 
 test("encodes Solidity-identical Project Router swap configurations", () => {
