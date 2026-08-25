@@ -1,7 +1,17 @@
 import type {
+  Address,
   ContractFunctionArgs,
   ContractFunctionReturnType,
+  Hex,
   PublicClient,
+} from "viem";
+import {
+  encodeAbiParameters,
+  getAddress,
+  isAddress,
+  isHex,
+  keccak256,
+  stringToHex,
 } from "viem";
 import {
   projectLauncherV2Abi,
@@ -9,6 +19,73 @@ import {
 } from "@sinjoh/abis";
 
 export { projectLauncherV2Abi, projectRegistryV2Abi } from "@sinjoh/abis";
+
+export const ProjectModuleKey = {
+  TOKEN: keccak256(stringToHex("TOKEN")),
+  MULTISIG: keccak256(stringToHex("MULTISIG")),
+  TIMELOCK: keccak256(stringToHex("TIMELOCK")),
+  STAKING: keccak256(stringToHex("STAKING")),
+  TREASURY: keccak256(stringToHex("TREASURY")),
+  AIRDROP: keccak256(stringToHex("AIRDROP")),
+  ROUTER: keccak256(stringToHex("ROUTER")),
+  BANDS: keccak256(stringToHex("BANDS")),
+  LIQUIDITY: keccak256(stringToHex("LIQUIDITY")),
+} as const;
+
+export const ProjectRouterActionType = {
+  SEND: 0,
+  SWAP_AND_SEND: 1,
+  BURN_PROJECT_TOKEN: 2,
+  ADD_LIQUIDITY: 3,
+  FUND_AIRDROP: 4,
+  FUND_RAFFLE: 5,
+  FUND_TREASURY: 6,
+  FUND_PROJECT_SINK: 7,
+  SWAP_AND_FUND_TREASURY: 8,
+  SWAP_AND_FUND_AIRDROP: 9,
+  SWAP_AND_FUND_RAFFLE: 10,
+} as const;
+
+export interface ProjectRouterSwapConfig {
+  outputAsset: Address;
+  routeData: Hex;
+  approvalProof: readonly Hex[];
+}
+
+export interface ProjectRouterSwapAndFundConfig extends ProjectRouterSwapConfig {
+  fundingConfig: Hex;
+}
+
+export function encodeProjectRouterSwapConfig(config: ProjectRouterSwapConfig): Hex {
+  return encodeAbiParameters(
+    [{
+      type: "tuple",
+      components: [
+        { name: "outputAsset", type: "address" },
+        { name: "routeData", type: "bytes" },
+        { name: "approvalProof", type: "bytes32[]" },
+      ],
+    }],
+    [config],
+  );
+}
+
+export function encodeProjectRouterSwapAndFundConfig(
+  config: ProjectRouterSwapAndFundConfig,
+): Hex {
+  return encodeAbiParameters(
+    [{
+      type: "tuple",
+      components: [
+        { name: "outputAsset", type: "address" },
+        { name: "routeData", type: "bytes" },
+        { name: "approvalProof", type: "bytes32[]" },
+        { name: "fundingConfig", type: "bytes" },
+      ],
+    }],
+    [config],
+  );
+}
 
 export type ProjectLaunchConfig = ContractFunctionArgs<
   typeof projectLauncherV2Abi,
@@ -68,6 +145,21 @@ export function predictExistingTokenLaunch(
   });
 }
 
+export function predictProjectModuleAddress(
+  client: PublicClient,
+  launcher: Address,
+  creator: Address,
+  userSalt: Hex,
+  moduleKey: Hex,
+) {
+  return client.readContract({
+    address: launcher,
+    abi: projectLauncherV2Abi,
+    functionName: "predictModuleAddress",
+    args: [creator, userSalt, moduleKey],
+  });
+}
+
 export function validateExistingTokenLaunchConfig(
   client: PublicClient,
   launcher: import("viem").Address,
@@ -94,8 +186,6 @@ export function projectRecord(
     args: [projectId],
   });
 }
-
-import { isAddress, type Address, type Hex } from "viem";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const BURN_ADDRESS = "0x000000000000000000000000000000000000dead";
@@ -372,13 +462,6 @@ function assertOptionalAddress(address: Address, label: string): void {
     throw new RangeError(`${label} must be the zero address or a valid non-burn address`);
   }
 }
-
-import {
-  getAddress,
-  isHex,
-  keccak256,
-  stringToHex,
-} from "viem";
 
 type JsonPrimitive = boolean | null | number | string;
 export type JsonValue = JsonPrimitive | readonly JsonValue[] | { readonly [key: string]: JsonValue };
