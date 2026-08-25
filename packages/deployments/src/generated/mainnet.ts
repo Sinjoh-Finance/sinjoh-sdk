@@ -279,18 +279,18 @@ export const mainnet = {
       "purpose": "Pure signed floor (SinjohPonsV2BuybackFloor, five-minute maximum validity) for pons v2 buybacks; no on-chain quote exists on either side of graduation, so the keeper's signer is the sole floor authority."
     },
     "ponsV2PairBuybackAdapter": {
-      "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
-      "deploymentBlock": 28126079,
-      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de",
-      "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
-      "purpose": "Pair-capable pons v2 buyback route: WETH into any launch's market — native or custom pair — via the pinned v3 hop, the bonding curve, or the graduated v4 pool. Supersedes ponsV2BuybackAdapter for new routes."
+      "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+      "deploymentBlock": 45666464,
+      "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26",
+      "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
+      "purpose": "Current pair-capable Pons v2 buyback route for launches created by the active Pons v2 factory: WETH into any native- or custom-pair market through the pinned v3 hop, bonding curve, or graduated v4 pool."
     },
     "ponsV2PairBuybackPriceGuard": {
-      "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
-      "deploymentBlock": 28126079,
-      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75",
-      "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
-      "purpose": "Signed-floor guard for the pair-capable pons v2 buyback route."
+      "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
+      "deploymentBlock": 45666468,
+      "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2",
+      "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
+      "purpose": "Signed-floor guard for the current-factory pair-capable Pons v2 buyback route."
     },
     "poolsTradeMerkleClaimFactory": {
       "address": "0x0C8B3e001C8DbBDbe15089c887C9323E097F0a15",
@@ -782,6 +782,22 @@ export const mainnet = {
       "deploymentBlock": 45741942,
       "deploymentTransaction": "0xa23e984bb1e6c85945ce2006b4a2db8398814b2bca6058beba2cddc41373eb3a",
       "runtimeCodeHash": "0x8fd84e21d7bf188ddd31eb2375e3b24dd49cb1a6018a8348c95375b192939704"
+    },
+    "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.launchFactory": {
+      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
+    },
+    "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.adapter": {
+      "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de",
+      "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07"
+    },
+    "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.priceGuard": {
+      "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75",
+      "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21"
     }
   },
   dependencies: {

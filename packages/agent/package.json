@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/agent",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "MCP server for Sinjoh public data, contract planning, prepared calls, and optional host-wallet transaction execution.",
   "license": "Apache-2.0",
   "repository": {
@@ -46,8 +46,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
-    "@sinjoh/deployments": "2.2.3",
-    "@sinjoh/sdk": "2.2.3",
+    "@sinjoh/deployments": "2.2.4",
+    "@sinjoh/sdk": "2.2.4",
     "viem": "2.55.10",
     "zod": "^4.4.3"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/deployments",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Typed Sinjoh deployment manifests for Robinhood Chain, generated from the canonical mainnet-deployments.json, with a runtime code-hash verifier.",
   "license": "Apache-2.0",
   "repository": {
