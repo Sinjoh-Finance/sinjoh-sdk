@@ -84,6 +84,7 @@ canonical launch artwork. No key is required for normal use.
 
 - [Five-minute tutorial](./docs/getting-started.md)
 - [Task recipes](./docs/how-to-query-sinjoh.md)
+- [v1 to v2 migration](./docs/migrate-v1-to-v2.md)
 - [Complete API reference](./docs/api.md)
 - [API design and trust boundaries](./docs/api-design.md)
 - [OpenAPI 3.1](./openapi/sinjoh-api.yaml)
