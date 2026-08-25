@@ -523,6 +523,7 @@ components:
             projectV2: { oneOf: [{ $ref: "#/components/schemas/ProjectV2LaunchFeature" }, { type: "null" }] }
     ProjectV2LaunchFeature:
       type: object
+      description: Immutable Project V2 governance and module identity. Zero addresses denote disabled modules; routed-action configuration remains authoritative onchain.
       required: [projectId, launchConfigHash, controller, governanceMode, voteSource, tokenGovernor, tokenTimelock, multisigAccount, treasury, stakingPool, airdrop, raffle, enabledModules]
       properties:
         projectId: { $ref: "#/components/schemas/Bytes32" }
@@ -534,9 +535,15 @@ components:
         tokenTimelock: { $ref: "#/components/schemas/Address" }
         multisigAccount: { $ref: "#/components/schemas/Address" }
         treasury: { $ref: "#/components/schemas/Address" }
+        router: { $ref: "#/components/schemas/Address" }
         stakingPool: { $ref: "#/components/schemas/Address" }
+        posNft: { $ref: "#/components/schemas/Address" }
         airdrop: { $ref: "#/components/schemas/Address" }
         raffle: { $ref: "#/components/schemas/Address" }
+        liquidityManager: { $ref: "#/components/schemas/Address" }
+        fundingBands: { $ref: "#/components/schemas/Address" }
+        basketManager: { $ref: "#/components/schemas/Address" }
+        primaryBasketId: { $ref: "#/components/schemas/ExactInteger" }
         enabledModules: { $ref: "#/components/schemas/ExactInteger" }
     LaunchImage:
       type: object

@@ -75,7 +75,17 @@ not need a separate registry handoff. Optional filters:
 | `page`, `limit` | Pagination |
 
 Each launch includes its subject token, creator, launchpad, fee router, adapter,
-deployment block, canonical `image` record (or `null`), and feature addresses.
+deployment block, canonical `image` record (or `null`), feature addresses, and a `projectV2`
+record when the subject belongs to Project V2. That record contains the immutable project ID,
+launch-config hash, governance identity, module addresses, and enabled-module bitmap. Routed
+action configuration remains authoritative onchain and is intentionally not projected as an
+editable API object.
+
+The module identity includes `treasury`, `router`, `stakingPool`, `posNft`, `airdrop`, `raffle`,
+`liquidityManager`, `fundingBands`, `basketManager`, and `primaryBasketId`. Disabled address
+modules are encoded as the zero address so the record remains byte-comparable with the Registry.
+The extended module fields are optional only for historical rows published before the
+complete-routing metadata release.
 The image URL is content-addressed in Sinjoh-controlled storage; `sourceUrl` is
 provenance only and must not be used as a display fallback.
 
@@ -337,15 +347,14 @@ Errors have a stable machine slug and a human message:
 
 ```ts
 import { createSinjohApiClient } from "@sinjoh/sdk";
+import type { Address } from "viem";
 
 const api = createSinjohApiClient();
 const { registry } = await api.getLaunchRegistryHealth();
 if (!registry.ok) throw new Error("Launch registry is out of sync");
 
-const { launches } = await api.listLaunches({
-  feeRouter: "0x...",
-  limit: 10,
-});
+const feeRouter = process.env["SINJOH_ROUTER"] as Address | undefined;
+const { launches } = await api.listLaunches({ feeRouter, limit: 10 });
 const raffle = await api.getRaffle(launches[0].subject);
 ```
 

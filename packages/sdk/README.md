@@ -57,6 +57,10 @@ placeholder minimum.
 - Launch planning: Pons v2, Flap, and letscash.fun prediction and ordered prepared-call plans.
   Every indexed, subject-bound launch is reconciled into the public registry automatically,
   including launches prepared by the SDK rather than Sinjoh's web UI.
+- Project V2: reviewed preset hydration, existing-token launch prediction, complete routed-action
+  encoding, exact Pons launch transaction assembly and verification, Registry reads, and
+  provenance manifests. Routed actions include direct sends, swaps, buyback-and-burn, Treasury,
+  Airdrop, Raffle, liquidity, and project-sink funding.
 - Prepared lifecycle calls: router, adapter, collector, holder airdrop, launch staking, liquidity, raffle, and randomness
   actions, each limited to one protocol action per call.
 - Prediction and diagnostics: Pons v2 launch assembly, EIP-1167 clone runtime construction,
@@ -111,6 +115,8 @@ and prepared calls. See the [API reference](../../docs/api.md).
 3. Keep `guardPreflight` route hashes and guard bytes unchanged; signatures bind those values.
 4. Re-read or simulate immediately before signing because eligibility and owed amounts can change.
 5. Keep RPC credentials outside source control and logs.
+6. Obtain Project V2 adapter proofs from the active attested release; do not construct or trim
+   Merkle proofs manually.
 
 See the [workspace README](https://github.com/Sinjoh-Finance/sinjoh-sdk) for generation,
 testing, MCP integration, and release status.

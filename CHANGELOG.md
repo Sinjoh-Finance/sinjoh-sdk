@@ -3,6 +3,29 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.0 - 2026-08-25
+
+### Added
+
+- Added Project V2 Launcher and Registry ABIs, reviewed preset hydration, deterministic module
+  prediction, exact Pons launch-transaction assembly and verification, and launch provenance
+  manifests.
+- Added complete Project V2 routed-action encoding for direct sends, swaps, buyback-and-burn,
+  Treasury, Airdrop, Raffle, liquidity, project-sink funding, and normalization chains.
+- Added attested candidate/active promotion imports and generated consumer deployment bindings.
+
+### Changed
+
+- Generated ABIs and deployment packages now track the complete-routing Project V2 production
+  release, including the four-leaf Pons integration proof.
+- Project V2 preset materialization now resolves creator wallet placeholders while preserving
+  module-specific Launcher placeholders.
+
+### Tests
+
+- Added byte-exact routed-action codec tests, Treasury-recipient coverage, four-leaf proof
+  coverage, Pons launch assembly verification, and release-promotion validation.
+
 ## 2.1.0 - 2026-08-22
 
 ### Added
