@@ -3,6 +3,29 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.5 - 2026-08-25
+
+### Added
+
+- Added the generated `ProjectLiquidVotesWrapperV2` ABI and typed one-for-one
+  `depositFor` / `withdrawTo` transaction helpers for Project governance.
+- Added Project Airdrop and Raffle agnostic-router funding overloads and the
+  Project Pons adapter Funding Bands plan to the generated contract ABIs.
+
+### Changed
+
+- Project launch previews now expose the deterministic `liquidVotes` address,
+  and Project Pons launch requests encode the complete Funding Bands plan.
+- Regenerated all contract ABIs from reviewed implementation source commit
+  `91aa7e53fc5da3c8dd78e789820ce983f1c3483a` so every workspace package shares
+  one source provenance and ABI digest.
+
+### Tests
+
+- Added exact Project launch-request coverage for the IssaDAO configuration,
+  including Treasury and staking modules, staked voting, 4% creator tax,
+  0.01 ETH developer buy, and the two Funding Bands allocations.
+
 ## 2.2.4 - 2026-08-25
 
 ### Fixed
