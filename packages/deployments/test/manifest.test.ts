@@ -54,19 +54,19 @@ test("core infrastructure is present under stable keys", () => {
   assert.ok("weth" in mainnet.dependencies, "missing weth dependency");
 });
 
-test("Project V2 uses the raffle-route-validated production generation", () => {
+test("Project V2 uses the public-Pons production generation", () => {
   assert.equal(mainnet.contracts["projectV2.launcher"]?.address,
-    "0x0281eC255Da0405cA581c630eB537F79ab4092B8");
+    "0xbf9c48Bd4784016065613Fbde7bbc2BcA017FA7E");
   assert.equal(mainnet.contracts["projectV2.registry"]?.address,
-    "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC");
+    "0xc8297e34aD37A8A6D9f237Eda996Ee207d23188A");
   assert.equal(mainnet.contracts["projectV2.deploymentEngine"]?.address,
-    "0x9BBEc7F7709daBf1b828c982e29e31Ae89AF42E9");
+    "0xf94acC8857e4EF5Be78aB6D53c8CbdDDBF22F460");
   assert.equal(mainnet.contracts["projectV2.launchValidator"]?.address,
-    "0x44B45869B4a6750e80c5cd104040d93f698a4856");
+    "0xe746519A82BD3E8356b502A5083e8873a3f15099");
   assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterFactory"]?.address,
-    "0x31D0C4E74aD63406C6B06F014832261733AF5415");
+    "0x37617C7603032b6a8437365d1582Fcb0B003501F");
   assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterImplementation"]?.address,
-    "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7");
+    "0xF4a58F32200dc92D86D3f02CA1F2c909F1366Cb6");
   assert.equal(
     mainnet.contracts[
       "projectV2Generations.project-v2-gascap-20260825-3d6dd81.launcher"
