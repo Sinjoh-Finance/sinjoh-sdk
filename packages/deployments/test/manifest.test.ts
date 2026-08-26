@@ -54,19 +54,31 @@ test("core infrastructure is present under stable keys", () => {
   assert.ok("weth" in mainnet.dependencies, "missing weth dependency");
 });
 
-test("Project V2 uses the raffle-route-validated production generation", () => {
+test("Project V2 uses the public-Pons production generation", () => {
   assert.equal(mainnet.contracts["projectV2.launcher"]?.address,
-    "0x0281eC255Da0405cA581c630eB537F79ab4092B8");
+    "0x6b5e99b344C0671f77BAC00c5ADbE453Ffa39100");
   assert.equal(mainnet.contracts["projectV2.registry"]?.address,
-    "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC");
+    "0xF2F0C38dd9E4DCBa46A4b8bE2E7441377c103Bf4");
   assert.equal(mainnet.contracts["projectV2.deploymentEngine"]?.address,
-    "0x9BBEc7F7709daBf1b828c982e29e31Ae89AF42E9");
+    "0xF2844Cd17F45adA05894AF938a96CB4417158f3B");
   assert.equal(mainnet.contracts["projectV2.launchValidator"]?.address,
-    "0x44B45869B4a6750e80c5cd104040d93f698a4856");
+    "0xA227633Cc64FeB8c36c63602cd3480e26c0F26Eb");
   assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterFactory"]?.address,
-    "0x31D0C4E74aD63406C6B06F014832261733AF5415");
+    "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d");
   assert.equal(mainnet.contracts["projectV2.ponsProjectAdapterImplementation"]?.address,
-    "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7");
+    "0xC5C7B33708121d542AC8172104D1d708DF61cA37");
+  assert.equal(mainnet.contracts["fundingBands.ponsV2Verifier"]?.address,
+    "0x9d93036656C51dd9Fe2164f9325FeF850fC282D9");
+  assert.equal(mainnet.contracts["fundingBands.launchEscrow"]?.address,
+    "0xf8F28826d4837e10fc9eD0d7787F763725F10378");
+  assert.equal(mainnet.contracts["ponsV2AdapterFactory"]?.address,
+    "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d");
+  assert.equal(mainnet.contracts["ponsV2AdapterImplementation"]?.address,
+    "0xAf3D6710621697d25096E01367A3D0490Fd11e2b");
+  assert.equal(mainnet.dependencies.ponsV2LaunchFactory?.address,
+    "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e");
+  assert.equal(mainnet.dependencies.ponsV2LaunchLocker?.address,
+    "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952");
   assert.equal(
     mainnet.contracts[
       "projectV2Generations.project-v2-gascap-20260825-3d6dd81.launcher"
@@ -79,13 +91,19 @@ test("Project V2 uses the raffle-route-validated production generation", () => {
     ]?.address,
     "0x4b748848f16DAA81D09d8743Ced4A9604bc7de69",
   );
+  assert.equal(
+    mainnet.contracts[
+      "projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.launcher"
+    ]?.address,
+    "0xbf9c48Bd4784016065613Fbde7bbc2BcA017FA7E",
+  );
 });
 
 test("ordinary Pons V2 uses one coherent current buyback generation", () => {
   assert.equal(mainnet.contracts.ponsV2PairBuybackAdapter?.address,
-    "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c");
+    "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8");
   assert.equal(mainnet.contracts.ponsV2PairBuybackPriceGuard?.address,
-    "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED");
+    "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b");
   assert.equal(
     mainnet.contracts[
       "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.adapter"
@@ -97,6 +115,18 @@ test("ordinary Pons V2 uses one coherent current buyback generation", () => {
       "ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.priceGuard"
     ]?.address,
     "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+  );
+  assert.equal(
+    mainnet.contracts[
+      "ponsV2PairBuybackHistoricalGenerations.trustedForwarderFactory.adapter"
+    ]?.address,
+    "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+  );
+  assert.equal(
+    mainnet.contracts[
+      "ponsV2PairBuybackHistoricalGenerations.trustedForwarderFactory.priceGuard"
+    ]?.address,
+    "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
   );
 });
 

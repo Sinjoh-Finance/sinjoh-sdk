@@ -60,6 +60,8 @@ function collect(section, prefix, into) {
   ]);
   for (const [key, value] of Object.entries(section)) {
     const path = prefix ? `${prefix}.${key}` : key;
+    const isExplicitEoa = explicitEoaPaths.has(path)
+      || /^fundingBandsHistoricalGenerations\.[^.]+\.(?:deployer|governance|operations\.keeper)$/.test(path);
     if (typeof value === "string") {
       if (ADDRESS.test(value)) {
         const siblingHash = section[`${key}RuntimeCodeHash`];
@@ -68,7 +70,7 @@ function collect(section, prefix, into) {
             address: getAddress(value),
             runtimeCodeHash: siblingHash.toLowerCase(),
           };
-        } else if (explicitEoaPaths.has(path)) {
+        } else if (isExplicitEoa) {
           into[path] = { address: getAddress(value), kind: "eoa" };
         } else {
           fail(`${path}: address must declare runtimeCodeHash or kind eoa`);

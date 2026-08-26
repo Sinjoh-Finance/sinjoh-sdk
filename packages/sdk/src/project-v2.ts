@@ -24,12 +24,15 @@ export const ProjectModuleKey = {
   TOKEN: keccak256(stringToHex("TOKEN")),
   MULTISIG: keccak256(stringToHex("MULTISIG")),
   TIMELOCK: keccak256(stringToHex("TIMELOCK")),
+  LIQUID_VOTES: keccak256(stringToHex("LIQUID_VOTES")),
   STAKING: keccak256(stringToHex("STAKING")),
   TREASURY: keccak256(stringToHex("TREASURY")),
   AIRDROP: keccak256(stringToHex("AIRDROP")),
   ROUTER: keccak256(stringToHex("ROUTER")),
+  BASKET: keccak256(stringToHex("BASKET")),
   BANDS: keccak256(stringToHex("BANDS")),
   LIQUIDITY: keccak256(stringToHex("LIQUIDITY")),
+  RAFFLE: keccak256(stringToHex("RAFFLE")),
 } as const;
 
 export const ProjectRouterActionType = {

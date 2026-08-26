@@ -70,6 +70,25 @@ test("deployment generation accepts the canonical companion-hash manifest shape"
   assert.equal(result.status, 0, result.stderr);
 });
 
+test("deployment generation classifies Funding Bands historical authority roles as EOAs", async () => {
+  const currentInfrastructure: Record<string, unknown> = Object.fromEntries(Array.from({ length: 30 }, (_, index) => [
+    `contract${index}`,
+    {
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
+      runtimeCodeHash: `0x${(index + 1).toString(16).padStart(64, "0")}`,
+    },
+  ]));
+  currentInfrastructure["fundingBandsHistoricalGenerations"] = {
+    "funding-bands-single-adapter": {
+      deployer: "0x3333333333333333333333333333333333333333",
+      governance: "0x4444444444444444444444444444444444444444",
+      operations: { keeper: "0x5555555555555555555555555555555555555555" },
+    },
+  };
+  const result = await runGenerator({}, currentInfrastructure);
+  assert.equal(result.status, 0, result.stderr);
+});
+
 test("deployment generation rejects contradictory authority role metadata", async () => {
   const root = await mkdtemp(join(tmpdir(), "sinjoh-deployment-role-generator-"));
   const script = join(root, "tools", "gen-deployments.mjs");

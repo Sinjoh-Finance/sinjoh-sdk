@@ -60,8 +60,11 @@ export {
   raffleDeliverStockOwed, raffleExpireRound, raffleSync, randomnessDeliver,
   randomnessFulfill, randomnessSeal, routerFundSink, routerProcessBucket,
   routerSendProtocolFee, routerSendWallet, routerSync,
+  projectLiquidVotesDeposit, projectLiquidVotesWithdraw,
   type AirdropPushLeaf, type AirdropPushProofElement, type PreparedCall
 } from "./actions.js";
+
+export { projectLiquidVotesWrapperV2Abi } from "@sinjoh/abis";
 
 export {
   planRouterWork, type PlannedAction, type RouterWorkKind, type RouterWorkPlan

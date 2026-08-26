@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ordinary-pons-v2-current-20260825-72a54c3",
+  "releaseId": "project-v2-public-pons-dual-funding-letscash-20260826-c184fad",
   "channel": "active",
   "chainId": 4663,
   "network": "robinhood-mainnet",
   "source": {
     "repository": "Sinjoh-Finance/sinjoh-contracts",
-    "commit": "72a54c393f4b23e2f33be880fd597104a137d9a7",
-    "releaseManifestSha256": "13adf3410240c80937830d2de4e292935c2517368c67d7d85852a93612867dd8",
+    "commit": "c184faddd881ddcabdc26c70364f825b79a142d0",
+    "releaseManifestSha256": "ac74c13368dc065417a08a8cbb3050ac53f8ba4c23a15f45364f50cf207f7a94",
     "deploymentManifest": "mainnet-deployments.json",
-    "deploymentManifestSha256": "b1ea7b54155da0e08d510fc95172bd9ebb5bbabcc5a8e50064bd92f8ace37082"
+    "deploymentManifestSha256": "5be4748d0dc575ec14030e619a7da7ffc735bb63369a107aef7ea6d80ea30b2c"
   },
-  "generatedAt": "2026-08-25T19:47:15.806Z",
+  "generatedAt": "2026-08-26T04:23:27.596Z",
   "contracts": {
     "contracts.launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
@@ -19,76 +19,97 @@
       "deploymentBlock": 41666632,
       "deploymentTransaction": "0x2271aaa33905873d5dd0486e042cb5118e3703460205016edf5c2cb37ccc1bbd"
     },
+    "contracts.fundingBands.ponsV2Generation.adapterFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+      "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+      "deploymentBlock": 46235444,
+      "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
+    },
+    "contracts.fundingBands.ponsV2Generation.ordinaryAdapterImplementation": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
+      "runtimeCodeHash": "0x5cc42a8a6ac7a9a792a04427f52063e5a8f4fb2c72fa614d46c1bc528d20ab4e",
+      "deploymentBlock": 46235444,
+      "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
+    },
+    "contracts.fundingBands.ponsV2Generation.projectAdapterImplementation": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xC5C7B33708121d542AC8172104D1d708DF61cA37",
+      "runtimeCodeHash": "0x305007652acf94952e5feb97add75c50ed8934365c67b3f1522eaf4809810841",
+      "deploymentBlock": 46235453,
+      "deploymentTransaction": "0x46555c50202b25fb65e96edb3a21a876a99891ba84c8e8c2fc23913778c55634"
+    },
     "contracts.fundingBands.manager": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
-      "runtimeCodeHash": "0x7d52072593c645aa9eef53dc612bc8be076122f3181e0c5e2ae318646d5578f5",
-      "deploymentBlock": 37220865,
-      "deploymentTransaction": "0xf8cc28db48484df8657aed4b503c0b7031fd31c11b685fc92767c1b9f5958f69"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x8AEb669200bcc03454Fe3B73124A4318027862e9",
+      "runtimeCodeHash": "0x27e79a76b510ea9ba4018822199e31339c8ac4a083e2723d6ec0b305c168e3d6",
+      "deploymentBlock": 46235700,
+      "deploymentTransaction": "0x528d45e4f783f2b4fe60ddcf01e7e7c1c9f56770a808268efd8ced082714ee21"
     },
     "contracts.fundingBands.oracle": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x09978409A32B7a8F574D2858c9981456E63CC65E",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xB1115B9d0c409d6bCbb8d2483B2Cc0C425679754",
       "runtimeCodeHash": "0x0f34766397d79c63a443067d266f6cddce1107ad410fc75f68293c0386412bb7",
-      "deploymentBlock": 37220681,
-      "deploymentTransaction": "0x34fefe5859b1365fecc3fc508ecb19042d009503f42e0c42ad481d9ff60088b0"
+      "deploymentBlock": 46235502,
+      "deploymentTransaction": "0x04fe763c37572f0655b57776e70b601440ed4b7608dfce9d7c12b336a5e8181d"
     },
     "contracts.fundingBands.ponsV2Verifier": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0xeE29bf87Fa7e4b9336D40D429874d3d9b0a01304",
-      "runtimeCodeHash": "0x34be3e111f42753bca0b3ee18c9f753d49c7e876329fb8ecacb1bdfd16402ef1",
-      "deploymentBlock": 37220707,
-      "deploymentTransaction": "0x816b25c6f05ac1b94c9e5bf40d1de3f572e320d0c69204f1c87f00551c2ab677"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x9d93036656C51dd9Fe2164f9325FeF850fC282D9",
+      "runtimeCodeHash": "0xedb1114f6c470682c3142a35300db3bb0000cc42b73f2adbb3cdd554bb14d34d",
+      "deploymentBlock": 46235529,
+      "deploymentTransaction": "0x38b5c6e7a9779cf499ecfdfc4789884bda80bb8c80c4db97a66a5a54d6754995"
     },
     "contracts.fundingBands.ponsV2Guard": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x7078b0b68293217678f9B8e0A2AfA8eC26eF149a",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xADB3BD2222dBCd08ab78Bd7BD2BDbb6Adf043915",
       "runtimeCodeHash": "0x08599108bd65ee9d3f87e6431dd3e6fa5ad1e25cf44cb597041a35836c79bc39",
-      "deploymentBlock": 37220772,
-      "deploymentTransaction": "0x61ddba7648f7a752f87ed6f91931cb901e4ed396bbe1b5b3c05f4e67dc9095bc"
+      "deploymentBlock": 46235610,
+      "deploymentTransaction": "0xe43df8cdfa83a37cbeba7878d391b42198953e06e9468c99d395aa73e45efcb2"
     },
     "contracts.fundingBands.launchEscrow": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x1b1C878f5D7F46159Dc4aE34405a6b36631DFA23",
-      "runtimeCodeHash": "0x449131c16711cac5a63a0c0c92a1838c0c6ce96bf86337a107a44f16dd320a4a",
-      "deploymentBlock": 37220736,
-      "deploymentTransaction": "0x43e34824c7c91f54083027ca2ab66b2b3ec38c388683bc98b3b1bba3d2981ce8"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0xf8F28826d4837e10fc9eD0d7787F763725F10378",
+      "runtimeCodeHash": "0xc4c40096bf36620fafdb166f7328f84c6907a60392fc3321fb66ab345b99dafc",
+      "deploymentBlock": 46235558,
+      "deploymentTransaction": "0x8dc69d61a8efc0ca74dd35564bddce13d6540657fbd3bf37e9f812c80d99bf65"
     },
     "contracts.fundingBands.subjectSellAdapter": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x13Aa34682F130105E363bE6aAA43d4421EB3c961",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x42C7ADD713Cf2084673f8490a66E97C6bd81b985",
       "runtimeCodeHash": "0x12f31d5a91362e4f5237365bb001b37d612b7f4bfc5a83e373311bf5edf2fdc7",
-      "deploymentBlock": 37220872,
-      "deploymentTransaction": "0x6ae391c1650a24d2c8e6747a8654f89b67c7cb608cc8c7a3ff905d97effeb22e"
+      "deploymentBlock": 46235727,
+      "deploymentTransaction": "0x7b2ab4f5a8c852a3a6a38bfae532ba8f4dba0d8353eecd699234f47a2066da1e"
     },
     "contracts.fundingBands.subjectPriceGuard": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x8a9f9cB3e4523A973F243E81d248Fa4F3e7c2582",
-      "runtimeCodeHash": "0x37b39d9a90abd782d8062309d5cf027dd9425cd7537e53e9b2eb262b355e2dd0",
-      "deploymentBlock": 37220896,
-      "deploymentTransaction": "0x160b526c4d1819093772f387762f81bb4ddafc0257cce3603f2b7b19ddcee1da"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x7Dd3D815fb2C188361Dd25340Cc3321D3dbfc8e3",
+      "runtimeCodeHash": "0x4196022290855870057245f71692759baec5ca0ecd629db1372a131f836257bc",
+      "deploymentBlock": 46235752,
+      "deploymentTransaction": "0xc9f07021339081550a49b192530fe0b984a4719a0ac37acf05a27093408b8bcb"
     },
     "contracts.fundingBands.fundingBandMath": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x9E421c5B72f3950333420C5749381f61b96436b8",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x24aC2A78fC684b7d40A1feB541FfBDC11098937c",
       "runtimeCodeHash": "0xabeefeed70b46391de5b9f110cf0e9ee857b0225c8224bee324fee623f30096e",
-      "deploymentBlock": 37220794,
-      "deploymentTransaction": "0xd53907742f5f8816d37a826ef9e22388d16af7701280f6d02bfdf6f152a65e47"
+      "deploymentBlock": 46235631,
+      "deploymentTransaction": "0x8a220ddbde745426b2df8dd5198e1552573618b152d6ed87d1d2c31eee1ded96"
     },
     "contracts.fundingBands.fundingBandV4": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-      "address": "0x49D3C913844bdAF3960Db4738ED2B101E67986D6",
-      "runtimeCodeHash": "0xd373f618fc1355ec9344ae55717c563d9a1a795260bc5204ef50fc32e159d5a7",
-      "deploymentBlock": 37220817,
-      "deploymentTransaction": "0x037547de8a8ac8d3b20aa3e8f4cfffeb6bd70fcca301b0de50b62fb60f1622e5"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "address": "0x223b8276B8652ED2bc36FBe4FdC6badaee542806",
+      "runtimeCodeHash": "0x33fdb83242e0cab13c9124170b861f6250134ca22689828b0937a8aab2230a41",
+      "deploymentBlock": 46235653,
+      "deploymentTransaction": "0x232142da84386ad4aa7ed52bb89120474f4c0478affca1acc2b8486f29c3c7c7"
     },
     "contracts.fundingBands.v4Infrastructure.stateView": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
       "address": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
       "runtimeCodeHash": "0x7d9c591e0956fd89d98feb4ffcfe8bf1f7a62bd485edd979fa21d104b49878a6"
     },
     "contracts.fundingBands.v4Infrastructure.poolManager": {
-      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
       "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
       "runtimeCodeHash": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626"
     },
@@ -219,16 +240,16 @@
       "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca"
     },
     "contracts.ponsV2AdapterFactory": {
-      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
-      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
-      "deploymentBlock": 45029745,
-      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+      "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+      "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+      "deploymentBlock": 46235444,
+      "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
     },
     "contracts.ponsV2AdapterImplementation": {
-      "address": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
-      "runtimeCodeHash": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
-      "deploymentBlock": 45029745,
-      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+      "address": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
+      "runtimeCodeHash": "0x5cc42a8a6ac7a9a792a04427f52063e5a8f4fb2c72fa614d46c1bc528d20ab4e",
+      "deploymentBlock": 46235444,
+      "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
     },
     "contracts.ponsV2BuybackAdapter": {
       "address": "0x39217172A3F07E827557093989039F968A571D43",
@@ -243,16 +264,16 @@
       "deploymentTransaction": "0x1106c5cc370d27162e23d9f6c5ec3d8131d1259d8cc6ad497c38a3c8efd8d4d8"
     },
     "contracts.ponsV2PairBuybackAdapter": {
-      "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
-      "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
-      "deploymentBlock": 45666464,
-      "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
+      "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+      "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
     },
     "contracts.ponsV2PairBuybackPriceGuard": {
-      "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
-      "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
-      "deploymentBlock": 45666468,
-      "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
+      "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+      "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
     },
     "contracts.ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.launchFactory": {
       "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
@@ -262,13 +283,29 @@
       "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
       "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
       "deploymentBlock": 28126079,
-      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
+      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
     },
     "contracts.ponsV2PairBuybackHistoricalGenerations.indexedLegacyFactory.priceGuard": {
       "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
       "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
       "deploymentBlock": 28126079,
-      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
+      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
+    },
+    "contracts.ponsV2PairBuybackHistoricalGenerations.trustedForwarderFactory.launchFactory": {
+      "address": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
+      "runtimeCodeHash": "0x3392f4e9040deec97e49bf05fc3a696f295b79806ef83910d84943d431d05e83"
+    },
+    "contracts.ponsV2PairBuybackHistoricalGenerations.trustedForwarderFactory.adapter": {
+      "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+      "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
+      "deploymentBlock": 45666464,
+      "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
+    },
+    "contracts.ponsV2PairBuybackHistoricalGenerations.trustedForwarderFactory.priceGuard": {
+      "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
+      "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
+      "deploymentBlock": 45666468,
+      "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
     },
     "contracts.poolsTradeMerkleClaimFactory": {
       "address": "0x0C8B3e001C8DbBDbe15089c887C9323E097F0a15",
@@ -363,256 +400,1171 @@
       "runtimeCodeHash": "0xd99afa61854a819bd0adcd593bbc8c3a9a278e5fe29cd2b6f150efe9cdc8b74d"
     },
     "contracts.projectV2.raffleImplementation": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x00369fBf7B697185E8B80088b5616301e1f10639",
-      "runtimeCodeHash": "0xba22d4e2aa622933541cb231f6ab8eca670539c748c8507e21742125157a0010",
-      "deploymentBlock": 45807282,
-      "deploymentTransaction": "0xf81a6bf67d2455923bb1eb3d738f70d5a31f52c1833191a1c116bd068e39317d"
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xdDcF1aE6C97675CA74C6F56D6ABDA1F19de252e1",
+      "runtimeCodeHash": "0x3a0d74d0dd72ad1965c4bb6a7d2e9d9e0ccbd7ed88a294bda05317f5bfd919ff",
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x739a0b85e817440bb38e17d3b53c2fd1e282bb0f3f183c23452775ef3ca05a4e"
     },
     "contracts.projectV2.fundingBandV3IntegrationFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x0d5C29a98717e7B7CD09Ee960f2d8A0Aa0C87a26",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x554bF316B7dfbF4221A3fc5F56D3414cC3F584D1",
       "runtimeCodeHash": "0x42af7b6fdbaab808c06db8761a7a91578a1e07cc75ce40551b9d6e010c71dcb3",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0x5bdea608b9318709059b1836fa7c661e5ad76b46735305862713386bed31f9d8"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x0bf345fa97c1cd328343d6ffb657c6d226e5a493201294c9a3e70343a4e191aa"
     },
     "contracts.projectV2.fundingBandQuoteUsdOracle": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x457c170cf37fF131d6Fe8a5A32ab4b2C5C55B58e",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x785339dadd748d410B286dd195F1644400B17772",
       "runtimeCodeHash": "0x6bde18fbfb602edfb4e5554b44ae9fe1f7b2d47ccbe35a7311b0936134a66efd",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0xdce77e5caf3725bef922783c006d9f9fdeec796984bae469d1e917e55e3c7ade"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x61a718889624d656d79ac9bbde3b4511da8a57d24d4edc18f5941456fef5a69f"
     },
     "contracts.projectV2.projectV3PriceGuard500": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x7280cD754e14fe753A4623EAA3025d0508e1de05",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xc14653f62dA1dFBD5b3Bb07f28d2Ab420281C3Ce",
       "runtimeCodeHash": "0xf3934b69bbf1f16faab99a265e7b8ab197042c78db71100a4c349b8e0035720c",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0x238b57069d2c030878469adbe8e995b1b6ac889d3181cc44356f27e12c0be5fe"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x632f100662c7ffc3f3c132c0e6da4508b812b4a018de16926c527e5f2383e7b9"
     },
     "contracts.projectV2.projectV3PriceGuard3000": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x2DA7b469EC87D1278712B34Ca698E60571BaB00B",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x2CDf0a31d0D9EF627A709e683d982812aF702011",
       "runtimeCodeHash": "0xd3e6fa9ac370e5eac8a969dca134556809ff5c654875c0b221be5adefc474b3b",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0xb0a284d6fe4b2ece537346208dd0be6404c010e0d68d0eee0a5435e60473b2d8"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x202a9e8176a4d5dde09af1041975148cfc964795e25464205d2a8bff1ebdc9f7"
     },
     "contracts.projectV2.projectV3PriceGuard10000": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x570d95CAB87243b7F4DEbC6705CB4E7aF6b7CFD4",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x68a262e65B994AbC5EFAcC415CCa967D3d729D17",
       "runtimeCodeHash": "0xd2c79ddcd6c133d5cab767f9d0b899a6148e6c76ef5b2d066a43a1147e53b937",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0x77892474e9ff5eadb9d07ba49e89aab6e318e96f4beeeafb43085f3d6691f216"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0x6cc5803c8a86935ca755adef047def991c69427521b40d3323d0ca1ab6ec94f4"
     },
     "contracts.projectV2.projectWethUnwrapPriceGuard": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x2045b823228c4e9BfFC5f4F7A320BbA7A570C60B",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x65f3fA3654A080cb9f1AC962200BeC884D204420",
       "runtimeCodeHash": "0x4b68dc8e8330fefeec40fc25a78622380ced829788c9bf3ce6467f82b8d0a12f",
-      "deploymentBlock": 45807283,
-      "deploymentTransaction": "0xa6b9e790b83dcff3994819088ef633e8fd82ef5a088dc7e5791789ed10768df4"
+      "deploymentBlock": 46238503,
+      "deploymentTransaction": "0xe3381af544f8c4acba761ae5880b786a2ef20ce7b58cec66f71044f1df290153"
     },
     "contracts.projectV2.ponsV2PairBuybackAdapter": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+      "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
+    },
+    "contracts.projectV2.ponsV2PairBuybackPriceGuard": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+      "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
+    },
+    "contracts.projectV2.ponsProjectAdapterFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+      "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+      "deploymentBlock": 46235444,
+      "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
+    },
+    "contracts.projectV2.ponsProjectAdapterImplementation": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xC5C7B33708121d542AC8172104D1d708DF61cA37",
+      "runtimeCodeHash": "0x305007652acf94952e5feb97add75c50ed8934365c67b3f1522eaf4809810841",
+      "deploymentBlock": 46235453,
+      "deploymentTransaction": "0x46555c50202b25fb65e96edb3a21a876a99891ba84c8e8c2fc23913778c55634"
+    },
+    "contracts.projectV2.poolsInstantProjectAdapterFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x7e49bbC2b1A96d635C66E192972D90467cbEbBe8",
+      "runtimeCodeHash": "0x04a414d27a03e6e1fd240d4032f3b8cbc918c5259cef95f1c434c14444566a4c",
+      "deploymentBlock": 46238443,
+      "deploymentTransaction": "0xb8232b8f9cf9aa857d923c2d4cf308797e96820bd23b8280abd0761b1eddbda3"
+    },
+    "contracts.projectV2.poolsInstantNoFeeProjectAdapterFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xbF6c13570B255826A438319EdFE986764039557B",
+      "runtimeCodeHash": "0x6031b24a36b3034851bae6b0d890a77615c0b9ee2b32af9d17277c2606a29314",
+      "deploymentBlock": 46238444,
+      "deploymentTransaction": "0xcded7ef81666c3091bad8b0444c9977252a62bb3300af3cf1d69899980770a53"
+    },
+    "contracts.projectV2.poolsLbpProjectAdapterFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xCcC944A29D6eb84b4a4B9522800e3f2FdD53da19",
+      "runtimeCodeHash": "0xa0840e9b1e794827d4dfe824e976555a1a1eff77dc3c0c0e0d4bb727e6739e73",
+      "deploymentBlock": 46238444,
+      "deploymentTransaction": "0x7370c5eeeea911f49878a4bed5c133307b173b9f74e5f1ea37f5217cc4664381"
+    },
+    "contracts.projectV2.poolsProjectRegistrationHelper": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xE0F87B203384c48DE52Fe5A57a3Fc4A1704e49fa",
+      "runtimeCodeHash": "0x34bd1ccd3740087c6fa60792496ff3a479f1d10c8c2e81a8bafb0f8dff011d8b",
+      "deploymentBlock": 46238444,
+      "deploymentTransaction": "0x74691f8ac60059bc9000ba4e9db7214fd6e472e86b789d961f623b62b2507513"
+    },
+    "contracts.projectV2.ponsProjectTokenFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x39701Ef4704Ce44957e0a8B6b802181ce4f635e2",
+      "runtimeCodeHash": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c",
+      "deploymentBlock": 46238506,
+      "deploymentTransaction": "0xaa6d1a069798e8af0878d301796cb31cac90f99aa619969a2a09e55fd8b68e5a"
+    },
+    "contracts.projectV2.launchpadProjectTokenFactory": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xE81962ba0B7eBA2c5d6060096Cd3634b4aC57d24",
+      "runtimeCodeHash": "0xb03c479677d6d7da6f4e65ff10864f2f64f8a471c2b6abf259ec73b696a4240f",
+      "deploymentBlock": 46238506,
+      "deploymentTransaction": "0xd2fda3da203e99d5600faad0abbf99cda08dc074459b41773867da142b7509dd"
+    },
+    "contracts.projectV2.registry": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xF2F0C38dd9E4DCBa46A4b8bE2E7441377c103Bf4",
+      "runtimeCodeHash": "0x0638ed852649bdca466c3d3a231893176f0d2659aba56782387f58af9bcc31d2",
+      "deploymentBlock": 46238506,
+      "deploymentTransaction": "0xbe3a8d6ba5924e5886a72c4a433c6e503c3bc2c3a5bd2f2e33172bd0419de99f"
+    },
+    "contracts.projectV2.deploymentEngine": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xF2844Cd17F45adA05894AF938a96CB4417158f3B",
+      "runtimeCodeHash": "0x53e0c3f1091041295157454414bf76becbc7225af1c9f883978a190152872c55",
+      "deploymentBlock": 46238507,
+      "deploymentTransaction": "0x2c421416a0304155c60941a614131a52fabfcfa8a526351dc5005f11f224d6ca"
+    },
+    "contracts.projectV2.launchValidator": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0xA227633Cc64FeB8c36c63602cd3480e26c0F26Eb",
+      "runtimeCodeHash": "0x943fc6a6f784346ae310d5376510ed8086b16d74eb3f4de5e3584bb53af7e7ed",
+      "deploymentBlock": 46238507,
+      "deploymentTransaction": "0xe6e4d3bb2e06789a6e20b29325bdff9d00396d00db0faf42cb84cf6a403c6417"
+    },
+    "contracts.projectV2.launcher": {
+      "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+      "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+      "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+      "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+      "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+      "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+      "address": "0x6b5e99b344C0671f77BAC00c5ADbE453Ffa39100",
+      "runtimeCodeHash": "0x5dd89482f663119e13acfdbb0b3b89d35814f494cd8c90c0c3337f176395c824",
+      "deploymentBlock": 46238507,
+      "deploymentTransaction": "0x7d1b0443dfcd5e0169438904764ef781afe0dfb41909410968d45ff7173f69bd"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.raffleImplementation": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x4043F2e3804B19F44cAf36Fb82cc7e9Cb332E818",
+      "runtimeCodeHash": "0xba22d4e2aa622933541cb231f6ab8eca670539c748c8507e21742125157a0010",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0x88dc5dfb3200e17bb1872e16dd776e638e9e54b38a471299a66b082d27d34ce3"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.fundingBandV3IntegrationFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x6684283e52935f70264408215936F6C189c2f493",
+      "runtimeCodeHash": "0x42af7b6fdbaab808c06db8761a7a91578a1e07cc75ce40551b9d6e010c71dcb3",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0xbdd457968f06cb707ca9abb6ebbf6ada01badfd44f86044b3f9622505f55a504"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.fundingBandQuoteUsdOracle": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0xE8ddE77C356980F9122e458286cBB8C9943f8240",
+      "runtimeCodeHash": "0x6bde18fbfb602edfb4e5554b44ae9fe1f7b2d47ccbe35a7311b0936134a66efd",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0x8a3761c53489d443bfb9686914feade426fea3342cd3f6693dfb3b10fd36f1d3"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.projectV3PriceGuard500": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x551a3c3f5945Dbd0A2AcB6cD30C6B3279f112094",
+      "runtimeCodeHash": "0xf3934b69bbf1f16faab99a265e7b8ab197042c78db71100a4c349b8e0035720c",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0x012d065858d35a771ca0312311b984f95a3c5add1e010172082a9c79d260fe35"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.projectV3PriceGuard3000": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x91880a80F022A829C75C06e9F679c9F0A407c3Aa",
+      "runtimeCodeHash": "0xd3e6fa9ac370e5eac8a969dca134556809ff5c654875c0b221be5adefc474b3b",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0xd4cda8df185085f051a38808aa628559ce03a7b950ba54ca8d2a1cf038d961b0"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.projectV3PriceGuard10000": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x9FE1671a7783cb658b25Bc05cc7E74C71b001dF3",
+      "runtimeCodeHash": "0xd2c79ddcd6c133d5cab767f9d0b899a6148e6c76ef5b2d066a43a1147e53b937",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0xc1e76cf3b02abe8679a7d00be68449644b036b15b7f1fc49fe502ac376b0633f"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.projectWethUnwrapPriceGuard": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x0B7299b61218077C9b41d32a5c6F3c78eaf8489a",
+      "runtimeCodeHash": "0x4b68dc8e8330fefeec40fc25a78622380ced829788c9bf3ce6467f82b8d0a12f",
+      "deploymentBlock": 45666812,
+      "deploymentTransaction": "0x49e30e5f435f0ceaefa0f719c0a1411f2bf4efdca795bfca22d647c337f742a3"
+    },
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.ponsV2PairBuybackAdapter": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
       "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
       "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
       "deploymentBlock": 45666464,
       "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
     },
-    "contracts.projectV2.ponsV2PairBuybackPriceGuard": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.ponsV2PairBuybackPriceGuard": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
       "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
       "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
       "deploymentBlock": 45666468,
       "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
     },
-    "contracts.projectV2.ponsProjectAdapterFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x31D0C4E74aD63406C6B06F014832261733AF5415",
-      "runtimeCodeHash": "0x63cc0e30965e08336780d63a3848df92c3de6974fae7a4cee4e58f8370b285dc",
-      "deploymentBlock": 45807179,
-      "deploymentTransaction": "0xa92cca6ed8155470dd6f8b3e1086d3aa7f2357a852f59306a94d05fdcf02f659"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.ponsProjectAdapterFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x2514bf827044578629572FD5a5b8A18f1662a0A2",
+      "runtimeCodeHash": "0x613b384a36534cd2ec8f181a820bd9e987e29edc712b6912a76a69b257f9170f",
+      "deploymentBlock": 45666715,
+      "deploymentTransaction": "0x06f31eec118ce18e2d692d98c44a0ad36798a8d42577b75f648141f3c3a72a8a"
     },
-    "contracts.projectV2.ponsProjectAdapterImplementation": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7",
-      "runtimeCodeHash": "0x3186cd65047fb0b56f67501be3fc1ea558b9f8835192325c22031e5a6d72eb43",
-      "deploymentBlock": 45807180,
-      "deploymentTransaction": "0xf704f5ed3065110f2b2df1326d11c79522535c8dc35da16f69cdef3650930ea7"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.ponsProjectAdapterImplementation": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0xCF8C1A211626FFc222C94bDBcC1CC40CE38Ea146",
+      "runtimeCodeHash": "0xbc01507bc09f4b15936149e7eef5e6ef13cbabbd03d3b7b3e56682d0255afea3",
+      "deploymentBlock": 45666716,
+      "deploymentTransaction": "0x513b1ea9752f14e01bb67f9467d7286dc5425423388cd1576179cc20fbacc2d6"
     },
-    "contracts.projectV2.poolsInstantProjectAdapterFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x8047d6B3fe44432dF04a2350136f7701288cE220",
-      "runtimeCodeHash": "0x22ea5d27c607f755ebeba901cc78811b0e00d61bd9f4b792a014a22cb4f37fd9",
-      "deploymentBlock": 45807220,
-      "deploymentTransaction": "0x7b6541b36fa3d0f743c58cf158d7ac8a5e4f5015a4dcbc3bf37e139a89847e85"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.poolsInstantProjectAdapterFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x581F1996061e893BC717c9e8FB8524da7D84A4Df",
+      "runtimeCodeHash": "0x2462223925a465ecececc3249872504b247596cea41fdbab0079fd00ce81b09e",
+      "deploymentBlock": 45666754,
+      "deploymentTransaction": "0x58c5a596c83d8f07a9fd1a6972e12a951bf6f58a4267866df0637894873b9c9a"
     },
-    "contracts.projectV2.poolsInstantNoFeeProjectAdapterFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x6aB499bab838fCe040F359335C9a13307aB07507",
-      "runtimeCodeHash": "0x71483cbd6565d6cabd5cbb2c63e1f9b3a16da49ae18dbb38cbfeb1d110f31910",
-      "deploymentBlock": 45807221,
-      "deploymentTransaction": "0x5d3c207239ed602124ee89e966e1445eefc6e3eb97e7bfc653e1713597c05e96"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.poolsInstantNoFeeProjectAdapterFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x44416ef4E2D7bDCDb38f1c9c7eA66df77F257830",
+      "runtimeCodeHash": "0xb3a1e8b7ac5be4ad2a21a98d028179b816603f92740addb9220b647f1abdd083",
+      "deploymentBlock": 45666755,
+      "deploymentTransaction": "0xb757fec8ce40a575af03cae9f0accab3ef4006253ed5d2d1a26c9367178221de"
     },
-    "contracts.projectV2.poolsLbpProjectAdapterFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0xB3D795aEa87358cBbc488884Ccd3c3126aA480b7",
-      "runtimeCodeHash": "0xb39ced05d13430538a223303b90f5d39f513efc228da7c53887b3f184e162f24",
-      "deploymentBlock": 45807222,
-      "deploymentTransaction": "0x53bb2d264694f3f65956e28eb5f92498e78d8fdb004d28108cc05232a181ea54"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.poolsLbpProjectAdapterFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0xA9313357d780912BE83BAdBe149e173B64804943",
+      "runtimeCodeHash": "0x3639e103347567ca95e75807ca4da49154046b13b3b31963b9f4e838eaee5473",
+      "deploymentBlock": 45666755,
+      "deploymentTransaction": "0xfd23dbadcb3b03625ca9a02de2f730bbb0ea6f70c437e489cadc18506e94d66b"
     },
-    "contracts.projectV2.poolsProjectRegistrationHelper": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0xEF962B8e60891f2784f8ea531Ea7C3Cf1E8fd109",
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.poolsProjectRegistrationHelper": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0xEAc85f4D2A1e668D7Ec1Dc8199FCA2150e352bF6",
       "runtimeCodeHash": "0x1b7b30124c43aefc4274f285b4ed9c58a6c6da4de563ce5613cceec3a54519bd",
-      "deploymentBlock": 45807222,
-      "deploymentTransaction": "0x49c2a81b0487407eccb407a4cb0e596d98a7ee2388f56b86ebe5cc5d81838343"
+      "deploymentBlock": 45666755,
+      "deploymentTransaction": "0xc6d77306737a14bc5a0ee767bff37c00c694f26591e71a1462211905ec635b87"
     },
-    "contracts.projectV2.ponsProjectTokenFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0xF6Cf05D8e18Ef807E2609FaF63ff90f325fAE0bb",
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.ponsProjectTokenFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x1D61c35525e100dE7057DB1A3fA10EA58aab5950",
       "runtimeCodeHash": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c",
-      "deploymentBlock": 45807287,
-      "deploymentTransaction": "0x9424622ae80cf13fa7b8e794336e9bb6973ad24a6b587b797535917c3a1f2cd2"
+      "deploymentBlock": 45666815,
+      "deploymentTransaction": "0xae57177c9dae747bf71cc6d666bac0efb5ed3c8a4ed5889012329b74251bd7df"
     },
-    "contracts.projectV2.launchpadProjectTokenFactory": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0xE9f0ebd107d0fD84119Dd5c95c9bDF41695479e0",
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.launchpadProjectTokenFactory": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x0E3E8BE5e4073391E0837C83e85463820328e701",
       "runtimeCodeHash": "0xb03c479677d6d7da6f4e65ff10864f2f64f8a471c2b6abf259ec73b696a4240f",
-      "deploymentBlock": 45807287,
-      "deploymentTransaction": "0xc6f2b41480f3ba91c46bab840579573e0418e054dd060de6e38dfa9a9593bc74"
+      "deploymentBlock": 45666815,
+      "deploymentTransaction": "0xe2e5312a9e1fb935b870b09790d8ad3d5959686f017c1bcb8ec0649ec2a150eb"
     },
-    "contracts.projectV2.registry": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC",
-      "runtimeCodeHash": "0x17a6045062d6287b30f89b0858b653dde0b4546960a28b6949b184dfc273ce8a",
-      "deploymentBlock": 45807287,
-      "deploymentTransaction": "0xd730eba0217d55500548ebe4fa6caaf184f143da8dc48c2740252ddfbcceda4b"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.registry": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x9a1a86EbDB6E3Bb5baBef607E04fB3aB1b3507d5",
+      "runtimeCodeHash": "0x4f912c34827620da14f081367377008a925b1288371cd6e87b9ed432519e48f2",
+      "deploymentBlock": 45666815,
+      "deploymentTransaction": "0x157e01b0d1f2690a2ed8290215af490f44776ae4c17bbfa0d72026592a9c3fc2"
     },
-    "contracts.projectV2.deploymentEngine": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x9BBEc7F7709daBf1b828c982e29e31Ae89AF42E9",
-      "runtimeCodeHash": "0xc5878795c89fe0e22c272655a2a26cb2343cae980658862178a5038a2ef945c2",
-      "deploymentBlock": 45807287,
-      "deploymentTransaction": "0x79ff2ab974beaa507fc3dbf9a1143bf94bdcfdf0272b1f3339784a8512aa79b0"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.deploymentEngine": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x67EDBC0eeF7C12c224c72eE9a4Df4F868844A9b8",
+      "runtimeCodeHash": "0x551cdc80f8f7a4a69bc1abf0f959a91a03b3416443a915c2849ec2aeef8028d2",
+      "deploymentBlock": 45666816,
+      "deploymentTransaction": "0xc61db9a383f6955fbdbc867c4fffc70aa7cc4f221c19728d15128366dc884c73"
     },
-    "contracts.projectV2.launchValidator": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x44B45869B4a6750e80c5cd104040d93f698a4856",
-      "runtimeCodeHash": "0x359f02a9ac567bdcd9188de80fd1773be3c6724da3f37076e37a3d5fbdf0f4a3",
-      "deploymentBlock": 45807288,
-      "deploymentTransaction": "0x3c5eb76b143337cd3454b004c6686dcafa5aa9e5cd8bd4e6141c914040e9871b"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.launchValidator": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x5E3F0Df4021764D493ed6e40dA2fCf145eccb435",
+      "runtimeCodeHash": "0xb12505823045afd50ed12d8b2f13e4a42456f31211ca09dbd6f761ca9fa11bc3",
+      "deploymentBlock": 45666816,
+      "deploymentTransaction": "0x5467edf493d693331fb1177ce929ea42e97ab711f3fd4d0837cc0df2dc2de9ac"
     },
-    "contracts.projectV2.launcher": {
-      "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-      "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-      "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-      "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-      "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-      "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-      "address": "0x0281eC255Da0405cA581c630eB537F79ab4092B8",
-      "runtimeCodeHash": "0x23b1cd6cd92821fd02941ad958068dd91ee0643396dc89f87282f51da734e202",
-      "deploymentBlock": 45807288,
-      "deploymentTransaction": "0x938f7bc2890aac258db6a6c8b276841c201ae00b1c3009be92de6fb60127e3f6"
+    "contracts.projectV2Generations.project-v2-routing-complete-20260825-3b5dc15.launcher": {
+      "sourceCommit": "2bab5bbb984c0ab2c6a8badbec6ba57ad9a8e4d0",
+      "buildHash": "9071acaf98f58aafcefa3a55bba2f2a814a70a2bf7da80ed3c4d0d3676d6f283",
+      "approvalProof0": "0x2aafe6bbf9023b777fd0458cbf1f3dbe50a78b839c00960565ece47236bb20e3",
+      "approvalProof1": "0xc5d2fca4ad20c7053ab6709bfa3cc19fa8272b5d24864850454dec926d858352",
+      "approvalProof2": "0xa5be60ac5659caf14be9ca72b7c51782665521b4c0ee0b3206fb3721b6bbffaf",
+      "approvalProof3": "0x05c1e9ecdf8f58e2c9c9c4662e65605b64d2c8ae9798017651589b131486d204",
+      "address": "0x4b748848f16DAA81D09d8743Ced4A9604bc7de69",
+      "runtimeCodeHash": "0x76c53ff90988f1e00e42738d70f41720b5c59c1a2f55f064602f83418a7849b2",
+      "deploymentBlock": 45666816,
+      "deploymentTransaction": "0x6a5213e0bd8f036f6e9627bdc4ec9303b9d9f5f1f500a7039440e1695aea4d8f"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.raffleImplementation": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x95d67d22a20eB306da925f9652F42d7cC240e4A3",
+      "runtimeCodeHash": "0xba22d4e2aa622933541cb231f6ab8eca670539c748c8507e21742125157a0010",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x31959f395729534d489331fca50067d49747fd20e89b5d6cab8db58a29bc093a"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.fundingBandV3IntegrationFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0xb1f74070Aced380929d3EC34C5Ec766025bBC148",
+      "runtimeCodeHash": "0x42af7b6fdbaab808c06db8761a7a91578a1e07cc75ce40551b9d6e010c71dcb3",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0xe3222e2e95df33ccb6cfc3f62d0c4739f56dbee8a43517359669c384bc352329"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.fundingBandQuoteUsdOracle": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x88d3E990B23F1d967aDfAE1C4a7bFCdfc2f80996",
+      "runtimeCodeHash": "0x6bde18fbfb602edfb4e5554b44ae9fe1f7b2d47ccbe35a7311b0936134a66efd",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x58268dbab3652afd7c2af62321633fbd4b49eedd869c39bdcd7afb0c30c42e19"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.projectV3PriceGuard500": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x522fcD2D65993AFeB82Ec49FC51dA2Cfa5139704",
+      "runtimeCodeHash": "0xf3934b69bbf1f16faab99a265e7b8ab197042c78db71100a4c349b8e0035720c",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x28f55959c065da4e9d47174f75da9fd6e7affb472885100d4577901bd9688ae9"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.projectV3PriceGuard3000": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x9e50BDC39156eFB7C404f441A77A38E091345a6F",
+      "runtimeCodeHash": "0xd3e6fa9ac370e5eac8a969dca134556809ff5c654875c0b221be5adefc474b3b",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x5b235a1b0fd1ffb452e07cc350c5f97eefbf225dc15a8fb6a314b8752f6c9192"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.projectV3PriceGuard10000": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x51744fDF7173c566f8C8FD8DEd3e97123Ef834f7",
+      "runtimeCodeHash": "0xd2c79ddcd6c133d5cab767f9d0b899a6148e6c76ef5b2d066a43a1147e53b937",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x02e33830ed57429e80fa1a2051826abb8485f027bac143e9df8c318adfefab63"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.projectWethUnwrapPriceGuard": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0xf9F0568b7D64a1331Ea196F576cce0285b07f4Ea",
+      "runtimeCodeHash": "0x4b68dc8e8330fefeec40fc25a78622380ced829788c9bf3ce6467f82b8d0a12f",
+      "deploymentBlock": 45741938,
+      "deploymentTransaction": "0x55cfd85c5c3b3306af0cfad74fd610e97f1ce93afbc24cf43aa322e2d7b9b23d"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.ponsV2PairBuybackAdapter": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
+      "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
+      "deploymentBlock": 45666464,
+      "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.ponsV2PairBuybackPriceGuard": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
+      "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
+      "deploymentBlock": 45666468,
+      "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.ponsProjectAdapterFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x96Bd46849C2455A192Aa92ea20560AA860D8c8c7",
+      "runtimeCodeHash": "0x00bcb0d9499f15ffbc17e8c3f06da56c93de778b176707286d8b6331b93d2e30",
+      "deploymentBlock": 45741849,
+      "deploymentTransaction": "0xbc81e7e4c6e83ca950ecd884bf7239231a5a16b8c7728757bf352760287871fe"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.ponsProjectAdapterImplementation": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x8Bb43c7a6cBeb0fCAFd4A2a315De71bAcf77802F",
+      "runtimeCodeHash": "0x558a9ae8a7cb9323bc07c7773e2b0ba8bc5f17a3f389676005a6f7d26473aa41",
+      "deploymentBlock": 45741850,
+      "deploymentTransaction": "0x3106ee39cff4992bc1a53e87c96a7cab44155e88a8fb5413ce4def6f4be6d3ee"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.poolsInstantProjectAdapterFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x106409ef1D27EdBdb765c4CaF263DB03394f8956",
+      "runtimeCodeHash": "0x4ead53b9cda29c67a53dcdccb31b985a4a90e16a303991cf368f74468f81585e",
+      "deploymentBlock": 45741874,
+      "deploymentTransaction": "0x7b80f274d3ede626ff28b73bcdcdd7f4bd251325c983250868a684e8ddc80949"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.poolsInstantNoFeeProjectAdapterFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x2C9b46FEF6835462bEda83781245dBC7eACc2294",
+      "runtimeCodeHash": "0xc988676c05056285e4f6683040eb9c2c91b714bf80e675e78819e01196d3b1ef",
+      "deploymentBlock": 45741876,
+      "deploymentTransaction": "0xf104201564a5d6f9b3a271843ee1b078e8494a36bff1c9b71f9d0100bb5a062d"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.poolsLbpProjectAdapterFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x05145f3c9074f7f20a69897843A3e9EaDcF5450c",
+      "runtimeCodeHash": "0xdd68ea5688b66015feb06fda039c9ed2e4fd552271d9563a818c3b3c5f716dd3",
+      "deploymentBlock": 45741876,
+      "deploymentTransaction": "0x2b7e59ed721f05849b7d897178c8a56c64d2c24a1bf5e268a3b0ffb7499ed137"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.poolsProjectRegistrationHelper": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x76195057B28395d86C532919C4Fe01824Cf1120D",
+      "runtimeCodeHash": "0x1b7b30124c43aefc4274f285b4ed9c58a6c6da4de563ce5613cceec3a54519bd",
+      "deploymentBlock": 45741876,
+      "deploymentTransaction": "0xa0e33f45cdac6dc41cceccdd1d72c864dc519cf277ecce2a6a92095a14ea9111"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.ponsProjectTokenFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0xfe8d6de18671546e92b713d918c2429F3d2F4A8E",
+      "runtimeCodeHash": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c",
+      "deploymentBlock": 45741941,
+      "deploymentTransaction": "0x90ffc7f745421073838f05b47e84e5f625b83000eb75083d62e8ebbd909ec60c"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.launchpadProjectTokenFactory": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x3fD50fd6CCD2Bf1DFaE834ea0dE8EE2d862903A6",
+      "runtimeCodeHash": "0xb03c479677d6d7da6f4e65ff10864f2f64f8a471c2b6abf259ec73b696a4240f",
+      "deploymentBlock": 45741941,
+      "deploymentTransaction": "0x8a432074ba9fa6457328fc8646d65238e47cba15402dd185a6c33142af1d00f4"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.registry": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x7658B8a558a9A5F2bF8d4E247D02d756F55a6d4d",
+      "runtimeCodeHash": "0xcf95dd02afb863f5b9047c5e981d02575708b5b5e431381ca4fc8a7a30965c80",
+      "deploymentBlock": 45741941,
+      "deploymentTransaction": "0xa7b98712605ba59b60a4f4152e4862c08c37ddf27ce5dd8bdac5a7f658b38613"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.deploymentEngine": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x8C79a8fC9fb0A817D9eB12a40Dd1aE8806FC2B73",
+      "runtimeCodeHash": "0x4d863bc14c272a62a9766cf55b09179317ac2c4f00a7853858046a536f12af53",
+      "deploymentBlock": 45741942,
+      "deploymentTransaction": "0x92c7b350c2580fbeea9c446c703ef3267a619d9993deee1cf7203b5529ca2607"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.launchValidator": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0xc7C6D0CB3EEeaf8fb693504cA73063Fb5E01fA41",
+      "runtimeCodeHash": "0xa1b88c15301138365168ae14929c8c41a867ec9370bbd505dbeb744708edcbfb",
+      "deploymentBlock": 45741942,
+      "deploymentTransaction": "0xbdafcd121e2e6c76d7b103d9a99ca390cad9a7bdafebc571977c7369a88bd584"
+    },
+    "contracts.projectV2Generations.project-v2-gascap-20260825-3d6dd81.launcher": {
+      "sourceCommit": "3d6dd815ff326a40bee04caa833b5ccd61de0f44",
+      "buildHash": "2a91f200a5d05ebcde570b32ee697e24c9af9d7ea67ed7774721c41697aa3b95",
+      "approvalProof0": "0xd0cfe010f7fd445323be20a32d7ad593916cd197a541a092ef7059ca51d24498",
+      "approvalProof1": "0x6a72313166c2fcfade45a479bb74b77079cc873ecf8719f44c2e3815ed853019",
+      "approvalProof2": "0xeed432f0514b1bebce3093e1d9ef319ca98c40a5f1d0a33d1b854f93c0cf06a6",
+      "approvalProof3": "0xaeb407acc37246969e48c379be352608bf218c2bc680e9cae9d2355257edb0bf",
+      "address": "0x2260655205Ad66D1034d3C8afA46E6168C9C48Ff",
+      "runtimeCodeHash": "0x8fd84e21d7bf188ddd31eb2375e3b24dd49cb1a6018a8348c95375b192939704",
+      "deploymentBlock": 45741942,
+      "deploymentTransaction": "0xa23e984bb1e6c85945ce2006b4a2db8398814b2bca6058beba2cddc41373eb3a"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.raffleImplementation": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xcEd195Bdc065D0A70B138fe07c6F9F79C70a65DF",
+      "runtimeCodeHash": "0x3a0d74d0dd72ad1965c4bb6a7d2e9d9e0ccbd7ed88a294bda05317f5bfd919ff",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0x42447e5fe420102caaa4b0c3e8654ca472154874624807453abfc19b970d19cd"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.fundingBandV3IntegrationFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xB97462beb73C87c4c22734eF676c0d938ADf9Dde",
+      "runtimeCodeHash": "0x42af7b6fdbaab808c06db8761a7a91578a1e07cc75ce40551b9d6e010c71dcb3",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0x5d14b55a4ec5137e23163ccf232bfef87e18fc61db4a17b82241d9e4d05f48fb"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.fundingBandQuoteUsdOracle": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x8506Ce4B817f85974273cce65Ce427c3e7Ee40f7",
+      "runtimeCodeHash": "0x6bde18fbfb602edfb4e5554b44ae9fe1f7b2d47ccbe35a7311b0936134a66efd",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0xe75544577b3acfcd87e0a69da86f973795e1d44ea772a8a61cd9e09dcf9ce300"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.projectV3PriceGuard500": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xDE14dC262d130bd786249a58370bE2dc34662692",
+      "runtimeCodeHash": "0xf3934b69bbf1f16faab99a265e7b8ab197042c78db71100a4c349b8e0035720c",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0x955014cef86fe149759c19530196eb5760ff0ceaf5b6d60eb2081d2c16ab2e36"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.projectV3PriceGuard3000": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x5b14D8a18b34AeeA89013d2B8B8f6Fae7fE2d121",
+      "runtimeCodeHash": "0xd3e6fa9ac370e5eac8a969dca134556809ff5c654875c0b221be5adefc474b3b",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0xff038fa38a2167aeadbefa97ff0d115b7b3bf81fa532ef8ac271b92ce887a4a2"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.projectV3PriceGuard10000": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xe7cb99361f00ce8f136AfF7e096f2d743B1dAdF0",
+      "runtimeCodeHash": "0xd2c79ddcd6c133d5cab767f9d0b899a6148e6c76ef5b2d066a43a1147e53b937",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0x2d972be27c4ac0180fc48d8da7dd70cdb6a453c3ba9b13a5eed1a0dc0a1da791"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.projectWethUnwrapPriceGuard": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x86d4bb5E130CDA655778Bd59Af4A5E00268f2F85",
+      "runtimeCodeHash": "0x4b68dc8e8330fefeec40fc25a78622380ced829788c9bf3ce6467f82b8d0a12f",
+      "deploymentBlock": 46149746,
+      "deploymentTransaction": "0xc011aeb1f701823076bf3fbc34eaa51590cecf434558f0a4940671fa37849a2d"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.ponsV2PairBuybackAdapter": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+      "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.ponsV2PairBuybackPriceGuard": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+      "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
+      "deploymentBlock": 28126079,
+      "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.ponsProjectAdapterFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x37617C7603032b6a8437365d1582Fcb0B003501F",
+      "runtimeCodeHash": "0x1150584f86e1c3f99281506d270127729c1592291c3643040a40e4501015cf0e",
+      "deploymentBlock": 46149612,
+      "deploymentTransaction": "0x906d0b0cb43c1c1c7e1f67633a425d41c0380736e28669e92f4ce0dbe8fe5374"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.ponsProjectAdapterImplementation": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xF4a58F32200dc92D86D3f02CA1F2c909F1366Cb6",
+      "runtimeCodeHash": "0x6771b3d19c35e439a8b333def079e7dab2c55c7fec6a8c1332f765ab026abd81",
+      "deploymentBlock": 46149612,
+      "deploymentTransaction": "0xf5d5e1ab2a08368c936ea7f964d32f7d2f741802c98ac1d61f55bc1a9202c715"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.poolsInstantProjectAdapterFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xfe31374738734593713ABa786770D4B743807357",
+      "runtimeCodeHash": "0x94f0173c31044ce739e4231875de7aad6de4f1b5b6ff154ccdd23900383e5543",
+      "deploymentBlock": 46149688,
+      "deploymentTransaction": "0xba6e62e13f0760f796a4161788d0c88792da869714c83f7b2374587bf76f6e9a"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.poolsInstantNoFeeProjectAdapterFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x183D9B7b27eAAE93fC66fF5e2fCe48324AD45c13",
+      "runtimeCodeHash": "0x8fbe4ecfc619ee0421b52471581c326f590b6fac73e4b9aa1c87770be0c3dc45",
+      "deploymentBlock": 46149688,
+      "deploymentTransaction": "0x5a3f4a793d28ac29c40ed6ef9afcea3b22cb3f9b1008a7916a2aed973c99c132"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.poolsLbpProjectAdapterFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xD9E67819353643CAb708B1b24DEE1915186C33D9",
+      "runtimeCodeHash": "0x0044814c692e020cfa48b09c2ecc51df83e6c7b41e39385bcaa61723f2fcdd0c",
+      "deploymentBlock": 46149688,
+      "deploymentTransaction": "0xc0f14f219225d6fa187c097b95cd6d37823f769b95f8018918c9265b15e66efe"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.poolsProjectRegistrationHelper": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x09Ab649D60faBF842B23f300c515b7043522CF08",
+      "runtimeCodeHash": "0x34bd1ccd3740087c6fa60792496ff3a479f1d10c8c2e81a8bafb0f8dff011d8b",
+      "deploymentBlock": 46149689,
+      "deploymentTransaction": "0xb605ce55fbdf0fffae796e5c5f7e3f41eb4427fa85d84854dbc27142c171c6d7"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.ponsProjectTokenFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x8f27b906f0B7562E51d1E9B23963FE738D90C0E8",
+      "runtimeCodeHash": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c",
+      "deploymentBlock": 46149749,
+      "deploymentTransaction": "0x876e13555b00c3ea253f67f1f7011ec6ef88fd6108b822f5e50d6e0a27058b25"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.launchpadProjectTokenFactory": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0x4Ca750DBA9728942048898004fF545AAC56ecD38",
+      "runtimeCodeHash": "0xb03c479677d6d7da6f4e65ff10864f2f64f8a471c2b6abf259ec73b696a4240f",
+      "deploymentBlock": 46149749,
+      "deploymentTransaction": "0x62ee30ee94b3233305129fe20bd52bba848480003ab1d3ebbeca6bca896e9c51"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.registry": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xc8297e34aD37A8A6D9f237Eda996Ee207d23188A",
+      "runtimeCodeHash": "0x006a442303dbe7dcbc96806bd8f737a3c51cf161c775795ebafa9b5a0ebcd2ab",
+      "deploymentBlock": 46149749,
+      "deploymentTransaction": "0xde5317f94005d70ae020bebe6f6baeb1775aeaa40f9feceb196243a9cef5d2f6"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.deploymentEngine": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xf94acC8857e4EF5Be78aB6D53c8CbdDDBF22F460",
+      "runtimeCodeHash": "0x2b8aa6b4bc0c45c26bf369940b020173419eb1eae86b642b664fa712bf2aa92b",
+      "deploymentBlock": 46149750,
+      "deploymentTransaction": "0xd8e3906f82f4742d5990dfdada6a612d4bb4dc39e80577000a1d980fc2ec9ce2"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.launchValidator": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xe746519A82BD3E8356b502A5083e8873a3f15099",
+      "runtimeCodeHash": "0x31410cf109fc61613023020d6ab6a372f964e824162ba4f6f3aa0528b81e6bc0",
+      "deploymentBlock": 46149750,
+      "deploymentTransaction": "0xd1d7008d8354cd9153a41fa72e041dcf3b14b68a7ef748d332b8c09cf14d91c1"
+    },
+    "contracts.projectV2Generations.project-v2-public-pons-wrong-locker-20260825-1925510.launcher": {
+      "sourceCommit": "192551019ad3b0156821b6d89bad559f1e24b2f4",
+      "buildHash": "95c55323aeeefa851380b1a795103b491202d774e7b41d30455170dbc163a770",
+      "approvalProof0": "0xbe7b096e5dcd5446a276b6662d46f1b52ee413905374c70a08b62564b817a747",
+      "approvalProof1": "0xb069f6ad7b00303633e3d1f3a0ee00c6f2fe0156297ecf056214cc5fb7fee6a6",
+      "approvalProof2": "0xbcbf862de02d378660a84385773261cec4cec6b7fa9aa19935a3deade7a25076",
+      "approvalProof3": "0xcf170a2046551056855a7559c35fbc3bac5967a480c81be3e08342b48366b072",
+      "address": "0xbf9c48Bd4784016065613Fbde7bbc2BcA017FA7E",
+      "runtimeCodeHash": "0x6fcfad826b44a3f115a709730f18d4b3976e6fc59fb03986ac97253783b81bdb",
+      "deploymentBlock": 46149750,
+      "deploymentTransaction": "0xdd333d11f1a1c44b01f065da5528723efdb86f48e311b5ec3a6576002feca58e"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.manager": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
+      "runtimeCodeHash": "0x7d52072593c645aa9eef53dc612bc8be076122f3181e0c5e2ae318646d5578f5",
+      "deploymentBlock": 37220865,
+      "deploymentTransaction": "0xf8cc28db48484df8657aed4b503c0b7031fd31c11b685fc92767c1b9f5958f69"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.oracle": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x09978409A32B7a8F574D2858c9981456E63CC65E",
+      "runtimeCodeHash": "0x0f34766397d79c63a443067d266f6cddce1107ad410fc75f68293c0386412bb7",
+      "deploymentBlock": 37220681,
+      "deploymentTransaction": "0x34fefe5859b1365fecc3fc508ecb19042d009503f42e0c42ad481d9ff60088b0"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.ponsV2Verifier": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0xeE29bf87Fa7e4b9336D40D429874d3d9b0a01304",
+      "runtimeCodeHash": "0x34be3e111f42753bca0b3ee18c9f753d49c7e876329fb8ecacb1bdfd16402ef1",
+      "deploymentBlock": 37220707,
+      "deploymentTransaction": "0x816b25c6f05ac1b94c9e5bf40d1de3f572e320d0c69204f1c87f00551c2ab677"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.ponsV2Guard": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x7078b0b68293217678f9B8e0A2AfA8eC26eF149a",
+      "runtimeCodeHash": "0x08599108bd65ee9d3f87e6431dd3e6fa5ad1e25cf44cb597041a35836c79bc39",
+      "deploymentBlock": 37220772,
+      "deploymentTransaction": "0x61ddba7648f7a752f87ed6f91931cb901e4ed396bbe1b5b3c05f4e67dc9095bc"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.launchEscrow": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x1b1C878f5D7F46159Dc4aE34405a6b36631DFA23",
+      "runtimeCodeHash": "0x449131c16711cac5a63a0c0c92a1838c0c6ce96bf86337a107a44f16dd320a4a",
+      "deploymentBlock": 37220736,
+      "deploymentTransaction": "0x43e34824c7c91f54083027ca2ab66b2b3ec38c388683bc98b3b1bba3d2981ce8"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.subjectSellAdapter": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x13Aa34682F130105E363bE6aAA43d4421EB3c961",
+      "runtimeCodeHash": "0x12f31d5a91362e4f5237365bb001b37d612b7f4bfc5a83e373311bf5edf2fdc7",
+      "deploymentBlock": 37220872,
+      "deploymentTransaction": "0x6ae391c1650a24d2c8e6747a8654f89b67c7cb608cc8c7a3ff905d97effeb22e"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.subjectPriceGuard": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x8a9f9cB3e4523A973F243E81d248Fa4F3e7c2582",
+      "runtimeCodeHash": "0x37b39d9a90abd782d8062309d5cf027dd9425cd7537e53e9b2eb262b355e2dd0",
+      "deploymentBlock": 37220896,
+      "deploymentTransaction": "0x160b526c4d1819093772f387762f81bb4ddafc0257cce3603f2b7b19ddcee1da"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.fundingBandMath": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x9E421c5B72f3950333420C5749381f61b96436b8",
+      "runtimeCodeHash": "0xabeefeed70b46391de5b9f110cf0e9ee857b0225c8224bee324fee623f30096e",
+      "deploymentBlock": 37220794,
+      "deploymentTransaction": "0xd53907742f5f8816d37a826ef9e22388d16af7701280f6d02bfdf6f152a65e47"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.fundingBandV4": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x49D3C913844bdAF3960Db4738ED2B101E67986D6",
+      "runtimeCodeHash": "0xd373f618fc1355ec9344ae55717c563d9a1a795260bc5204ef50fc32e159d5a7",
+      "deploymentBlock": 37220817,
+      "deploymentTransaction": "0x037547de8a8ac8d3b20aa3e8f4cfffeb6bd70fcca301b0de50b62fb60f1622e5"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.v4Infrastructure.stateView": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+      "runtimeCodeHash": "0x7d9c591e0956fd89d98feb4ffcfe8bf1f7a62bd485edd979fa21d104b49878a6"
+    },
+    "contracts.fundingBandsHistoricalGenerations.funding-bands-single-adapter-20260815-036972e.v4Infrastructure.poolManager": {
+      "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
+      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+      "runtimeCodeHash": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.launchFactory": {
+      "address": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
+      "runtimeCodeHash": "0x3392f4e9040deec97e49bf05fc3a696f295b79806ef83910d84943d431d05e83"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.launchDeployer": {
+      "address": "0xa0bc05240f1cD1f3Df7FEfA35e48C19ffF4c6ACe",
+      "runtimeCodeHash": "0x1a02242a68ae3b615880e87cba298a208fe991a7a6f87cbc9b34e596e9518fc7"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.feeEscrow": {
+      "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
+      "runtimeCodeHash": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.memeHook": {
+      "address": "0xE9Ec0Ffc7d5bEF33f815D7b0cDd15A7c5Dc1e044",
+      "runtimeCodeHash": "0x5f3bc01971cffe8dea490d70f123c25c01ae2c3579b68d40109c3ac68e1461eb"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.launchLocker": {
+      "address": "0x1006fA85294A9c38AA4214d52c86CC970Ddc5647",
+      "runtimeCodeHash": "0x5304631acb89c64e75397509c745337b6ddb3e7f529e2297a335114049bcff7d"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.launchForwarder": {
+      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
+      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.buybackVault": {
+      "address": "0xA61f18568d3B817bbb95450D42F7403e871Ce0a1",
+      "runtimeCodeHash": "0x99fd213fd5cccddc5bb26e9ab9763a69bd17f7286333f93ae9c3b96817f8f904"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.adapterFactory": {
+      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
+      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.trustedForwarderFactory.adapterImplementation": {
+      "address": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
+      "runtimeCodeHash": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
+      "deploymentBlock": 45029745,
+      "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.launchFactory": {
+      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.launchDeployer": {
+      "address": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42",
+      "runtimeCodeHash": "0xeade22566c766377f6adfb99534f2772251efad9568642c0704a7051418e624c"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.feeEscrow": {
+      "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
+      "runtimeCodeHash": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.memeHook": {
+      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+      "runtimeCodeHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.launchLocker": {
+      "address": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952",
+      "runtimeCodeHash": "0x58455f80b3773871d601a025e56ec27c71ab3bbb8e2ca6b17828954450742025"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.launchForwarder": {
+      "address": "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948",
+      "runtimeCodeHash": "0xed9065184519eaa24a22c2556403d5d8bbb230ff94dbc5c414cf5028e20e52e7"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.buybackVault": {
+      "address": "0x42df2a798f82289E177311362e8f5ccC45c1219c",
+      "runtimeCodeHash": "0x5de8480874faffefa539648f1a7d6c1e69b39da3fa34de22fc95eb7586aece03"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.adapterFactory": {
+      "address": "0x37617C7603032b6a8437365d1582Fcb0B003501F",
+      "runtimeCodeHash": "0x1150584f86e1c3f99281506d270127729c1592291c3643040a40e4501015cf0e",
+      "deploymentBlock": 46149612,
+      "deploymentTransaction": "0x906d0b0cb43c1c1c7e1f67633a425d41c0380736e28669e92f4ce0dbe8fe5374"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.adapterImplementation": {
+      "address": "0x095b16399337cd54652F766847c9208a18B1a779",
+      "runtimeCodeHash": "0x9be066c119b6c9d568c096ef14d9b6068292cfaaa3e984e52d7ceb34aee2fcd3",
+      "deploymentBlock": 46149612,
+      "deploymentTransaction": "0x906d0b0cb43c1c1c7e1f67633a425d41c0380736e28669e92f4ce0dbe8fe5374"
+    },
+    "contracts.ponsV2AdapterHistoricalGenerations.publicPonsUnboundFunding.projectAdapterImplementation": {
+      "address": "0xF4a58F32200dc92D86D3f02CA1F2c909F1366Cb6",
+      "runtimeCodeHash": "0x6771b3d19c35e439a8b333def079e7dab2c55c7fec6a8c1332f765ab026abd81",
+      "deploymentBlock": 46149612,
+      "deploymentTransaction": "0xf5d5e1ab2a08368c936ea7f964d32f7d2f741802c98ac1d61f55bc1a9202c715"
     },
     "dependencies.ponsLaunchFactory": {
       "address": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
@@ -639,32 +1591,32 @@
       "runtimeCodeHash": "0x6f36c378e272c6324c48f045182bcb54bd8ad654cf9ebd42e8893d52c4cb25dc"
     },
     "dependencies.ponsV2LaunchFactory": {
-      "address": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
-      "runtimeCodeHash": "0x3392f4e9040deec97e49bf05fc3a696f295b79806ef83910d84943d431d05e83"
+      "address": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+      "runtimeCodeHash": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84"
     },
     "dependencies.ponsV2LaunchDeployer": {
-      "address": "0xa0bc05240f1cD1f3Df7FEfA35e48C19ffF4c6ACe",
-      "runtimeCodeHash": "0x1a02242a68ae3b615880e87cba298a208fe991a7a6f87cbc9b34e596e9518fc7"
+      "address": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42",
+      "runtimeCodeHash": "0xeade22566c766377f6adfb99534f2772251efad9568642c0704a7051418e624c"
     },
     "dependencies.ponsV2FeeEscrow": {
       "address": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
       "runtimeCodeHash": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1"
     },
     "dependencies.ponsV2MemeHook": {
-      "address": "0xE9Ec0Ffc7d5bEF33f815D7b0cDd15A7c5Dc1e044",
-      "runtimeCodeHash": "0x5f3bc01971cffe8dea490d70f123c25c01ae2c3579b68d40109c3ac68e1461eb"
+      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+      "runtimeCodeHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db"
     },
     "dependencies.ponsV2BuybackVault": {
-      "address": "0xA61f18568d3B817bbb95450D42F7403e871Ce0a1",
-      "runtimeCodeHash": "0x99fd213fd5cccddc5bb26e9ab9763a69bd17f7286333f93ae9c3b96817f8f904"
+      "address": "0x42df2a798f82289E177311362e8f5ccC45c1219c",
+      "runtimeCodeHash": "0x5de8480874faffefa539648f1a7d6c1e69b39da3fa34de22fc95eb7586aece03"
     },
     "dependencies.ponsV2LaunchLocker": {
-      "address": "0x1006fA85294A9c38AA4214d52c86CC970Ddc5647",
-      "runtimeCodeHash": "0x5304631acb89c64e75397509c745337b6ddb3e7f529e2297a335114049bcff7d"
+      "address": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952",
+      "runtimeCodeHash": "0x58455f80b3773871d601a025e56ec27c71ab3bbb8e2ca6b17828954450742025"
     },
     "dependencies.ponsV2LaunchForwarder": {
-      "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
-      "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5"
+      "address": "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948",
+      "runtimeCodeHash": "0xed9065184519eaa24a22c2556403d5d8bbb230ff94dbc5c414cf5028e20e52e7"
     },
     "dependencies.uniswapV4PoolManager": {
       "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
@@ -739,12 +1691,20 @@
     "dependencies.letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
       "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-      "implementation": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-      "implementationRuntimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
+      "implementation": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "implementationRuntimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
     },
     "dependencies.letscash.factoryImplementation": {
-      "address": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-      "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
+      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
+      "deploymentBlock": 46051259,
+      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab"
+    },
+    "dependencies.letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260825": {
+      "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
+      "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+      "deploymentBlock": 28872652,
+      "deploymentTransaction": "0xf0871106205ff3df6c8f3f11585be0508d813f5f0d3e5c1454c5464983766919"
     },
     "dependencies.letscash.hook": {
       "address": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
@@ -785,53 +1745,53 @@
           "deploymentTransaction": "0x2271aaa33905873d5dd0486e042cb5118e3703460205016edf5c2cb37ccc1bbd"
         },
         "fundingBandsManager": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
-          "runtimeCodeHash": "0x7d52072593c645aa9eef53dc612bc8be076122f3181e0c5e2ae318646d5578f5",
-          "deploymentBlock": 37220865,
-          "deploymentTransaction": "0xf8cc28db48484df8657aed4b503c0b7031fd31c11b685fc92767c1b9f5958f69"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0x8AEb669200bcc03454Fe3B73124A4318027862e9",
+          "runtimeCodeHash": "0x27e79a76b510ea9ba4018822199e31339c8ac4a083e2723d6ec0b305c168e3d6",
+          "deploymentBlock": 46235700,
+          "deploymentTransaction": "0x528d45e4f783f2b4fe60ddcf01e7e7c1c9f56770a808268efd8ced082714ee21"
         },
         "fundingBandsEscrow": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x1b1C878f5D7F46159Dc4aE34405a6b36631DFA23",
-          "runtimeCodeHash": "0x449131c16711cac5a63a0c0c92a1838c0c6ce96bf86337a107a44f16dd320a4a",
-          "deploymentBlock": 37220736,
-          "deploymentTransaction": "0x43e34824c7c91f54083027ca2ab66b2b3ec38c388683bc98b3b1bba3d2981ce8"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0xf8F28826d4837e10fc9eD0d7787F763725F10378",
+          "runtimeCodeHash": "0xc4c40096bf36620fafdb166f7328f84c6907a60392fc3321fb66ab345b99dafc",
+          "deploymentBlock": 46235558,
+          "deploymentTransaction": "0x8dc69d61a8efc0ca74dd35564bddce13d6540657fbd3bf37e9f812c80d99bf65"
         },
         "fundingBandsVerifier": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0xeE29bf87Fa7e4b9336D40D429874d3d9b0a01304",
-          "runtimeCodeHash": "0x34be3e111f42753bca0b3ee18c9f753d49c7e876329fb8ecacb1bdfd16402ef1",
-          "deploymentBlock": 37220707,
-          "deploymentTransaction": "0x816b25c6f05ac1b94c9e5bf40d1de3f572e320d0c69204f1c87f00551c2ab677"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0x9d93036656C51dd9Fe2164f9325FeF850fC282D9",
+          "runtimeCodeHash": "0xedb1114f6c470682c3142a35300db3bb0000cc42b73f2adbb3cdd554bb14d34d",
+          "deploymentBlock": 46235529,
+          "deploymentTransaction": "0x38b5c6e7a9779cf499ecfdfc4789884bda80bb8c80c4db97a66a5a54d6754995"
         },
         "fundingBandsGuard": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x7078b0b68293217678f9B8e0A2AfA8eC26eF149a",
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0xADB3BD2222dBCd08ab78Bd7BD2BDbb6Adf043915",
           "runtimeCodeHash": "0x08599108bd65ee9d3f87e6431dd3e6fa5ad1e25cf44cb597041a35836c79bc39",
-          "deploymentBlock": 37220772,
-          "deploymentTransaction": "0x61ddba7648f7a752f87ed6f91931cb901e4ed396bbe1b5b3c05f4e67dc9095bc"
+          "deploymentBlock": 46235610,
+          "deploymentTransaction": "0xe43df8cdfa83a37cbeba7878d391b42198953e06e9468c99d395aa73e45efcb2"
         },
         "fundingBandsOracle": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x09978409A32B7a8F574D2858c9981456E63CC65E",
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0xB1115B9d0c409d6bCbb8d2483B2Cc0C425679754",
           "runtimeCodeHash": "0x0f34766397d79c63a443067d266f6cddce1107ad410fc75f68293c0386412bb7",
-          "deploymentBlock": 37220681,
-          "deploymentTransaction": "0x34fefe5859b1365fecc3fc508ecb19042d009503f42e0c42ad481d9ff60088b0"
+          "deploymentBlock": 46235502,
+          "deploymentTransaction": "0x04fe763c37572f0655b57776e70b601440ed4b7608dfce9d7c12b336a5e8181d"
         },
         "fundingBandsSubjectSellAdapter": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x13Aa34682F130105E363bE6aAA43d4421EB3c961",
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0x42C7ADD713Cf2084673f8490a66E97C6bd81b985",
           "runtimeCodeHash": "0x12f31d5a91362e4f5237365bb001b37d612b7f4bfc5a83e373311bf5edf2fdc7",
-          "deploymentBlock": 37220872,
-          "deploymentTransaction": "0x6ae391c1650a24d2c8e6747a8654f89b67c7cb608cc8c7a3ff905d97effeb22e"
+          "deploymentBlock": 46235727,
+          "deploymentTransaction": "0x7b2ab4f5a8c852a3a6a38bfae532ba8f4dba0d8353eecd699234f47a2066da1e"
         },
         "fundingBandsSubjectPriceGuard": {
-          "sourceCommit": "036972edec6b07a2f867bbe1582d3e51aaae0a65",
-          "address": "0x8a9f9cB3e4523A973F243E81d248Fa4F3e7c2582",
-          "runtimeCodeHash": "0x37b39d9a90abd782d8062309d5cf027dd9425cd7537e53e9b2eb262b355e2dd0",
-          "deploymentBlock": 37220896,
-          "deploymentTransaction": "0x160b526c4d1819093772f387762f81bb4ddafc0257cce3603f2b7b19ddcee1da"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "address": "0x7Dd3D815fb2C188361Dd25340Cc3321D3dbfc8e3",
+          "runtimeCodeHash": "0x4196022290855870057245f71692759baec5ca0ecd629db1372a131f836257bc",
+          "deploymentBlock": 46235752,
+          "deploymentTransaction": "0xc9f07021339081550a49b192530fe0b984a4719a0ac37acf05a27093408b8bcb"
         },
         "feeRouterImplementation": {
           "address": "0x17c76ff58b7da12e116bb22ebdcc7f31cadf9b64",
@@ -942,28 +1902,28 @@
           "deploymentTransaction": "0xd5878a1775f92d263c2b8212b40620dc4940b46c5325560f61ea6be1f293d1ca"
         },
         "ponsV2AdapterFactory": {
-          "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
-          "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
-          "deploymentBlock": 45029745,
-          "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+          "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+          "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+          "deploymentBlock": 46235444,
+          "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
         },
         "ponsV2AdapterImplementation": {
-          "address": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
-          "runtimeCodeHash": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
-          "deploymentBlock": 45029745,
-          "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+          "address": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
+          "runtimeCodeHash": "0x5cc42a8a6ac7a9a792a04427f52063e5a8f4fb2c72fa614d46c1bc528d20ab4e",
+          "deploymentBlock": 46235444,
+          "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
         },
         "ponsV2PairBuybackAdapter": {
-          "address": "0x1BE0E8F04221329FDfea34f41a1832a80c2c147c",
-          "runtimeCodeHash": "0xba0a98c865c548ca90799cac47b7978380d52b8db6e7c66d4149d3010f77b6e3",
-          "deploymentBlock": 45666464,
-          "deploymentTransaction": "0x0a45abf50c63bae215062879061e05abd85e7f101e8e4e53ff0f875ade24cc26"
+          "address": "0xfAB57a5fE409B4503A1a09fD7DC80e6ffB85Abb8",
+          "runtimeCodeHash": "0x37fedab733793c3b192b44be34c45048b99915534b9e2a256cf9b518a7417a07",
+          "deploymentBlock": 28126079,
+          "deploymentTransaction": "0x17579811baa9eb290ebe1a2a73534fecd1e93909edcf170a261418682ce5ec75"
         },
         "ponsV2PairBuybackPriceGuard": {
-          "address": "0x902A6Fa8Ca273aAB186633FF27879Cd3703F6AED",
-          "runtimeCodeHash": "0xa03b64312803b10d3fe9bf511d0ba80cfc9ebd40931c64dc37481b49e9413e02",
-          "deploymentBlock": 45666468,
-          "deploymentTransaction": "0x371953095fae116a61de3ae970795c119430433bf286a33a329d9b941680a6c2"
+          "address": "0x69768f0b41A5A51aB23b23ccfbE9e3122Ac0DA8b",
+          "runtimeCodeHash": "0x27a8a84e173e127965717c020a07bb304ab0eb7e3396d0b6e3fc720f536cea21",
+          "deploymentBlock": 28126079,
+          "deploymentTransaction": "0x52b095758edc3d998dbff2c6a23b01d3e3e593c1c8f79334c9040d8c71e8a2de"
         },
         "ponsV2BuybackAdapter": {
           "address": "0x39217172A3F07E827557093989039F968A571D43",
@@ -1069,56 +2029,56 @@
         }
       },
       "environment": {
-        "NEXT_PUBLIC_FUNDING_BANDS_MANAGER": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
-        "NEXT_PUBLIC_FUNDING_BANDS_MANAGER_CODEHASH": "0x7d52072593c645aa9eef53dc612bc8be076122f3181e0c5e2ae318646d5578f5",
-        "NEXT_PUBLIC_FUNDING_BANDS_ESCROW": "0x1b1C878f5D7F46159Dc4aE34405a6b36631DFA23",
-        "NEXT_PUBLIC_FUNDING_BANDS_ESCROW_CODEHASH": "0x449131c16711cac5a63a0c0c92a1838c0c6ce96bf86337a107a44f16dd320a4a",
-        "NEXT_PUBLIC_FUNDING_BANDS_DEPLOYMENT_BLOCK": 37220865,
-        "NEXT_PUBLIC_FUNDING_BANDS_VERIFIER": "0xeE29bf87Fa7e4b9336D40D429874d3d9b0a01304",
-        "NEXT_PUBLIC_FUNDING_BANDS_VERIFIER_CODEHASH": "0x34be3e111f42753bca0b3ee18c9f753d49c7e876329fb8ecacb1bdfd16402ef1",
-        "NEXT_PUBLIC_FUNDING_BANDS_GUARD": "0x7078b0b68293217678f9B8e0A2AfA8eC26eF149a",
+        "NEXT_PUBLIC_FUNDING_BANDS_MANAGER": "0x8AEb669200bcc03454Fe3B73124A4318027862e9",
+        "NEXT_PUBLIC_FUNDING_BANDS_MANAGER_CODEHASH": "0x27e79a76b510ea9ba4018822199e31339c8ac4a083e2723d6ec0b305c168e3d6",
+        "NEXT_PUBLIC_FUNDING_BANDS_ESCROW": "0xf8F28826d4837e10fc9eD0d7787F763725F10378",
+        "NEXT_PUBLIC_FUNDING_BANDS_ESCROW_CODEHASH": "0xc4c40096bf36620fafdb166f7328f84c6907a60392fc3321fb66ab345b99dafc",
+        "NEXT_PUBLIC_FUNDING_BANDS_DEPLOYMENT_BLOCK": 46235700,
+        "NEXT_PUBLIC_FUNDING_BANDS_VERIFIER": "0x9d93036656C51dd9Fe2164f9325FeF850fC282D9",
+        "NEXT_PUBLIC_FUNDING_BANDS_VERIFIER_CODEHASH": "0xedb1114f6c470682c3142a35300db3bb0000cc42b73f2adbb3cdd554bb14d34d",
+        "NEXT_PUBLIC_FUNDING_BANDS_GUARD": "0xADB3BD2222dBCd08ab78Bd7BD2BDbb6Adf043915",
         "NEXT_PUBLIC_FUNDING_BANDS_GUARD_CODEHASH": "0x08599108bd65ee9d3f87e6431dd3e6fa5ad1e25cf44cb597041a35836c79bc39",
-        "NEXT_PUBLIC_FUNDING_BANDS_ORACLE": "0x09978409A32B7a8F574D2858c9981456E63CC65E",
+        "NEXT_PUBLIC_FUNDING_BANDS_ORACLE": "0xB1115B9d0c409d6bCbb8d2483B2Cc0C425679754",
         "NEXT_PUBLIC_FUNDING_BANDS_ORACLE_CODEHASH": "0x0f34766397d79c63a443067d266f6cddce1107ad410fc75f68293c0386412bb7",
-        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_SELL_ADAPTER": "0x13Aa34682F130105E363bE6aAA43d4421EB3c961",
+        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_SELL_ADAPTER": "0x42C7ADD713Cf2084673f8490a66E97C6bd81b985",
         "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_SELL_ADAPTER_CODEHASH": "0x12f31d5a91362e4f5237365bb001b37d612b7f4bfc5a83e373311bf5edf2fdc7",
-        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_PRICE_GUARD": "0x8a9f9cB3e4523A973F243E81d248Fa4F3e7c2582",
-        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_PRICE_GUARD_CODEHASH": "0x37b39d9a90abd782d8062309d5cf027dd9425cd7537e53e9b2eb262b355e2dd0",
-        "NEXT_PUBLIC_PONS_V2_ADAPTER_FACTORY": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
-        "NEXT_PUBLIC_PONS_V2_ADAPTER_FACTORY_CODEHASH": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
-        "NEXT_PUBLIC_PONS_V2_ADAPTER_IMPLEMENTATION": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
-        "NEXT_PUBLIC_PONS_V2_ADAPTER_IMPLEMENTATION_CODEHASH": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
-        "NEXT_PUBLIC_PONS_V2_LAUNCH_FACTORY": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
-        "NEXT_PUBLIC_PONS_V2_LAUNCH_FACTORY_CODEHASH": "0x3392f4e9040deec97e49bf05fc3a696f295b79806ef83910d84943d431d05e83",
-        "NEXT_PUBLIC_PONS_V2_LAUNCH_DEPLOYER": "0xa0bc05240f1cD1f3Df7FEfA35e48C19ffF4c6ACe",
-        "NEXT_PUBLIC_PONS_V2_LAUNCH_DEPLOYER_CODEHASH": "0x1a02242a68ae3b615880e87cba298a208fe991a7a6f87cbc9b34e596e9518fc7",
+        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_PRICE_GUARD": "0x7Dd3D815fb2C188361Dd25340Cc3321D3dbfc8e3",
+        "NEXT_PUBLIC_FUNDING_BANDS_SUBJECT_PRICE_GUARD_CODEHASH": "0x4196022290855870057245f71692759baec5ca0ecd629db1372a131f836257bc",
+        "NEXT_PUBLIC_PONS_V2_ADAPTER_FACTORY": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+        "NEXT_PUBLIC_PONS_V2_ADAPTER_FACTORY_CODEHASH": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+        "NEXT_PUBLIC_PONS_V2_ADAPTER_IMPLEMENTATION": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
+        "NEXT_PUBLIC_PONS_V2_ADAPTER_IMPLEMENTATION_CODEHASH": "0x5cc42a8a6ac7a9a792a04427f52063e5a8f4fb2c72fa614d46c1bc528d20ab4e",
+        "NEXT_PUBLIC_PONS_V2_LAUNCH_FACTORY": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+        "NEXT_PUBLIC_PONS_V2_LAUNCH_FACTORY_CODEHASH": "0x89a27da6f703e0a7cdd4f233e7cb57604ff75b164530962d3ff7cf8483a67d84",
+        "NEXT_PUBLIC_PONS_V2_LAUNCH_DEPLOYER": "0x3711ceA4feaDE896C913C68F01Eda97Cb06D1A42",
+        "NEXT_PUBLIC_PONS_V2_LAUNCH_DEPLOYER_CODEHASH": "0xeade22566c766377f6adfb99534f2772251efad9568642c0704a7051418e624c",
         "NEXT_PUBLIC_PONS_V2_FEE_ESCROW": "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
         "NEXT_PUBLIC_PONS_V2_FEE_ESCROW_CODEHASH": "0xf25f75cfbc1637ba068dc34f69098fa4e8a80f8ee8fe7bf7820594e0b3fed2f1",
-        "NEXT_PUBLIC_PONS_V2_MEME_HOOK": "0xE9Ec0Ffc7d5bEF33f815D7b0cDd15A7c5Dc1e044",
-        "NEXT_PUBLIC_PONS_V2_MEME_HOOK_CODEHASH": "0x5f3bc01971cffe8dea490d70f123c25c01ae2c3579b68d40109c3ac68e1461eb",
-        "NEXT_PUBLIC_PONS_V2_BUYBACK_VAULT": "0xA61f18568d3B817bbb95450D42F7403e871Ce0a1",
-        "NEXT_PUBLIC_PONS_V2_BUYBACK_VAULT_CODEHASH": "0x99fd213fd5cccddc5bb26e9ab9763a69bd17f7286333f93ae9c3b96817f8f904",
-        "NEXT_PUBLIC_PONS_V2_LOCKER": "0x1006fA85294A9c38AA4214d52c86CC970Ddc5647",
-        "NEXT_PUBLIC_PONS_V2_LOCKER_CODEHASH": "0x5304631acb89c64e75397509c745337b6ddb3e7f529e2297a335114049bcff7d",
+        "NEXT_PUBLIC_PONS_V2_MEME_HOOK": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+        "NEXT_PUBLIC_PONS_V2_MEME_HOOK_CODEHASH": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db",
+        "NEXT_PUBLIC_PONS_V2_BUYBACK_VAULT": "0x42df2a798f82289E177311362e8f5ccC45c1219c",
+        "NEXT_PUBLIC_PONS_V2_BUYBACK_VAULT_CODEHASH": "0x5de8480874faffefa539648f1a7d6c1e69b39da3fa34de22fc95eb7586aece03",
+        "NEXT_PUBLIC_PONS_V2_LOCKER": "0x267444D099b10fB5Ed7c3Cc7B7c767AdcA574952",
+        "NEXT_PUBLIC_PONS_V2_LOCKER_CODEHASH": "0x58455f80b3773871d601a025e56ec27c71ab3bbb8e2ca6b17828954450742025",
         "NEXT_PUBLIC_PONS_V2_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
         "NEXT_PUBLIC_PONS_V2_POOL_MANAGER_CODEHASH": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
         "NEXT_PUBLIC_ENABLE_PROJECTS_V2": true,
-        "NEXT_PUBLIC_PROJECT_V2_GIT_COMMIT": "41dbce2d050abe958e604c236c0346e69be231ff",
-        "NEXT_PUBLIC_PROJECT_V2_BUILD_HASH": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-        "NEXT_PUBLIC_PROJECT_V2_LAUNCHER": "0x0281eC255Da0405cA581c630eB537F79ab4092B8",
-        "NEXT_PUBLIC_PROJECT_V2_LAUNCHER_CODEHASH": "0x23b1cd6cd92821fd02941ad958068dd91ee0643396dc89f87282f51da734e202",
-        "NEXT_PUBLIC_PROJECT_V2_REGISTRY": "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC",
-        "NEXT_PUBLIC_PROJECT_V2_REGISTRY_CODEHASH": "0x17a6045062d6287b30f89b0858b653dde0b4546960a28b6949b184dfc273ce8a",
-        "NEXT_PUBLIC_PROJECT_V2_TOKEN_FACTORY": "0xF6Cf05D8e18Ef807E2609FaF63ff90f325fAE0bb",
+        "NEXT_PUBLIC_PROJECT_V2_GIT_COMMIT": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+        "NEXT_PUBLIC_PROJECT_V2_BUILD_HASH": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+        "NEXT_PUBLIC_PROJECT_V2_LAUNCHER": "0x6b5e99b344C0671f77BAC00c5ADbE453Ffa39100",
+        "NEXT_PUBLIC_PROJECT_V2_LAUNCHER_CODEHASH": "0x5dd89482f663119e13acfdbb0b3b89d35814f494cd8c90c0c3337f176395c824",
+        "NEXT_PUBLIC_PROJECT_V2_REGISTRY": "0xF2F0C38dd9E4DCBa46A4b8bE2E7441377c103Bf4",
+        "NEXT_PUBLIC_PROJECT_V2_REGISTRY_CODEHASH": "0x0638ed852649bdca466c3d3a231893176f0d2659aba56782387f58af9bcc31d2",
+        "NEXT_PUBLIC_PROJECT_V2_TOKEN_FACTORY": "0x39701Ef4704Ce44957e0a8B6b802181ce4f635e2",
         "NEXT_PUBLIC_PROJECT_V2_TOKEN_FACTORY_CODEHASH": "0x3ab99ca63c12efb229c701e56787ec86f8c7b59be41465936e0384de7046173c",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_FACTORY": "0x31D0C4E74aD63406C6B06F014832261733AF5415",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_FACTORY_CODEHASH": "0x63cc0e30965e08336780d63a3848df92c3de6974fae7a4cee4e58f8370b285dc",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_IMPLEMENTATION": "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_IMPLEMENTATION_CODEHASH": "0x3186cd65047fb0b56f67501be3fc1ea558b9f8835192325c22031e5a6d72eb43",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_FACTORY": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_FACTORY_CODEHASH": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_IMPLEMENTATION": "0xC5C7B33708121d542AC8172104D1d708DF61cA37",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_ADAPTER_IMPLEMENTATION_CODEHASH": "0x305007652acf94952e5feb97add75c50ed8934365c67b3f1522eaf4809810841",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+        "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
         "NEXT_PUBLIC_PROJECT_V2_AIRDROP_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
         "NEXT_PUBLIC_PROJECT_V2_RAFFLE_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_FACTORY": "0x81f50D1695eeB6976b53f5dCc9E785Ff06C183DC",
@@ -1134,64 +2094,64 @@
     "sdk": {
       "contracts": {
         "projectV2Launcher": {
-          "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-          "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-          "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-          "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-          "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-          "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-          "address": "0x0281eC255Da0405cA581c630eB537F79ab4092B8",
-          "runtimeCodeHash": "0x23b1cd6cd92821fd02941ad958068dd91ee0643396dc89f87282f51da734e202",
-          "deploymentBlock": 45807288,
-          "deploymentTransaction": "0x938f7bc2890aac258db6a6c8b276841c201ae00b1c3009be92de6fb60127e3f6"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+          "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+          "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+          "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+          "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+          "address": "0x6b5e99b344C0671f77BAC00c5ADbE453Ffa39100",
+          "runtimeCodeHash": "0x5dd89482f663119e13acfdbb0b3b89d35814f494cd8c90c0c3337f176395c824",
+          "deploymentBlock": 46238507,
+          "deploymentTransaction": "0x7d1b0443dfcd5e0169438904764ef781afe0dfb41909410968d45ff7173f69bd"
         },
         "projectV2Registry": {
-          "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-          "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-          "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-          "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-          "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-          "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-          "address": "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC",
-          "runtimeCodeHash": "0x17a6045062d6287b30f89b0858b653dde0b4546960a28b6949b184dfc273ce8a",
-          "deploymentBlock": 45807287,
-          "deploymentTransaction": "0xd730eba0217d55500548ebe4fa6caaf184f143da8dc48c2740252ddfbcceda4b"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+          "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+          "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+          "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+          "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+          "address": "0xF2F0C38dd9E4DCBa46A4b8bE2E7441377c103Bf4",
+          "runtimeCodeHash": "0x0638ed852649bdca466c3d3a231893176f0d2659aba56782387f58af9bcc31d2",
+          "deploymentBlock": 46238506,
+          "deploymentTransaction": "0xbe3a8d6ba5924e5886a72c4a433c6e503c3bc2c3a5bd2f2e33172bd0419de99f"
         },
         "projectV2PonsAdapterFactory": {
-          "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-          "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-          "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-          "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-          "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-          "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-          "address": "0x31D0C4E74aD63406C6B06F014832261733AF5415",
-          "runtimeCodeHash": "0x63cc0e30965e08336780d63a3848df92c3de6974fae7a4cee4e58f8370b285dc",
-          "deploymentBlock": 45807179,
-          "deploymentTransaction": "0xa92cca6ed8155470dd6f8b3e1086d3aa7f2357a852f59306a94d05fdcf02f659"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+          "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+          "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+          "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+          "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+          "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+          "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+          "deploymentBlock": 46235444,
+          "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
         },
         "projectV2PonsAdapterImplementation": {
-          "sourceCommit": "41dbce2d050abe958e604c236c0346e69be231ff",
-          "buildHash": "a9b2735c86306a6a49ba126cfdf75a7c639dcd82db04d531170228f0b2110a11",
-          "approvalProof0": "0x3f9b50b24dc381ff79289c9792cd1086ce2108ae781b06f6295f75bca4c9662d",
-          "approvalProof1": "0xa05c81723560410a241fef264e9bd5b41d3f104e472af9c4f221b2490743bbec",
-          "approvalProof2": "0x0aad8161b3a429a554738e818958ce3405eacebb5c979918d756d8e25ecdf4e1",
-          "approvalProof3": "0x84b115a62c9ef5350d5d7cc4f313d0a91b73cc839c93fb9993751bdbdc77f329",
-          "address": "0x3D618ec3d889D572Cc97d78c660d6F7F8dfb2fA7",
-          "runtimeCodeHash": "0x3186cd65047fb0b56f67501be3fc1ea558b9f8835192325c22031e5a6d72eb43",
-          "deploymentBlock": 45807180,
-          "deploymentTransaction": "0xf704f5ed3065110f2b2df1326d11c79522535c8dc35da16f69cdef3650930ea7"
+          "sourceCommit": "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a",
+          "buildHash": "40fbc18f7a8b54c0eabf5f47076b1e348237b5c9d3a871fd95a329d60f80d54e",
+          "approvalProof0": "0x1f6941785448115a5028e120bcec4bf75a77d41411326a583f62ffbe82036e9d",
+          "approvalProof1": "0x0a07f84d949bea59af65cfc07c8c8b6e4c62091fb33a8d7e67f31c92c8e5b711",
+          "approvalProof2": "0x19b4bf23de134efdefdc521fbb44634c73fd0d6c8351afd9facf0c03cce733aa",
+          "approvalProof3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
+          "address": "0xC5C7B33708121d542AC8172104D1d708DF61cA37",
+          "runtimeCodeHash": "0x305007652acf94952e5feb97add75c50ed8934365c67b3f1522eaf4809810841",
+          "deploymentBlock": 46235453,
+          "deploymentTransaction": "0x46555c50202b25fb65e96edb3a21a876a99891ba84c8e8c2fc23913778c55634"
         },
         "ponsV2AdapterFactory": {
-          "address": "0xAc299024C0f4E561D6e99CEFABB9b7212de729b6",
-          "runtimeCodeHash": "0x964762b1cdb587f7dc7d27f796e0ed403e0066e00a7ed0d015c90b1df32c5ec5",
-          "deploymentBlock": 45029745,
-          "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+          "address": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
+          "runtimeCodeHash": "0x42b9b3eca3f4bf37072bcf60f3405e30bd6e95e7279c307cdef9c5905f67f3bf",
+          "deploymentBlock": 46235444,
+          "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
         },
         "ponsV2AdapterImplementation": {
-          "address": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
-          "runtimeCodeHash": "0xde9bed0423e5a8c554e8ac2f4ce01b0c77b68674eb76425508e8c4595424e5a6",
-          "deploymentBlock": 45029745,
-          "deploymentTransaction": "0x5c632df37c4d79ed4c40ac1f944b431ee7f33ecaceb45a9309b783ac08bdaf41"
+          "address": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
+          "runtimeCodeHash": "0x5cc42a8a6ac7a9a792a04427f52063e5a8f4fb2c72fa614d46c1bc528d20ab4e",
+          "deploymentBlock": 46235444,
+          "deploymentTransaction": "0x72b3f7408cf4cc89d7ad752eca7c26100526bb192b1b7a79085385efeb484e09"
         }
       }
     },
@@ -1204,9 +2164,9 @@
         "ENVIO_RAFFLE_FACTORY": "0xd030064fb83d14c97c22a6b63bf376552eba7112",
         "ENVIO_FLAP_ADAPTER_FACTORY": "0x77748D07CAD323A7f6EFa54968aCF69de743be61",
         "ENVIO_PONS_V1_LAUNCH_FACTORY": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
-        "ENVIO_PONS_V2_LAUNCH_FACTORY": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
-        "ENVIO_PROJECT_V2_REGISTRY": "0xc3D9d2f4559289be44B260B533542b3fDEe47bFC",
-        "ENVIO_PONS_V2_PROJECT_ADAPTER_FACTORY": "0x31D0C4E74aD63406C6B06F014832261733AF5415",
+        "ENVIO_PONS_V2_LAUNCH_FACTORY": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+        "ENVIO_PROJECT_V2_REGISTRY": "0xF2F0C38dd9E4DCBa46A4b8bE2E7441377c103Bf4",
+        "ENVIO_PONS_V2_PROJECT_ADAPTER_FACTORY": "0xa16389c14c9299A4317D50aEfd5e4cC442F2dF0d",
         "ENVIO_V4_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
         "ENVIO_LETSCASH_ADAPTER_FACTORY": "0x81f50D1695eeB6976b53f5dCc9E785Ff06C183DC",
         "ENVIO_LETSCASH_FACTORY": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
@@ -1216,14 +2176,14 @@
         "ENVIO_AIRDROP_DISTRIBUTOR": "0xa1d65242d367501d9a261389a69005e584f4786a",
         "ENVIO_LIQUIDITY_MANAGER_V3": "0xf67150fb39e6a9200c06f9f8df589d40c94d79c3",
         "ENVIO_REVENUE_COLLECTOR": "0x5bb7582557f5be30b62c335ad3ccf4ba79e138c5",
-        "ENVIO_FUNDING_BANDS_MANAGER": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023"
+        "ENVIO_FUNDING_BANDS_MANAGER": "0x8AEb669200bcc03454Fe3B73124A4318027862e9"
       }
     },
     "marketIndexer": {
       "environment": {
         "ENVIO_CHAIN_ID": 4663,
         "ENVIO_PONS_V1_LAUNCH_FACTORY": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
-        "ENVIO_PONS_V2_LAUNCH_FACTORY": "0x7DCeEaB0A53684b001A4900768a52eAcDb27294e",
+        "ENVIO_PONS_V2_LAUNCH_FACTORY": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
         "ENVIO_V4_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
         "ENVIO_LETSCASH_FACTORY": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661"
       }
@@ -1234,17 +2194,17 @@
         "SINJOH_REVENUE_COLLECTOR": "0x5bb7582557f5be30b62c335ad3ccf4ba79e138c5",
         "SINJOH_AIRDROP_DISTRIBUTOR": "0xa1d65242d367501d9a261389a69005e584f4786a",
         "SINJOH_LIQUIDITY_MANAGER": "0xf67150fb39e6a9200c06f9f8df589d40c94d79c3",
-        "SINJOH_FUNDING_BANDS_MANAGER": "0x49cCBaF51a141f726Ed8010612fd541cE8d81023",
-        "SINJOH_FUNDING_BANDS_MANAGER_CODEHASH": "0x7d52072593c645aa9eef53dc612bc8be076122f3181e0c5e2ae318646d5578f5",
-        "SINJOH_FUNDING_BANDS_DEPLOYMENT_BLOCK": 37220865,
-        "SINJOH_PONS_V2_ADAPTER_IMPLEMENTATION": "0x8AAd1720e8a79b2DfF57294D768C3C2fC4a70e71",
+        "SINJOH_FUNDING_BANDS_MANAGER": "0x8AEb669200bcc03454Fe3B73124A4318027862e9",
+        "SINJOH_FUNDING_BANDS_MANAGER_CODEHASH": "0x27e79a76b510ea9ba4018822199e31339c8ac4a083e2723d6ec0b305c168e3d6",
+        "SINJOH_FUNDING_BANDS_DEPLOYMENT_BLOCK": 46235700,
+        "SINJOH_PONS_V2_ADAPTER_IMPLEMENTATION": "0xAf3D6710621697d25096E01367A3D0490Fd11e2b",
         "SINJOH_LETSCASH_ADAPTER_IMPLEMENTATION": "0x0B825f7d00adB6bF03A7c7853F670F192D742cC4",
         "SINJOH_LETSCASH_BUYBACK_ADAPTER": "0xb372e5E82C189b2c6BFBdD218956E3e198533D17",
         "SINJOH_LETSCASH_BUYBACK_GUARD": "0x1fE014FDa9B4054a5Da3b52Be5031393F83eeC8d",
         "SINJOH_LETSCASH_FACTORY": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
         "SINJOH_LETSCASH_FACTORY_CODEHASH": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
         "SINJOH_LETSCASH_HOOK": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
         "SINJOH_LETSCASH_HOOK_CODEHASH": "0x5bbb7cb03abf34683d1f1e795e5e1a96573a0feee7c20c51f1cbf02139eb9003",
         "SINJOH_LETSCASH_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
