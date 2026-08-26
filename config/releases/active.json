@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "releaseId": "project-v2-public-pons-dual-funding-20260825-1048c1d",
+  "releaseId": "project-v2-public-pons-dual-funding-letscash-20260826-c184fad",
   "channel": "active",
   "chainId": 4663,
   "network": "robinhood-mainnet",
   "source": {
     "repository": "Sinjoh-Finance/sinjoh-contracts",
-    "commit": "1048c1d2bbd4ee9ae017113925108a80713cb662",
-    "releaseManifestSha256": "e9d3d11e01159fd2a727df2b85d0bf2c7acce3f69ace5d474b6335c06687dc7f",
+    "commit": "c184faddd881ddcabdc26c70364f825b79a142d0",
+    "releaseManifestSha256": "ac74c13368dc065417a08a8cbb3050ac53f8ba4c23a15f45364f50cf207f7a94",
     "deploymentManifest": "mainnet-deployments.json",
-    "deploymentManifestSha256": "29fe68ce1de0810eb7ff5222f6fb5cc309345ecfe738e0a75aa5b1fb20509df0"
+    "deploymentManifestSha256": "5be4748d0dc575ec14030e619a7da7ffc735bb63369a107aef7ea6d80ea30b2c"
   },
-  "generatedAt": "2026-08-26T03:40:01.952Z",
+  "generatedAt": "2026-08-26T04:23:27.596Z",
   "contracts": {
     "contracts.launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
@@ -1691,12 +1691,20 @@
     "dependencies.letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
       "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-      "implementation": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-      "implementationRuntimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
+      "implementation": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "implementationRuntimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
     },
     "dependencies.letscash.factoryImplementation": {
-      "address": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-      "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
+      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
+      "deploymentBlock": 46051259,
+      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab"
+    },
+    "dependencies.letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260825": {
+      "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
+      "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+      "deploymentBlock": 28872652,
+      "deploymentTransaction": "0xf0871106205ff3df6c8f3f11585be0508d813f5f0d3e5c1454c5464983766919"
     },
     "dependencies.letscash.hook": {
       "address": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
@@ -2195,8 +2203,8 @@
         "SINJOH_LETSCASH_BUYBACK_GUARD": "0x1fE014FDa9B4054a5Da3b52Be5031393F83eeC8d",
         "SINJOH_LETSCASH_FACTORY": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
         "SINJOH_LETSCASH_FACTORY_CODEHASH": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x3dfd73a63e15920add4b6c5c6a4b1b4b768b2c1a",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
         "SINJOH_LETSCASH_HOOK": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
         "SINJOH_LETSCASH_HOOK_CODEHASH": "0x5bbb7cb03abf34683d1f1e795e5e1a96573a0feee7c20c51f1cbf02139eb9003",
         "SINJOH_LETSCASH_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",

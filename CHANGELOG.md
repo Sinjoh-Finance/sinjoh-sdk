@@ -20,6 +20,10 @@ All notable changes to the Sinjoh SDK are documented here. This project follows
   the public Pons locker and dual ordinary/Project Funding Bands verifier to
   the canonical deployment keys. All displaced Project, Funding Bands, Pons
   adapter, and buyback generations remain under explicit historical keys.
+- Updated the live letscash.fun factory proxy binding to implementation
+  `0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4` and preserved the displaced
+  implementation under an explicit historical key, so manifest verification
+  follows the current EIP-1967 implementation slot.
 - Regenerated all contract ABIs from reviewed and merged source commit
   `cb46aa8fc291f6d8ddabe2d7f315623e78611f2a` so every workspace package shares
   one source provenance and ABI digest.

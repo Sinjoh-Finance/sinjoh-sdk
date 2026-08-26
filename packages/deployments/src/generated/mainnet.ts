@@ -1253,15 +1253,23 @@ export const mainnet = {
     "letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
       "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-      "implementation": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
-      "implementationRuntimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
+      "implementation": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "implementationRuntimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
       "implementationBinding": {
         "kind": "eip1967",
         "slot": "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
       }
     },
     "letscash.factoryImplementation": {
+      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "deploymentBlock": 46051259,
+      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab",
+      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
+    },
+    "letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260825": {
       "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
+      "deploymentBlock": 28872652,
+      "deploymentTransaction": "0xf0871106205ff3df6c8f3f11585be0508d813f5f0d3e5c1454c5464983766919",
       "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
     },
     "letscash.hook": {
