@@ -115,7 +115,23 @@ test("public SDK exports the canonical Project V2 launch and Registry ABIs", () 
 });
 
 test("exports immutable Project module keys and complete Router action values", () => {
-  assert.match(ProjectModuleKey.ROUTER, /^0x[0-9a-f]{64}$/);
+  assert.deepEqual(Object.keys(ProjectModuleKey), [
+    "TOKEN",
+    "MULTISIG",
+    "TIMELOCK",
+    "LIQUID_VOTES",
+    "STAKING",
+    "TREASURY",
+    "AIRDROP",
+    "ROUTER",
+    "BASKET",
+    "BANDS",
+    "LIQUIDITY",
+    "RAFFLE",
+  ]);
+  for (const moduleKey of Object.values(ProjectModuleKey)) {
+    assert.match(moduleKey, /^0x[0-9a-f]{64}$/);
+  }
   assert.equal(ProjectRouterActionType.FUND_TREASURY, 6);
   assert.equal(ProjectRouterActionType.SWAP_AND_FUND_TREASURY, 8);
   assert.equal(ProjectRouterActionType.SWAP_AND_FUND_AIRDROP, 9);

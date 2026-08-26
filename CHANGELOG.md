@@ -16,6 +16,9 @@ All notable changes to the Sinjoh SDK are documented here. This project follows
 
 - Project launch previews now expose the deterministic `liquidVotes` address,
   and Project Pons launch requests encode the complete Funding Bands plan.
+- Promoted the public-indexed Pons Project V2 generation to the canonical
+  deployment keys while retaining both prior Project V2 generations and the
+  earlier indexed-factory Pons buyback generation under historical keys.
 - Regenerated all contract ABIs from reviewed implementation source commit
   `91aa7e53fc5da3c8dd78e789820ce983f1c3483a` so every workspace package shares
   one source provenance and ABI digest.

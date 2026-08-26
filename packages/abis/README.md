@@ -48,7 +48,9 @@ recovery so one paused or reverting destination does not freeze unrelated fee ro
 
 Project V2 exports include `projectLauncherV2Abi`, `projectLaunchValidatorV2Abi`,
 `projectRegistryV2Abi`, `projectRouterV2Abi`, `projectTreasuryVaultV2Abi`,
-`projectAirdropV2Abi`, `projectStakingPoolV2Abi`, and the remaining governed module ABIs.
+`projectAirdropV2Abi`, `projectStakingPoolV2Abi`, `projectLiquidVotesWrapperV2Abi`, and the
+remaining governed module ABIs. The liquid-votes wrapper provides one-for-one deposits and
+withdrawals for an ordinary external Project token while preserving governance checkpoints.
 `projectRouterV2Abi` is the complete routed-asset surface: one route may execute ordered direct
 sends, swaps, buyback-and-burn, Treasury funding, Airdrop funding, Raffle funding, liquidity,
 and project-sink actions. Generated ABI values remain the source of truth for action tuple shapes

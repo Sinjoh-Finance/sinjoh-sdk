@@ -59,8 +59,10 @@ placeholder minimum.
   including launches prepared by the SDK rather than Sinjoh's web UI.
 - Project V2: reviewed preset hydration, existing-token launch prediction, complete routed-action
   encoding, exact Pons launch transaction assembly and verification, Registry reads, and
-  provenance manifests. Routed actions include direct sends, swaps, buyback-and-burn, Treasury,
-  Airdrop, Raffle, liquidity, and project-sink funding.
+  provenance manifests. `projectLiquidVotesDeposit` and `projectLiquidVotesWithdraw` prepare
+  one-for-one wrapper operations for liquid token-holder governance. Routed actions include
+  direct sends, swaps, buyback-and-burn, Treasury, Airdrop, Raffle, liquidity, and project-sink
+  funding.
 - Prepared lifecycle calls: router, adapter, collector, holder airdrop, launch staking, liquidity, raffle, and randomness
   actions, each limited to one protocol action per call.
 - Prediction and diagnostics: Pons v2 launch assembly, EIP-1167 clone runtime construction,
