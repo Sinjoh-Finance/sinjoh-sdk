@@ -15,6 +15,7 @@ import {
   prepareYieldBankAdapterWithdrawal,
   prepareYieldBankClaim,
   prepareYieldBankSettle,
+  prepareYieldBankSleeveRedemption,
   prepareYieldBankTransfer,
   validateYieldBankManifest,
   verifyYieldBankManifest,
@@ -144,7 +145,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
   validateYieldBankManifest(release);
   const results = await verifyYieldBankManifest({
     getCode: async () => runtime,
-    readContract: async ({ functionName }: { functionName: string }) => {
+    readContract: async ({ address, functionName }: { address: Address; functionName: string }) => {
       if (functionName === "factoryVersion") return release.factoryVersion;
       if (functionName === "collectionCreationCodeHash") return release.deployment.collectionCreationCodeHash;
       if (functionName === "systemPlanHash") return release.deployment.systemPlanHash;
@@ -153,6 +154,15 @@ test("Yield Banks manifest validates immutable economics and live code", async (
         release.deployment.collectionConfigurationHash, release.contracts.collection.runtimeCodeHash,
         1n, true,
       ];
+      if (functionName === "collectionId") return release.collectionId;
+      if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "nft") return release.contracts.nft.address;
+      if (functionName === "distributor") return release.contracts.distributor.address;
+      if (functionName === "proceedsVault") return release.contracts.proceedsVault.address;
+      if (functionName === "collection") return release.contracts.collection.address;
+      if (functionName === "seaDrop") return release.dependencies.seaDrop.address;
+      if (functionName === "royaltyReceiver") return release.contracts.revenueRouter.address;
+      if (functionName === "ROYALTY_BPS") return 500n;
       if (functionName in release.economics) {
         return release.economics[functionName as keyof typeof release.economics];
       }
@@ -180,7 +190,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       throw new Error(`unexpected ${functionName}`);
     },
   } as never, release);
-  assert.equal(results.length, 65);
+  assert.equal(results.length, 79);
   assert.ok(results.every((result) => result.ok));
 
   release.economics.exitTaxBps = 501 as 500;
@@ -208,6 +218,9 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   const adapterWithdrawal = prepareYieldBankAdapterWithdrawal(addresses[4], addresses[5], addresses[6], 10n, 100);
   const adapterCollection = prepareYieldBankAdapterCollection(addresses[4], addresses[5], addresses[6]);
   const adapterExit = prepareYieldBankAdapterExit(addresses[4], addresses[5], addresses[6], 100);
+  const sleeveRedemption = prepareYieldBankSleeveRedemption(
+    addresses[5], 10n, addresses[3], addresses[3], 1n,
+  );
   assert.equal(settle.value, 0n);
   assert.equal(transfer.value, 0n);
   assert.equal(burn.value, 0n);
@@ -217,6 +230,7 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.equal(adapterWithdrawal.value, 0n);
   assert.equal(adapterCollection.value, 0n);
   assert.equal(adapterExit.value, 0n);
+  assert.equal(sleeveRedemption.value, 0n);
   assert.throws(
     () => prepareYieldBankAllocation(addresses[4], 1n, 2n, [
       { ...guarded, minimumOutput: 0n }, guarded, guarded,
@@ -224,6 +238,8 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
     /positive minimum output/,
   );
   assert.notEqual(settle.data, burn.data);
+  assert.throws(() => prepareYieldBankSettle(collection, 0n), /positive/);
+  assert.throws(() => prepareYieldBankBurn(collection, 0n), /positive/);
   assert.equal(openSeaCollectionUrl("sinjoh-yield-banks"), "https://opensea.io/collection/sinjoh-yield-banks/overview");
 });
 
@@ -260,6 +276,22 @@ test("Delta operator calldata encodes every manual position and slippage decisio
   assert.equal(decoded.rungs.length, 2);
   assert.equal(decoded.rungs[1]!.amount1Min, 9n);
   assert.equal(decoded.maximumCurrentTick, 60);
+
+  assert.match(encodeYieldBankDeltaDepositData({
+    wethToConvert: 2n,
+    minimumInjohOut: 1n,
+    routeData: "0x",
+    rungs: [{
+      tickLower: -600, tickUpper: 600, amount0: 1n, amount1: 1n,
+      amount0Minimum: 1n, amount1Minimum: 1n,
+    }, {
+      tickLower: -300, tickUpper: 300, amount0: 1n, amount1: 1n,
+      amount0Minimum: 1n, amount1Minimum: 1n,
+    }],
+    minimumCurrentTick: -60,
+    maximumCurrentTick: 60,
+    deadline: 1_800_000_000n,
+  }), /^0x[0-9a-f]+$/);
 
   const action = {
     tokenId: 7n, liquidity: 1_000n, amount0Minimum: 50n, amount1Minimum: 40n,

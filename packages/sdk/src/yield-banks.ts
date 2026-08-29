@@ -4,6 +4,7 @@ import {
 } from "viem";
 
 export const yieldBankCollectionAbi = [
+  { type: "function", name: "collectionId", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
   { type: "function", name: "state", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
   { type: "function", name: "liveSupply", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "mintedSupply", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
@@ -28,6 +29,9 @@ export const yieldBankNftAbi = [
   { type: "function", name: "tokenURI", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "string" }] },
   { type: "function", name: "maxSupply", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "seaDrop", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "collection", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "royaltyReceiver", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "ROYALTY_BPS", stateMutability: "view", inputs: [], outputs: [{ type: "uint96" }] },
   { type: "function", name: "safeTransferFrom", stateMutability: "nonpayable", inputs: [{ name: "from", type: "address" }, { name: "to", type: "address" }, { name: "tokenId", type: "uint256" }], outputs: [] },
 ] as const;
 
@@ -77,6 +81,11 @@ export const yieldBankSleeveAbi = [
   { type: "function", name: "adapters", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "adapterState", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "uint8" }] },
   { type: "function", name: "adapterCapBps", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "uint16" }] },
+  { type: "function", name: "redeem", stateMutability: "nonpayable", inputs: [
+    { name: "shares", type: "uint256" }, { name: "receiver", type: "address" },
+    { name: "owner", type: "address" }, { name: "mode", type: "uint8" },
+    { name: "minimumOutput", type: "uint256" }, { name: "data", type: "bytes" },
+  ], outputs: [{ name: "assets", type: "address[]" }, { name: "amounts", type: "uint256[]" }] },
 ] as const;
 
 export const yieldBankErc20Abi = [
@@ -348,6 +357,7 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
   if (manifest.schemaVersion !== "1.0") throw new Error("unsupported Yield Banks manifest schema");
   if (manifest.chainId !== 4663 && manifest.chainId !== 46630) throw new Error("unsupported chain");
   for (const [name, hash] of Object.entries({
+    collectionId: manifest.collectionId,
     factoryVersion: manifest.factoryVersion,
     factorySalt: manifest.deployment.factorySalt,
     collectionSalt: manifest.deployment.collectionSalt,
@@ -500,7 +510,10 @@ export async function verifyYieldBankManifest(
     };
   }));
   const factory = manifest.contracts.factory.address;
-  const [factoryVersion, collectionCreationCodeHash, systemPlanHash, collectionRecord] = await Promise.all([
+  const [factoryVersion, collectionCreationCodeHash, systemPlanHash, collectionRecord,
+    collectionId, collectionMaxSupply, collectionNft, collectionDistributor,
+    collectionProceedsVault, nftMaxSupply, nftCollection, nftSeaDrop, royaltyReceiver,
+    royaltyBps] = await Promise.all([
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "factoryVersion"),
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "collectionCreationCodeHash"),
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "systemPlanHash"),
@@ -508,6 +521,16 @@ export async function verifyYieldBankManifest(
       client, manifest.contracts.registry.address, yieldBankProtocolRegistryAbi,
       "collections", [manifest.contracts.collection.address],
     ),
+    read<Hex>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "collectionId"),
+    read<bigint>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "maxSupply"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "nft"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "distributor"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "proceedsVault"),
+    read<bigint>(client, manifest.contracts.nft.address, yieldBankNftAbi, "maxSupply"),
+    read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "collection"),
+    read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "seaDrop"),
+    read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "royaltyReceiver"),
+    read<bigint>(client, manifest.contracts.nft.address, yieldBankNftAbi, "ROYALTY_BPS"),
   ]);
   const economicsKeys = [
     "primaryBackingBps", "primaryCreatorBps", "primarySinjohBps", "primaryOperationsBps",
@@ -533,6 +556,41 @@ export async function verifyYieldBankManifest(
     actualCodeHash,
     ok: expectedCodeHash.toLowerCase() === actualCodeHash.toLowerCase(),
   }));
+  const valueResult = (path: string, address: Address, expected: Hex, actual: Hex) => ({
+    path, address, expectedCodeHash: expected, actualCodeHash: actual,
+    ok: expected.toLowerCase() === actual.toLowerCase(),
+  });
+  const addressWord = (address: Address) => toHex(BigInt(getAddress(address)), { size: 32 });
+  const topologyResults = [
+    valueResult("collection.collectionId", manifest.contracts.collection.address,
+      manifest.collectionId, collectionId),
+    valueResult("collection.maxSupply", manifest.contracts.collection.address,
+      toHex(manifest.economics.maxSupply, { size: 32 }), toHex(collectionMaxSupply, { size: 32 })),
+    valueResult("collection.nft", manifest.contracts.collection.address,
+      addressWord(manifest.contracts.nft.address), addressWord(collectionNft)),
+    valueResult("collection.distributor", manifest.contracts.collection.address,
+      addressWord(manifest.contracts.distributor.address), addressWord(collectionDistributor)),
+    valueResult("collection.proceedsVault", manifest.contracts.collection.address,
+      addressWord(manifest.contracts.proceedsVault.address), addressWord(collectionProceedsVault)),
+    valueResult("nft.maxSupply", manifest.contracts.nft.address,
+      toHex(manifest.economics.maxSupply, { size: 32 }), toHex(nftMaxSupply, { size: 32 })),
+    valueResult("nft.collection", manifest.contracts.nft.address,
+      addressWord(manifest.contracts.collection.address), addressWord(nftCollection)),
+    valueResult("nft.seaDrop", manifest.contracts.nft.address,
+      addressWord(manifest.dependencies.seaDrop.address), addressWord(nftSeaDrop)),
+    valueResult("nft.royaltyReceiver", manifest.contracts.nft.address,
+      addressWord(manifest.contracts.revenueRouter.address), addressWord(royaltyReceiver)),
+    valueResult("nft.royaltyBps", manifest.contracts.nft.address,
+      toHex(500, { size: 32 }), toHex(royaltyBps, { size: 32 })),
+    valueResult("registry.factory", manifest.contracts.registry.address,
+      addressWord(manifest.contracts.factory.address), addressWord(collectionRecord[0])),
+    valueResult("registry.factoryVersion", manifest.contracts.registry.address,
+      manifest.factoryVersion, collectionRecord[1]),
+    valueResult("registry.runtimeCodeHash", manifest.contracts.registry.address,
+      manifest.contracts.collection.runtimeCodeHash, collectionRecord[3]),
+    valueResult("registry.registered", manifest.contracts.registry.address,
+      toHex(1, { size: 32 }), toHex(collectionRecord[5] ? 1 : 0, { size: 32 })),
+  ];
   const economicsResults = economicsKeys.map((key, index) => {
     const expected = toHex(manifest.economics[key], { size: 32 });
     const actual = toHex(onchainEconomics[index]!, { size: 32 });
@@ -582,11 +640,6 @@ export async function verifyYieldBankManifest(
       read<bigint>(client, manifest.contracts.marketMakingSleeve.address, yieldBankSleeveAbi,
         "adapterCapBps", [manifest.delta.adapter]),
     ]);
-  const valueResult = (path: string, address: Address, expected: Hex, actual: Hex) => ({
-    path, address, expectedCodeHash: expected, actualCodeHash: actual,
-    ok: expected.toLowerCase() === actual.toLowerCase(),
-  });
-  const addressWord = (address: Address) => toHex(BigInt(getAddress(address)), { size: 32 });
   const deltaResults = deltaBindings.map(([field, expected], index) => valueResult(
     `delta.${field}`, manifest.delta.adapter, addressWord(expected),
     addressWord(deltaActualAddresses[index]!),
@@ -621,7 +674,7 @@ export async function verifyYieldBankManifest(
     toHex(manifest.delta.adapterCapBps, { size: 32 }), toHex(adapterCapBps, { size: 32 }),
   ));
   return codeResults.concat(
-    commitmentResults, economicsResults, royaltyEconomicsResults, deltaResults,
+    commitmentResults, topologyResults, economicsResults, royaltyEconomicsResults, deltaResults,
   );
 }
 
@@ -739,6 +792,7 @@ export function prepareYieldBankClaim(collection: Address, tokenId: bigint) {
 }
 
 export function prepareYieldBankSettle(collection: Address, tokenId: bigint) {
+  if (tokenId < 1n) throw new Error("tokenId must be positive");
   return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "settle", args: [tokenId] }), value: 0n } as const;
 }
 
@@ -760,7 +814,30 @@ export function prepareYieldBankTransfer(
 }
 
 export function prepareYieldBankBurn(collection: Address, tokenId: bigint, proof: Hex = "0x") {
+  if (tokenId < 1n) throw new Error("tokenId must be positive");
   return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "burnToken", args: [tokenId, proof] }), value: 0n } as const;
+}
+
+export function prepareYieldBankSleeveRedemption(
+  sleeve: Address,
+  shares: bigint,
+  receiver: Address,
+  owner: Address,
+  minimumOutput: bigint,
+  proof: Hex = "0x",
+) {
+  if (shares <= 0n || minimumOutput <= 0n) {
+    throw new Error("sleeve redemption requires positive shares and minimum output");
+  }
+  return {
+    to: sleeve,
+    data: encodeFunctionData({
+      abi: yieldBankSleeveAbi,
+      functionName: "redeem",
+      args: [shares, receiver, owner, 0, minimumOutput, proof],
+    }),
+    value: 0n,
+  } as const;
 }
 
 const deltaRungComponents = [
@@ -794,9 +871,7 @@ export function encodeYieldBankDeltaDepositData(params: YieldBankDeltaDepositDat
   params.rungs.forEach((rung, index) => {
     validateDeltaTick(rung.tickLower, `rungs.${index}.tickLower`);
     validateDeltaTick(rung.tickUpper, `rungs.${index}.tickUpper`);
-    if (rung.tickLower >= rung.tickUpper || (index > 0
-      && rung.tickLower < params.rungs[index - 1]!.tickUpper)
-      || rung.amount0 < 0n || rung.amount1 < 0n
+    if (rung.tickLower >= rung.tickUpper || rung.amount0 < 0n || rung.amount1 < 0n
       || (rung.amount0 === 0n && rung.amount1 === 0n)
       || rung.amount0Minimum < 0n || rung.amount1Minimum < 0n
       || rung.amount0Minimum > rung.amount0 || rung.amount1Minimum > rung.amount1) {
