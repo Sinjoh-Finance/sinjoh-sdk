@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { keccak256, toBytes, type Address, type Hex } from "viem";
+import { decodeAbiParameters, keccak256, toBytes, type Address, type Hex } from "viem";
 import {
+  encodeYieldBankDeltaCollectionData,
+  encodeYieldBankDeltaDepositData,
+  encodeYieldBankDeltaExitData,
+  encodeYieldBankDeltaWithdrawalData,
   prepareYieldBankBurn,
   openSeaCollectionUrl,
   prepareYieldBankAllocation,
@@ -37,6 +41,14 @@ const addresses = [
   "0x0000000000000000000000000000000000000016",
   "0x0000000000000000000000000000000000000017",
   "0x0000000000000000000000000000000000000018",
+  "0x0000000000000000000000000000000000000019",
+  "0x0000000000000000000000000000000000000020",
+  "0x0000000000000000000000000000000000000021",
+  "0x0000000000000000000000000000000000000022",
+  "0x0000000000000000000000000000000000000023",
+  "0x0000000000000000000000000000000000000024",
+  "0x0000000000000000000000000000000000000025",
+  "0x0000000000000000000000000000000000000026",
 ] as const satisfies readonly Address[];
 const runtime = "0x60006000" as Hex;
 const runtimeCodeHash = keccak256(runtime);
@@ -100,11 +112,25 @@ function manifest(): YieldBankReleaseManifest {
       USDG: entry("0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"),
       seaDrop: entry("0x00005EA00Ac477B1030CE78506496e8C2dE24bf5"),
       seaport: entry("0x0000000000000068F116a894984e2DB1123eB395"),
+      INJOH: entry(addresses[18]),
+      deltaPositionBuilder: entry(addresses[19]),
+      v3Factory: entry(addresses[20]),
+      v3PositionManager: entry(addresses[21]),
     },
     stockTokens: [entry(addresses[0])],
-    adapters: {},
+    adapters: {
+      deltaV3LP: entry(addresses[22]),
+      deltaEntryRoute: entry(addresses[23]),
+      deltaExitRoute: entry(addresses[24]),
+    },
     feeds: { stockTokenOne: entry(addresses[5]) },
-    pools: {},
+    pools: { injohWeth: entry(addresses[25]) },
+    delta: {
+      adapter: addresses[22], injoh: addresses[18], pool: addresses[25],
+      positionBuilder: addresses[19], factory: addresses[20],
+      positionManager: addresses[21], entryRoute: addresses[23], exitRoute: addresses[24],
+      maximumPositions: 8, adapterCapBps: 4_000,
+    },
     roles: {
       creator: addresses[0], sinjoh: addresses[1], operations: addresses[2],
       allocationOperator: addresses[4], guardian: addresses[3], timelock: addresses[8],
@@ -130,10 +156,31 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName in release.economics) {
         return release.economics[functionName as keyof typeof release.economics];
       }
+      const deltaAddresses: Record<string, Address> = {
+        sleeve: release.contracts.marketMakingSleeve.address,
+        accountingAsset: release.dependencies.WETH.address,
+        injoh: release.delta.injoh,
+        priceHub: release.contracts.priceHub.address,
+        pool: release.delta.pool,
+        factory: release.delta.factory,
+        positionManager: release.delta.positionManager,
+        positionBuilder: release.delta.positionBuilder,
+        entryRoute: release.delta.entryRoute,
+        exitRoute: release.delta.exitRoute,
+      };
+      if (functionName in deltaAddresses) return deltaAddresses[functionName];
+      if (functionName === "maximumPositions") return BigInt(release.delta.maximumPositions);
+      if (functionName === "recordOf") return [
+        release.delta.adapter, release.adapters.deltaV3LP!.runtimeCodeHash,
+        keccak256(toBytes("YIELD_BANK_MARKET_MAKING")), release.dependencies.WETH.address,
+        1n, 1n,
+      ];
+      if (functionName === "adapterState") return 3n;
+      if (functionName === "adapterCapBps") return BigInt(release.delta.adapterCapBps);
       throw new Error(`unexpected ${functionName}`);
     },
   } as never, release);
-  assert.equal(results.length, 39);
+  assert.equal(results.length, 65);
   assert.ok(results.every((result) => result.ok));
 
   release.economics.exitTaxBps = 501 as 500;
@@ -178,4 +225,60 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   );
   assert.notEqual(settle.data, burn.data);
   assert.equal(openSeaCollectionUrl("sinjoh-yield-banks"), "https://opensea.io/collection/sinjoh-yield-banks/overview");
+});
+
+test("Delta operator calldata encodes every manual position and slippage decision", () => {
+  const deposit = encodeYieldBankDeltaDepositData({
+    wethToConvert: 25n,
+    minimumInjohOut: 24n,
+    routeData: "0x1234",
+    rungs: [{
+      tickLower: -600, tickUpper: 0, amount0: 10n, amount1: 15n,
+      amount0Minimum: 9n, amount1Minimum: 14n,
+    }, {
+      tickLower: 0, tickUpper: 600, amount0: 15n, amount1: 10n,
+      amount0Minimum: 14n, amount1Minimum: 9n,
+    }],
+    minimumCurrentTick: -60,
+    maximumCurrentTick: 60,
+    deadline: 1_800_000_000n,
+  });
+  const [decoded] = decodeAbiParameters([{ type: "tuple", components: [
+    { name: "wethToConvert", type: "uint256" },
+    { name: "minimumInjohOut", type: "uint256" },
+    { name: "routeData", type: "bytes" },
+    { name: "rungs", type: "tuple[]", components: [
+      { name: "tickLower", type: "int24" }, { name: "tickUpper", type: "int24" },
+      { name: "amount0", type: "uint256" }, { name: "amount1", type: "uint256" },
+      { name: "amount0Min", type: "uint256" }, { name: "amount1Min", type: "uint256" },
+    ] },
+    { name: "minimumCurrentTick", type: "int24" },
+    { name: "maximumCurrentTick", type: "int24" },
+    { name: "deadline", type: "uint256" },
+  ] }], deposit);
+  assert.equal(decoded.wethToConvert, 25n);
+  assert.equal(decoded.rungs.length, 2);
+  assert.equal(decoded.rungs[1]!.amount1Min, 9n);
+  assert.equal(decoded.maximumCurrentTick, 60);
+
+  const action = {
+    tokenId: 7n, liquidity: 1_000n, amount0Minimum: 50n, amount1Minimum: 40n,
+  } as const;
+  assert.match(encodeYieldBankDeltaWithdrawalData({
+    actions: [action], injohToConvert: 40n, minimumWethOut: 38n,
+    wethToReturn: 88n, routeData: "0xab", deadline: 1_800_000_001n,
+  }), /^0x[0-9a-f]+$/);
+  assert.match(encodeYieldBankDeltaCollectionData([7n, 8n]), /^0x[0-9a-f]+$/);
+  assert.match(encodeYieldBankDeltaExitData({
+    actions: [action], deadline: 1_800_000_002n,
+  }), /^0x[0-9a-f]+$/);
+  assert.throws(() => encodeYieldBankDeltaCollectionData([7n, 7n]), /unique positive/);
+  assert.throws(() => encodeYieldBankDeltaDepositData({
+    wethToConvert: 1n, minimumInjohOut: 1n, routeData: "0x",
+    rungs: [{
+      tickLower: -60, tickUpper: 60, amount0: 1n, amount1: 0n,
+      amount0Minimum: 2n, amount1Minimum: 0n,
+    }],
+    minimumCurrentTick: -60, maximumCurrentTick: 60, deadline: 1n,
+  }), /invalid Delta rung/);
 });

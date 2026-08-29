@@ -1,5 +1,5 @@
 import {
-  encodeFunctionData, getAddress, keccak256, stringToHex, toHex,
+  encodeAbiParameters, encodeFunctionData, getAddress, keccak256, stringToHex, toHex,
   type Address, type Hex, type PublicClient,
 } from "viem";
 
@@ -75,6 +75,8 @@ export const yieldBankSleeveAbi = [
   { type: "function", name: "depositsPaused", stateMutability: "view", inputs: [], outputs: [{ type: "bool" }] },
   { type: "function", name: "inventoryAssets", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "adapters", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "adapterState", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "uint8" }] },
+  { type: "function", name: "adapterCapBps", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "uint16" }] },
 ] as const;
 
 export const yieldBankErc20Abi = [
@@ -85,6 +87,24 @@ export const yieldBankErc20Abi = [
 export const yieldBankStrategyAdapterAbi = [
   { type: "function", name: "accountingAsset", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "totalManagedAssets", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+] as const;
+
+export const yieldBankDeltaAdapterAbi = [
+  ...[
+    "sleeve", "accountingAsset", "injoh", "priceHub", "pool", "factory",
+    "positionManager", "positionBuilder", "entryRoute", "exitRoute",
+  ].map((name) => ({
+    type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "address" }],
+  } as const)),
+  { type: "function", name: "maximumPositions", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
+] as const;
+
+export const yieldBankStrategyRegistryAbi = [
+  { type: "function", name: "recordOf", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "tuple", components: [
+    { name: "implementation", type: "address" }, { name: "runtimeCodeHash", type: "bytes32" },
+    { name: "sleeveCategory", type: "bytes32" }, { name: "accountingAsset", type: "address" },
+    { name: "state", type: "uint8" }, { name: "registeredAt", type: "uint48" },
+  ] }] },
 ] as const;
 
 export const yieldBankAllocatorAbi = [
@@ -190,8 +210,22 @@ export interface YieldBankReleaseManifest {
   adapters: Record<string, YieldBankManifestEntry>;
   feeds: Record<string, YieldBankManifestEntry>;
   pools: Record<string, YieldBankManifestEntry>;
+  delta: YieldBankDeltaManifestBindings;
   roles: Record<"creator" | "sinjoh" | "operations" | "allocationOperator" | "guardian" | "timelock", Address>;
   auditHashes: readonly Hex[];
+}
+
+export interface YieldBankDeltaManifestBindings {
+  adapter: Address;
+  injoh: Address;
+  pool: Address;
+  positionBuilder: Address;
+  factory: Address;
+  positionManager: Address;
+  entryRoute: Address;
+  exitRoute: Address;
+  maximumPositions: number;
+  adapterCapBps: number;
 }
 
 export interface YieldBankManifestVerification {
@@ -237,6 +271,46 @@ export interface YieldBankStrategyPosition {
   accountingAsset: Address;
   managedAssets: bigint;
   tokenAmount: bigint;
+}
+
+export interface YieldBankDeltaRung {
+  tickLower: number;
+  tickUpper: number;
+  amount0: bigint;
+  amount1: bigint;
+  amount0Minimum: bigint;
+  amount1Minimum: bigint;
+}
+
+export interface YieldBankDeltaLiquidityAction {
+  tokenId: bigint;
+  liquidity: bigint;
+  amount0Minimum: bigint;
+  amount1Minimum: bigint;
+}
+
+export interface YieldBankDeltaDepositData {
+  wethToConvert: bigint;
+  minimumInjohOut: bigint;
+  routeData: Hex;
+  rungs: readonly YieldBankDeltaRung[];
+  minimumCurrentTick: number;
+  maximumCurrentTick: number;
+  deadline: bigint;
+}
+
+export interface YieldBankDeltaWithdrawalData {
+  actions: readonly YieldBankDeltaLiquidityAction[];
+  injohToConvert: bigint;
+  minimumWethOut: bigint;
+  wethToReturn: bigint;
+  routeData: Hex;
+  deadline: bigint;
+}
+
+export interface YieldBankDeltaExitData {
+  actions: readonly YieldBankDeltaLiquidityAction[];
+  deadline: bigint;
 }
 
 export interface YieldBankTokenView {
@@ -377,6 +451,29 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       throw new Error(`roles.${role} is zero`);
     }
   }
+  const delta = manifest.delta;
+  if (!delta || !Number.isInteger(delta.maximumPositions) || delta.maximumPositions < 1
+    || delta.maximumPositions > 64 || !Number.isInteger(delta.adapterCapBps)
+    || delta.adapterCapBps < 1
+    || delta.adapterCapBps > manifest.policyCaps.marketMaking.maximumAdapterCapBps
+    || manifest.policyCaps.marketMaking.maximumStrategies < 1) {
+    throw new Error("Delta policy bindings are invalid");
+  }
+  const containsAddress = (entries: Record<string, YieldBankManifestEntry>, address: Address) =>
+    Object.values(entries).some((entry) => getAddress(entry.address) === getAddress(address));
+  for (const [field, entries] of [
+    ["adapter", manifest.adapters], ["entryRoute", manifest.adapters],
+    ["exitRoute", manifest.adapters], ["pool", manifest.pools],
+    ["injoh", manifest.dependencies], ["positionBuilder", manifest.dependencies],
+    ["factory", manifest.dependencies], ["positionManager", manifest.dependencies],
+  ] as const) {
+    if (!containsAddress(entries, delta[field])) {
+      throw new Error(`delta.${field} is not bound to its manifest group`);
+    }
+  }
+  if (getAddress(delta.injoh) === getAddress(manifest.dependencies.WETH.address)) {
+    throw new Error("delta.injoh must differ from WETH");
+  }
   if (manifest.auditHashes.length === 0) throw new Error("audit hashes are required");
   manifest.auditHashes.forEach((hash, index) => validateBytes32(`auditHashes.${index}`, hash));
 }
@@ -458,7 +555,74 @@ export async function verifyYieldBankManifest(
       ok: expected === actual,
     };
   });
-  return codeResults.concat(commitmentResults, economicsResults, royaltyEconomicsResults);
+  const deltaBindings = [
+    ["sleeve", manifest.contracts.marketMakingSleeve.address],
+    ["accountingAsset", manifest.dependencies.WETH.address],
+    ["injoh", manifest.delta.injoh],
+    ["priceHub", manifest.contracts.priceHub.address],
+    ["pool", manifest.delta.pool],
+    ["factory", manifest.delta.factory],
+    ["positionManager", manifest.delta.positionManager],
+    ["positionBuilder", manifest.delta.positionBuilder],
+    ["entryRoute", manifest.delta.entryRoute],
+    ["exitRoute", manifest.delta.exitRoute],
+  ] as const;
+  const [deltaActualAddresses, maximumPositions, strategyRecord, adapterState, adapterCapBps] =
+    await Promise.all([
+      Promise.all(deltaBindings.map(([functionName]) => read<Address>(
+        client, manifest.delta.adapter, yieldBankDeltaAdapterAbi, functionName,
+      ))),
+      read<bigint>(client, manifest.delta.adapter, yieldBankDeltaAdapterAbi, "maximumPositions"),
+      read<readonly [Address, Hex, Hex, Address, bigint, bigint]>(
+        client, manifest.contracts.strategyRegistry.address, yieldBankStrategyRegistryAbi,
+        "recordOf", [manifest.delta.adapter],
+      ),
+      read<bigint>(client, manifest.contracts.marketMakingSleeve.address, yieldBankSleeveAbi,
+        "adapterState", [manifest.delta.adapter]),
+      read<bigint>(client, manifest.contracts.marketMakingSleeve.address, yieldBankSleeveAbi,
+        "adapterCapBps", [manifest.delta.adapter]),
+    ]);
+  const valueResult = (path: string, address: Address, expected: Hex, actual: Hex) => ({
+    path, address, expectedCodeHash: expected, actualCodeHash: actual,
+    ok: expected.toLowerCase() === actual.toLowerCase(),
+  });
+  const addressWord = (address: Address) => toHex(BigInt(getAddress(address)), { size: 32 });
+  const deltaResults = deltaBindings.map(([field, expected], index) => valueResult(
+    `delta.${field}`, manifest.delta.adapter, addressWord(expected),
+    addressWord(deltaActualAddresses[index]!),
+  ));
+  deltaResults.push(valueResult(
+    "delta.maximumPositions", manifest.delta.adapter,
+    toHex(manifest.delta.maximumPositions, { size: 32 }), toHex(maximumPositions, { size: 32 }),
+  ));
+  const strategyExpected = [
+    addressWord(manifest.delta.adapter),
+    Object.values(manifest.adapters).find((entry) =>
+      getAddress(entry.address) === getAddress(manifest.delta.adapter))!.runtimeCodeHash,
+    keccak256(stringToHex("YIELD_BANK_MARKET_MAKING")),
+    addressWord(manifest.dependencies.WETH.address),
+    toHex(1, { size: 32 }),
+  ];
+  const strategyActual = [
+    addressWord(strategyRecord[0]), strategyRecord[1], strategyRecord[2],
+    addressWord(strategyRecord[3]), toHex(strategyRecord[4], { size: 32 }),
+  ];
+  ["implementation", "runtimeCodeHash", "sleeveCategory", "accountingAsset", "state"]
+    .forEach((field, index) => deltaResults.push(valueResult(
+      `strategyRegistry.${field}`, manifest.contracts.strategyRegistry.address,
+      strategyExpected[index]!, strategyActual[index]!,
+    )));
+  deltaResults.push(valueResult(
+    "marketMakingSleeve.adapterState", manifest.contracts.marketMakingSleeve.address,
+    toHex(3, { size: 32 }), toHex(adapterState, { size: 32 }),
+  ));
+  deltaResults.push(valueResult(
+    "marketMakingSleeve.adapterCapBps", manifest.contracts.marketMakingSleeve.address,
+    toHex(manifest.delta.adapterCapBps, { size: 32 }), toHex(adapterCapBps, { size: 32 }),
+  ));
+  return codeResults.concat(
+    commitmentResults, economicsResults, royaltyEconomicsResults, deltaResults,
+  );
 }
 
 export async function readYieldBankToken(
@@ -599,6 +763,118 @@ export function prepareYieldBankBurn(collection: Address, tokenId: bigint, proof
   return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "burnToken", args: [tokenId, proof] }), value: 0n } as const;
 }
 
+const deltaRungComponents = [
+  { name: "tickLower", type: "int24" },
+  { name: "tickUpper", type: "int24" },
+  { name: "amount0", type: "uint256" },
+  { name: "amount1", type: "uint256" },
+  { name: "amount0Min", type: "uint256" },
+  { name: "amount1Min", type: "uint256" },
+] as const;
+
+const deltaLiquidityActionComponents = [
+  { name: "tokenId", type: "uint256" },
+  { name: "liquidity", type: "uint128" },
+  { name: "amount0Minimum", type: "uint256" },
+  { name: "amount1Minimum", type: "uint256" },
+] as const;
+
+/** Encodes the exact manual inputs consumed by DeltaV3LPAdapter.deposit. */
+export function encodeYieldBankDeltaDepositData(params: YieldBankDeltaDepositData): Hex {
+  validateDeltaTick(params.minimumCurrentTick, "minimumCurrentTick");
+  validateDeltaTick(params.maximumCurrentTick, "maximumCurrentTick");
+  if (params.minimumCurrentTick > params.maximumCurrentTick || params.deadline <= 0n
+    || params.wethToConvert < 0n || params.minimumInjohOut < 0n
+    || (params.wethToConvert === 0n) !== (params.minimumInjohOut === 0n)) {
+    throw new Error("invalid Delta deposit bounds");
+  }
+  if (params.rungs.length < 1 || params.rungs.length > 64) {
+    throw new Error("Delta deposit requires 1..64 rungs");
+  }
+  params.rungs.forEach((rung, index) => {
+    validateDeltaTick(rung.tickLower, `rungs.${index}.tickLower`);
+    validateDeltaTick(rung.tickUpper, `rungs.${index}.tickUpper`);
+    if (rung.tickLower >= rung.tickUpper || (index > 0
+      && rung.tickLower < params.rungs[index - 1]!.tickUpper)
+      || rung.amount0 < 0n || rung.amount1 < 0n
+      || (rung.amount0 === 0n && rung.amount1 === 0n)
+      || rung.amount0Minimum < 0n || rung.amount1Minimum < 0n
+      || rung.amount0Minimum > rung.amount0 || rung.amount1Minimum > rung.amount1) {
+      throw new Error(`invalid Delta rung ${index}`);
+    }
+  });
+  return encodeAbiParameters(
+    [{ type: "tuple", components: [
+      { name: "wethToConvert", type: "uint256" },
+      { name: "minimumInjohOut", type: "uint256" },
+      { name: "routeData", type: "bytes" },
+      { name: "rungs", type: "tuple[]", components: deltaRungComponents },
+      { name: "minimumCurrentTick", type: "int24" },
+      { name: "maximumCurrentTick", type: "int24" },
+      { name: "deadline", type: "uint256" },
+    ] }],
+    [{
+      wethToConvert: params.wethToConvert,
+      minimumInjohOut: params.minimumInjohOut,
+      routeData: params.routeData,
+      rungs: params.rungs.map((rung) => ({
+        tickLower: rung.tickLower,
+        tickUpper: rung.tickUpper,
+        amount0: rung.amount0,
+        amount1: rung.amount1,
+        amount0Min: rung.amount0Minimum,
+        amount1Min: rung.amount1Minimum,
+      })),
+      minimumCurrentTick: params.minimumCurrentTick,
+      maximumCurrentTick: params.maximumCurrentTick,
+      deadline: params.deadline,
+    }],
+  );
+}
+
+/** Encodes explicit liquidity burns, conversion, and WETH return for a manual withdrawal. */
+export function encodeYieldBankDeltaWithdrawalData(params: YieldBankDeltaWithdrawalData): Hex {
+  validateDeltaActions(params.actions);
+  if (params.deadline <= 0n || params.injohToConvert < 0n || params.minimumWethOut < 0n
+    || params.wethToReturn <= 0n
+    || (params.injohToConvert === 0n) !== (params.minimumWethOut === 0n)) {
+    throw new Error("invalid Delta withdrawal bounds");
+  }
+  return encodeAbiParameters(
+    [{ type: "tuple", components: [
+      { name: "actions", type: "tuple[]", components: deltaLiquidityActionComponents },
+      { name: "injohToConvert", type: "uint256" },
+      { name: "minimumWethOut", type: "uint256" },
+      { name: "wethToReturn", type: "uint256" },
+      { name: "routeData", type: "bytes" },
+      { name: "deadline", type: "uint256" },
+    ] }],
+    [{ ...params, actions: params.actions.map((action) => ({ ...action })) }],
+  );
+}
+
+/** Encodes an explicit, duplicate-free position list for fee collection. */
+export function encodeYieldBankDeltaCollectionData(tokenIds: readonly bigint[]): Hex {
+  if (tokenIds.length === 0 || tokenIds.some((tokenId) => tokenId <= 0n)
+    || new Set(tokenIds).size !== tokenIds.length) {
+    throw new Error("Delta collection requires unique positive token IDs");
+  }
+  return encodeAbiParameters([{ type: "uint256[]" }], [tokenIds]);
+}
+
+/** Encodes the complete position list required by DeltaV3LPAdapter.exitAll. */
+export function encodeYieldBankDeltaExitData(params: YieldBankDeltaExitData): Hex {
+  validateDeltaActions(params.actions);
+  if (params.deadline <= 0n) throw new Error("Delta exit requires a positive deadline");
+  return encodeAbiParameters(
+    [{ type: "tuple", components: [
+      { name: "actions", type: "tuple[]", components: deltaLiquidityActionComponents },
+      { name: "deadline", type: "uint256" },
+    ] }],
+    [{ actions: params.actions.map((action) => ({ ...action })), deadline: params.deadline }],
+  );
+}
+
 export function prepareYieldBankAdapterDeposit(
   allocator: Address,
   sleeve: Address,
@@ -679,6 +955,25 @@ export function prepareYieldBankAdapterExit(
 function validateLossBps(value: number): void {
   if (!Number.isInteger(value) || value < 0 || value > 10_000) {
     throw new Error("maxLossBps must be integer basis points");
+  }
+}
+
+function validateDeltaActions(actions: readonly YieldBankDeltaLiquidityAction[]): void {
+  const ids = new Set<bigint>();
+  actions.forEach((action, index) => {
+    if (action.tokenId <= 0n || action.liquidity <= 0n
+      || action.liquidity > (1n << 128n) - 1n
+      || action.amount0Minimum < 0n || action.amount1Minimum < 0n
+      || ids.has(action.tokenId)) {
+      throw new Error(`invalid Delta liquidity action ${index}`);
+    }
+    ids.add(action.tokenId);
+  });
+}
+
+function validateDeltaTick(tick: number, path: string): void {
+  if (!Number.isInteger(tick) || tick < -8_388_608 || tick > 8_388_607) {
+    throw new Error(`${path} must fit int24`);
   }
 }
 
