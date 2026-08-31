@@ -107,13 +107,25 @@ and prepared calls. See the [API reference](../../docs/api.md).
 ## Yield Banks owner allocations
 
 `readYieldBankToken` returns the NFT owner, current per-sleeve USD18 value, current percentage mix,
-saved target, and target execution revision. A holder calls `prepareYieldBankTargetAllocation` with
-three integer basis-point weights totaling 10,000. That transaction records intent but does not move
-funds. The manual allocation operator uses `prepareYieldBankTargetExecution` with the expected
-revision, complete sleeve unwind data, reverse conversions, slippage floors, loss limits, and a
-deadline. The same saved target can be manually re-synced after later distributions create drift.
+saved target, owner maximum adapter-withdrawal-loss limit, expiry, and target execution revision. A holder calls
+`prepareYieldBankTargetAllocation` with three integer basis-point weights totaling 10,000 and must
+also provide the maximum adapter withdrawal loss and expiry. That transaction records intent but does not
+move funds. Each revision is executable only once. The manual allocation operator uses
+`prepareYieldBankTargetExecution` with the expected revision, complete sleeve unwind data, reverse
+conversions, separate slippage floors, adapter loss limits, and a deadline no later than the owner&apos;s expiry. A new
+owner request is required for any later rebalance.
 Release verification also requires the manifest's exact WETH entry routes and reverse-to-WETH
 rebalance routes to match the allocator's live codehash-bound mappings.
+It also rejects an OpenSea-observed secondary royalty percentage or recipient that differs from the
+collection's immutable rate and revenue router.
+
+Every release manifest also declares the equity custody model, income behavior, and an HTTPS
+disclosure. The sleeve accepts only reviewed ERC-20 assets; the SDK does not infer that a token is a
+legal share or that it pays a separate cash dividend.
+
+`prepareYieldBankBurn` and `prepareYieldBankSleeveRedemption` both accept eligibility proof bytes.
+The same policy-approved holder can therefore receive restricted sleeve shares during an NFT burn
+and later redeem those shares without an empty-proof mismatch.
 
 ## Safety rules
 

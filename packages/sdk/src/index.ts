@@ -152,6 +152,7 @@ export {
 export {
   openSeaAssetUrl, openSeaCollectionUrl, prepareYieldBankAllocation, prepareYieldBankBurn,
   prepareYieldBankClaim, prepareYieldBankSettle, prepareYieldBankTransfer,
+  prepareYieldBankNativeRoyaltySync, prepareYieldBankRoyaltySync,
   prepareYieldBankSleeveRedemption, prepareYieldBankTargetAllocation,
   prepareYieldBankTargetExecution,
   prepareYieldBankAdapterCollection, prepareYieldBankAdapterDeposit,

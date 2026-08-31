@@ -14,6 +14,8 @@ import {
   prepareYieldBankAdapterExit,
   prepareYieldBankAdapterWithdrawal,
   prepareYieldBankClaim,
+  prepareYieldBankNativeRoyaltySync,
+  prepareYieldBankRoyaltySync,
   prepareYieldBankSettle,
   prepareYieldBankSleeveRedemption,
   prepareYieldBankTargetAllocation,
@@ -90,11 +92,16 @@ function manifest(): YieldBankReleaseManifest {
       contractUriHash: keccak256(toBytes("ipfs://yield-banks/contract.json")),
     },
     economics: {
-      maxSupply: 777, primaryBackingBps: 7500, primaryCreatorBps: 1200,
+      maxSupply: 777, secondaryRoyaltyBps: 650, primaryBackingBps: 7500, primaryCreatorBps: 1200,
       primarySinjohBps: 800, primaryOperationsBps: 500, exitTaxBps: 500,
       royaltyBackingBps: 6000, royaltyCreatorBps: 2000,
       royaltySinjohBps: 1000, royaltyOperationsBps: 1000,
       coreWeightBps: 4000, marketMakingWeightBps: 3750, usdgWeightBps: 2250,
+    },
+    equityModel: {
+      custody: "onchain-tokenized-equity",
+      income: "balance-appreciation",
+      disclosureUri: "https://example.com/yield-banks/equity-disclosure",
     },
     policyCaps: {
       core: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
@@ -109,6 +116,8 @@ function manifest(): YieldBankReleaseManifest {
       mintStagesHash: keccak256(toBytes("mint-stages")),
       creatorPayoutAddress: addresses[6],
       observedPrimaryPlatformFeeBps: 1000,
+      observedSecondaryRoyaltyBps: 650,
+      observedSecondaryRoyaltyRecipient: addresses[8],
       observedAt: "2026-08-28T16:00:00Z",
     },
     dependencies: {
@@ -121,7 +130,7 @@ function manifest(): YieldBankReleaseManifest {
       v3Factory: entry(addresses[20]),
       v3PositionManager: entry(addresses[21]),
     },
-    stockTokens: [entry(addresses[0])],
+    equityAssets: [entry(addresses[0])],
     adapters: {
       deltaV3LP: entry(addresses[22]),
       deltaEntryRoute: entry(addresses[23]),
@@ -174,10 +183,19 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName === "distributor") return release.contracts.distributor.address;
       if (functionName === "proceedsVault") return release.contracts.proceedsVault.address;
       if (functionName === "portfolioAllocator") return release.contracts.allocator.address;
+      if (functionName === "accountImplementation") return release.contracts.accountImplementation.address;
       if (functionName === "collection") return release.contracts.collection.address;
       if (functionName === "seaDrop") return release.dependencies.seaDrop.address;
       if (functionName === "royaltyReceiver") return release.contracts.revenueRouter.address;
-      if (functionName === "ROYALTY_BPS") return 500n;
+      if (functionName === "royaltyBps") return BigInt(release.economics.secondaryRoyaltyBps);
+      if (["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"].includes(functionName)) {
+        const policy = address.toLowerCase() === release.contracts.coreSleeve.address.toLowerCase()
+          ? release.policyCaps.core
+          : address.toLowerCase() === release.contracts.marketMakingSleeve.address.toLowerCase()
+            ? release.policyCaps.marketMaking
+            : release.policyCaps.usdg;
+        return policy[functionName as keyof typeof policy];
+      }
       if (functionName in release.economics) {
         return release.economics[functionName as keyof typeof release.economics];
       }
@@ -216,7 +234,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       throw new Error(`unexpected ${functionName}`);
     },
   } as never, release);
-  assert.equal(results.length, 90);
+  assert.equal(results.length, 101);
   assert.ok(results.every((result) => result.ok));
 
   release.economics.exitTaxBps = 501 as 500;
@@ -230,9 +248,11 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
     coreWeightBps: 2_500,
     marketMakingWeightBps: 0,
     usdgWeightBps: 7_500,
+    maximumAdapterLossBps: 100,
     revision: 4n,
     executedRevision: 3n,
     requestedAt: 1_700_000_000,
+    validUntil: 1_700_003_600,
     executedAt: 1_699_999_000,
   } as const;
   const view = await readYieldBankToken({
@@ -271,6 +291,12 @@ test("Yield Banks manifest binds OpenSea payout and hosted collection", () => {
   release.openSea.creatorPayoutAddress = release.contracts.proceedsVault.address;
   release.openSea.collectionUrl = "https://example.com/collection/sinjoh-yield-banks/overview";
   assert.throws(() => validateYieldBankManifest(release), /collectionUrl/);
+  release.openSea.collectionUrl = "https://opensea.io/collection/sinjoh-yield-banks/overview";
+  release.openSea.observedSecondaryRoyaltyBps += 1;
+  assert.throws(() => validateYieldBankManifest(release), /observedSecondaryRoyaltyBps/);
+  release.openSea.observedSecondaryRoyaltyBps = release.economics.secondaryRoyaltyBps;
+  release.openSea.observedSecondaryRoyaltyRecipient = addresses[7];
+  assert.throws(() => validateYieldBankManifest(release), /observedSecondaryRoyaltyRecipient/);
 });
 
 test("Yield Banks wallet and operator calls match the OpenSea-first flow", () => {
@@ -289,8 +315,10 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
     addresses[5], 10n, addresses[3], addresses[3], 1n,
   );
   const targetAllocation = prepareYieldBankTargetAllocation(
-    addresses[11], 42n, [2_500, 0, 7_500],
+    addresses[11], 42n, [2_500, 0, 7_500], 100, 1_900_000_000n,
   );
+  const royaltySync = prepareYieldBankRoyaltySync(addresses[11], addresses[1], "0x1234");
+  const nativeRoyaltySync = prepareYieldBankNativeRoyaltySync(addresses[11], "0x1234");
   const emptyAllocation = {
     minimumOutput: 0n, minimumShares: 0n, routeData: "0x", sleeveData: "0x",
   } as const;
@@ -320,6 +348,8 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.equal(adapterExit.value, 0n);
   assert.equal(sleeveRedemption.value, 0n);
   assert.equal(targetAllocation.value, 0n);
+  assert.equal(royaltySync.value, 0n);
+  assert.equal(nativeRoyaltySync.value, 0n);
   assert.equal(targetExecution.value, 0n);
   assert.throws(
     () => prepareYieldBankAllocation(addresses[4], 1n, 2n, [
@@ -331,7 +361,9 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.throws(() => prepareYieldBankSettle(collection, 0n), /positive/);
   assert.throws(() => prepareYieldBankBurn(collection, 0n), /positive/);
   assert.throws(
-    () => prepareYieldBankTargetAllocation(addresses[11], 42n, [5_000, 5_000, 1]),
+    () => prepareYieldBankTargetAllocation(
+      addresses[11], 42n, [5_000, 5_000, 1], 100, 1_900_000_000n,
+    ),
     /totaling 10000/,
   );
   assert.equal(openSeaCollectionUrl("sinjoh-yield-banks"), "https://opensea.io/collection/sinjoh-yield-banks/overview");
