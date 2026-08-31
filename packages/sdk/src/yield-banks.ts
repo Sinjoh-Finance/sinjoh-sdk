@@ -118,6 +118,7 @@ export const yieldBankProceedsVaultAbi = [
 ] as const;
 
 export const yieldBankDistributorAbi = [
+  { type: "function", name: "distributionAssetCount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "distributionAssets", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "pending", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }, { name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "cumulativeSettled", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }, { name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
@@ -205,6 +206,7 @@ const yieldBankSinglePoolRouteAbi = [...["pool", "factory", "inputAsset", "outpu
 } as const))] as const;
 
 export const yieldBankStrategyRegistryAbi = [
+  { type: "function", name: "isRegistrar", stateMutability: "view", inputs: [{ name: "registrar", type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "recordOf", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "tuple", components: [
     { name: "implementation", type: "address" }, { name: "runtimeCodeHash", type: "bytes32" },
     { name: "sleeveCategory", type: "bytes32" }, { name: "accountingAsset", type: "address" },
@@ -212,8 +214,13 @@ export const yieldBankStrategyRegistryAbi = [
   ] }] },
 ] as const;
 
+export const yieldBankPriceHubAbi = [
+  { type: "function", name: "isRegistrar", stateMutability: "view", inputs: [{ name: "registrar", type: "address" }], outputs: [{ type: "bool" }] },
+] as const;
+
 export const yieldBankAllocatorAbi = [
   { type: "function", name: "rebalanceValueGuard", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "deltaPoolController", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "activeDeltaPoolOf", stateMutability: "view", inputs: [
     { name: "tokenId", type: "uint256" },
   ], outputs: [{ type: "address" }] },
@@ -225,12 +232,12 @@ export const yieldBankAllocatorAbi = [
   ], outputs: [{ name: "route", type: "address" }, { name: "runtimeCodeHash", type: "bytes32" }] },
   { type: "function", name: "deltaPoolBinding", stateMutability: "view", inputs: [
     { name: "pool", type: "address" },
-  ], outputs: [
-    { name: "sleeve", type: "address" }, { name: "adapter", type: "address" },
-    { name: "poolRuntimeCodeHash", type: "bytes32" },
-    { name: "sleeveRuntimeCodeHash", type: "bytes32" },
-    { name: "adapterRuntimeCodeHash", type: "bytes32" },
-  ] },
+  ], outputs: [{ name: "binding", type: "tuple", components: [
+      { name: "sleeve", type: "address" }, { name: "adapter", type: "address" },
+      { name: "poolRuntimeCodeHash", type: "bytes32" },
+      { name: "sleeveRuntimeCodeHash", type: "bytes32" },
+      { name: "adapterRuntimeCodeHash", type: "bytes32" },
+    ] }] },
   { type: "function", name: "deltaPoolOfSleeve", stateMutability: "view", inputs: [
     { name: "sleeve", type: "address" },
   ], outputs: [{ name: "pool", type: "address" }] },
@@ -303,6 +310,87 @@ export const yieldBankAllocatorAbi = [
     { name: "sleeve", type: "address" }, { name: "adapter", type: "address" },
     { name: "maxLossBps", type: "uint16" }, { name: "data", type: "bytes" },
   ], outputs: [{ name: "assets", type: "address[]" }, { name: "amounts", type: "uint256[]" }] },
+] as const;
+
+export const yieldBankDeltaPoolControllerAbi = [
+  ...["allocator", "allocationOperator", "collection", "timelock", "guardian", "weth", "eligibilityPolicy", "priceHub", "strategyRegistry"]
+    .map((name) => ({ type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "address" }] } as const)),
+  ...["maximumAdapterCapBps", "maximumOperatorLossBps"].map((name) => ({
+    type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }],
+  } as const)),
+  ...["maximumPoolFeedHeartbeat", "maximumPoolFeedGracePeriod", "minimumPoolTwapWindow"]
+    .map((name) => ({
+      type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint32" }],
+    } as const)),
+  ...["maximumPoolReferenceDeviationBps", "maximumPoolSpotDeviationBps"].map((name) => ({
+    type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }],
+  } as const)),
+  { type: "function", name: "isSelectablePool", stateMutability: "view", inputs: [{ name: "pool", type: "address" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "isAllocationPool", stateMutability: "view", inputs: [{ name: "pool", type: "address" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "foundationInfrastructureCommitment", stateMutability: "view", inputs: [{ name: "pool", type: "address" }], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "pairedAssetOf", stateMutability: "view", inputs: [{ name: "pool", type: "address" }], outputs: [{ type: "address" }] },
+  { type: "function", name: "poolOfSleeve", stateMutability: "view", inputs: [{ name: "sleeve", type: "address" }], outputs: [{ type: "address" }] },
+  { type: "function", name: "isFoundationSleeve", stateMutability: "view", inputs: [{ name: "sleeve", type: "address" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "infrastructureOfFactory", stateMutability: "view", inputs: [{ name: "factory", type: "address" }], outputs: [
+    { name: "positionManager", type: "address" }, { name: "positionBuilder", type: "address" },
+    { name: "factoryRuntimeCodeHash", type: "bytes32" },
+    { name: "positionManagerRuntimeCodeHash", type: "bytes32" },
+    { name: "positionBuilderRuntimeCodeHash", type: "bytes32" },
+    { name: "routeCreationCodeHash", type: "bytes32" },
+    { name: "sleeveCreationCodeHash", type: "bytes32" },
+    { name: "adapterCreationCodeHash", type: "bytes32" },
+    { name: "feedCreationCodeHash", type: "bytes32" }, { name: "active", type: "bool" },
+  ] },
+  { type: "function", name: "foundationOf", stateMutability: "view", inputs: [{ name: "pool", type: "address" }], outputs: [
+    { name: "sleeve", type: "address" }, { name: "adapter", type: "address" },
+    { name: "poolRuntimeCodeHash", type: "bytes32" },
+    { name: "sleeveRuntimeCodeHash", type: "bytes32" },
+    { name: "adapterRuntimeCodeHash", type: "bytes32" },
+  ] },
+  { type: "function", name: "configureInfrastructure", stateMutability: "nonpayable", inputs: [
+    { name: "factory", type: "address" }, { name: "config", type: "tuple", components: [
+      { name: "positionManager", type: "address" }, { name: "positionBuilder", type: "address" },
+      { name: "factoryRuntimeCodeHash", type: "bytes32" },
+      { name: "positionManagerRuntimeCodeHash", type: "bytes32" },
+      { name: "positionBuilderRuntimeCodeHash", type: "bytes32" },
+      { name: "routeCreationCodeHash", type: "bytes32" },
+      { name: "sleeveCreationCodeHash", type: "bytes32" },
+      { name: "adapterCreationCodeHash", type: "bytes32" },
+      { name: "feedCreationCodeHash", type: "bytes32" },
+    ] },
+  ], outputs: [] },
+  { type: "function", name: "setInfrastructureActive", stateMutability: "nonpayable", inputs: [
+    { name: "factory", type: "address" }, { name: "active", type: "bool" },
+  ], outputs: [] },
+  { type: "function", name: "configurePoolDerivedFeed", stateMutability: "nonpayable", inputs: [
+    { name: "pool", type: "address" }, { name: "config", type: "tuple", components: [
+      { name: "referenceSource", type: "address" }, { name: "heartbeat", type: "uint32" },
+      { name: "gracePeriod", type: "uint32" }, { name: "twapWindow", type: "uint32" },
+      { name: "maxDeviationBps", type: "uint16" },
+      { name: "maxSpotDeviationBps", type: "uint16" },
+      { name: "comparisonAmount", type: "uint128" },
+      { name: "minimumLiquidity", type: "uint128" }, { name: "description", type: "string" },
+    ] }, { name: "feedCreationCode", type: "bytes" },
+  ], outputs: [{ name: "feed", type: "address" }] },
+  { type: "function", name: "materializePool", stateMutability: "nonpayable", inputs: [
+    { name: "pool", type: "address" }, { name: "config", type: "tuple", components: [
+      { name: "maximumPositions", type: "uint8" }, { name: "adapterCapBps", type: "uint16" },
+      { name: "maximumOperatorLossBps", type: "uint16" },
+    ] }, { name: "routeCreationCode", type: "bytes" },
+    { name: "sleeveCreationCode", type: "bytes" },
+    { name: "adapterCreationCode", type: "bytes" },
+  ], outputs: [{ name: "sleeve", type: "address" }, { name: "adapter", type: "address" }] },
+  ...["setPoolAdapterCap"].map((name) => ({
+    type: "function", name, stateMutability: "nonpayable", inputs: [
+      { name: "pool", type: "address" }, { name: "capBps", type: "uint16" },
+    ], outputs: [],
+  } as const)),
+  { type: "function", name: "setPoolDepositsPaused", stateMutability: "nonpayable", inputs: [
+    { name: "pool", type: "address" }, { name: "paused", type: "bool" },
+  ], outputs: [] },
+  { type: "function", name: "retirePoolAdapter", stateMutability: "nonpayable", inputs: [
+    { name: "pool", type: "address" },
+  ], outputs: [] },
 ] as const;
 
 export const yieldBankSystemFactoryAbi = [
@@ -431,8 +519,14 @@ export interface YieldBankManifestEntry {
     };
 }
 
+export interface YieldBankSleevePolicy {
+  maximumStrategies: number;
+  maximumAdapterCapBps: number;
+  maximumOperatorLossBps: number;
+}
+
 export interface YieldBankReleaseManifest {
-  schemaVersion: "1.0";
+  schemaVersion: "1.1";
   chainId: 4663;
   collectionId: Hex;
   factoryVersion: Hex;
@@ -472,11 +566,18 @@ export interface YieldBankReleaseManifest {
     income: "balance-appreciation" | "cash-distribution" | "mixed";
     disclosureUri: string;
   };
-  policyCaps: Record<"core" | "marketMaking" | "usdg", {
-    maximumStrategies: number;
-    maximumAdapterCapBps: number;
-    maximumOperatorLossBps: number;
-  }>;
+  policyCaps: {
+    core: YieldBankSleevePolicy;
+    marketMaking: YieldBankSleevePolicy;
+    usdg: YieldBankSleevePolicy;
+    deltaPoolFeed: {
+      maximumHeartbeat: number;
+      maximumGracePeriod: number;
+      minimumTwapWindow: number;
+      maximumReferenceDeviationBps: number;
+      maximumSpotDeviationBps: number;
+    };
+  };
   openSea: {
     collectionSlug: string;
     collectionUrl: string;
@@ -496,7 +597,7 @@ export interface YieldBankReleaseManifest {
   contracts: Record<
     | "registry" | "factoryDeployer" | "factory" | "collection" | "nft" | "accountImplementation" | "proceedsVault"
     | "distributor" | "revenueRouter" | "timelock"
-    | "allocator" | "priceHub" | "strategyRegistry" | "renderer" | "coreSleeve"
+    | "allocator" | "deltaPoolController" | "priceHub" | "strategyRegistry" | "renderer" | "coreSleeve"
     | "marketMakingSleeve" | "usdgSleeve" | "rebalanceValueGuard",
     YieldBankManifestEntry
   >;
@@ -506,8 +607,7 @@ export interface YieldBankReleaseManifest {
   coreConstituents: readonly YieldBankCoreConstituent[];
   adapters: Record<string, YieldBankManifestEntry>;
   feeds: readonly YieldBankFeedBinding[];
-  pools: Record<string, YieldBankManifestEntry>;
-  deltaPools: readonly YieldBankDeltaManifestBindings[];
+  deltaInfrastructure: readonly YieldBankDeltaInfrastructureBinding[];
   routeBindings: {
     allocations: readonly YieldBankAllocationRouteBinding[];
     rebalances: readonly YieldBankRebalanceRouteBinding[];
@@ -529,21 +629,19 @@ export interface YieldBankRebalanceRouteBinding {
   runtimeCodeHash: Hex;
 }
 
-export interface YieldBankDeltaManifestBindings {
-  adapter: Address;
-  sleeve: Address;
-  pairedAsset: Address;
-  pool: Address;
-  fee: number;
-  tickSpacing: number;
-  positionBuilder: Address;
+export interface YieldBankDeltaInfrastructureBinding {
   factory: Address;
   positionManager: Address;
-  entryRoute: Address;
-  exitRoute: Address;
-  maximumPositions: number;
-  maximumStrategies: 1;
-  adapterCapBps: number;
+  positionBuilder: Address;
+  weth: Address;
+  factoryRuntimeCodeHash: Hex;
+  positionManagerRuntimeCodeHash: Hex;
+  positionBuilderRuntimeCodeHash: Hex;
+  routeCreationCodeHash: Hex;
+  sleeveCreationCodeHash: Hex;
+  adapterCreationCodeHash: Hex;
+  feedCreationCodeHash: Hex;
+  active: boolean;
 }
 
 export interface YieldBankCoreConstituent {
@@ -730,7 +828,7 @@ const EIP1967_BEACON_SLOT =
   "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50" as Hex;
 
 export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): void {
-  if (manifest.schemaVersion !== "1.0") throw new Error("unsupported Yield Banks manifest schema");
+  if (manifest.schemaVersion !== "1.1") throw new Error("unsupported Yield Banks manifest schema");
   if (manifest.chainId !== 4663) throw new Error("Yield Banks release manifests require Robinhood mainnet chain 4663");
   for (const [name, hash] of Object.entries({
     collectionId: manifest.collectionId,
@@ -793,7 +891,8 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
   } catch {
     throw new Error("equityModel.disclosureUri must be an HTTPS URL");
   }
-  for (const [name, policy] of Object.entries(manifest.policyCaps)) {
+  for (const name of ["core", "marketMaking", "usdg"] as const) {
+    const policy = manifest.policyCaps[name];
     if (!Number.isInteger(policy.maximumStrategies)
       || policy.maximumStrategies < 0 || policy.maximumStrategies > 8
       || !Number.isInteger(policy.maximumAdapterCapBps)
@@ -803,6 +902,23 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       || (policy.maximumStrategies !== 0 && policy.maximumAdapterCapBps === 0)) {
       throw new Error(`policyCaps.${name} is invalid`);
     }
+  }
+  const poolFeedPolicy = manifest.policyCaps.deltaPoolFeed;
+  if (!Number.isInteger(poolFeedPolicy.maximumHeartbeat)
+    || poolFeedPolicy.maximumHeartbeat <= 0
+    || poolFeedPolicy.maximumHeartbeat > 4_294_967_295
+    || !Number.isInteger(poolFeedPolicy.maximumGracePeriod)
+    || poolFeedPolicy.maximumGracePeriod < 0
+    || poolFeedPolicy.maximumGracePeriod > 4_294_967_295
+    || !Number.isInteger(poolFeedPolicy.minimumTwapWindow)
+    || poolFeedPolicy.minimumTwapWindow <= 0 || poolFeedPolicy.minimumTwapWindow > 86_400
+    || !Number.isInteger(poolFeedPolicy.maximumReferenceDeviationBps)
+    || poolFeedPolicy.maximumReferenceDeviationBps <= 0
+    || poolFeedPolicy.maximumReferenceDeviationBps > 10_000
+    || !Number.isInteger(poolFeedPolicy.maximumSpotDeviationBps)
+    || poolFeedPolicy.maximumSpotDeviationBps <= 0
+    || poolFeedPolicy.maximumSpotDeviationBps > 2_000) {
+    throw new Error("policyCaps.deltaPoolFeed is invalid");
   }
   if (!/^[a-z0-9][a-z0-9-]*$/.test(manifest.openSea.collectionSlug)) {
     throw new Error("openSea.collectionSlug is invalid");
@@ -899,7 +1015,6 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
   for (const [group, entries] of Object.entries({
     dependencies: manifest.dependencies,
     adapters: manifest.adapters,
-    pools: manifest.pools,
   })) {
     for (const [key, entry] of Object.entries(entries)) validateEntry(`${group}.${key}`, entry);
   }
@@ -918,36 +1033,10 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     }
     const source = new URL(binding.sourceUrl);
     if (source.protocol !== "https:") throw new Error(`feeds.${index}.sourceUrl must be HTTPS`);
-    if (binding.kind === "chainlink") {
-      if (source.hostname !== "docs.chain.link" || binding.twapWindow !== 0
-        || binding.maxSpotDeviationBps !== 0 || binding.comparisonAmount !== "0"
-        || binding.minimumLiquidity !== "0") {
-        throw new Error(`feeds.${index} has invalid Chainlink provenance`);
-      }
-    } else if (binding.kind !== "delta-v3-twap"
-      || source.hostname !== "robinhoodchain.blockscout.com"
-      || binding.twapWindow < 1 || binding.twapWindow > 86_400
-      || binding.maxSpotDeviationBps < 1 || binding.maxSpotDeviationBps > 2_000
-      || getAddress(binding.referenceSource) === "0x0000000000000000000000000000000000000000"
-      || !/^\d+$/.test(binding.comparisonAmount) || BigInt(binding.comparisonAmount) < 1n
-      || !/^\d+$/.test(binding.minimumLiquidity) || BigInt(binding.minimumLiquidity) < 1n) {
-      throw new Error(`feeds.${index} has invalid Delta V3 TWAP provenance or controls`);
-    }
-  });
-  const manifestBoundAddresses = new Set([
-    ...Object.values(manifest.contracts),
-    ...Object.values(manifest.dependencies),
-    ...Object.values(manifest.adapters),
-    ...Object.values(manifest.pools),
-    ...manifest.equityAssets,
-    ...manifest.feeds.map((binding) => binding.feed),
-  ].map((entry) => getAddress(entry.address)));
-  manifest.feeds.forEach((binding, index) => {
-    if (binding.kind !== "delta-v3-twap") return;
-    const referenceSource = getAddress(binding.referenceSource);
-    if (!manifestBoundAddresses.has(referenceSource)
-      || referenceSource === getAddress(binding.feed.address)) {
-      throw new Error(`feeds.${index}.referenceSource must be a separate manifest-bound source`);
+    if (binding.kind !== "chainlink" || source.hostname !== "docs.chain.link"
+      || binding.twapWindow !== 0 || binding.maxSpotDeviationBps !== 0
+      || binding.comparisonAmount !== "0" || binding.minimumLiquidity !== "0") {
+      throw new Error(`feeds.${index} has invalid release feed provenance`);
     }
   });
   if (manifest.coreConstituents.length !== manifest.equityAssets.length
@@ -967,38 +1056,22 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       throw new Error(`roles.${role} is zero`);
     }
   }
-  const containsAddress = (entries: Record<string, YieldBankManifestEntry>, address: Address) =>
-    Object.values(entries).some((entry) => getAddress(entry.address) === getAddress(address));
-  const deltaPools = new Set<string>();
-  const deltaSleeves = new Set<string>();
-  for (const [index, delta] of manifest.deltaPools.entries()) {
-    if (!Number.isInteger(delta.fee) || delta.fee < 1 || delta.fee > 16_777_215
-      || !Number.isInteger(delta.tickSpacing) || delta.tickSpacing < 1
-      || delta.tickSpacing > 8_388_607
-      || !Number.isInteger(delta.maximumPositions) || delta.maximumPositions < 1
-      || delta.maximumPositions > 64 || delta.maximumStrategies !== 1
-      || !Number.isInteger(delta.adapterCapBps) || delta.adapterCapBps < 1
-      || delta.adapterCapBps > manifest.policyCaps.marketMaking.maximumAdapterCapBps) {
-      throw new Error(`deltaPools.${index} policy bindings are invalid`);
+  if (!Array.isArray(manifest.deltaInfrastructure) || manifest.deltaInfrastructure.length === 0) {
+    throw new Error("deltaInfrastructure must contain at least one verified generation");
+  }
+  const deltaFactories = new Set<string>();
+  for (const [index, infrastructure] of manifest.deltaInfrastructure.entries()) {
+    const factory = getAddress(infrastructure.factory);
+    if (deltaFactories.has(factory)
+      || getAddress(infrastructure.weth) !== getAddress(manifest.dependencies.WETH.address)) {
+      throw new Error(`deltaInfrastructure.${index} is duplicated or has the wrong WETH`);
     }
-    for (const [field, entries] of [
-      ["adapter", manifest.adapters], ["entryRoute", manifest.adapters],
-      ["exitRoute", manifest.adapters], ["pool", manifest.pools],
-      ["pairedAsset", manifest.dependencies], ["positionBuilder", manifest.dependencies],
-      ["factory", manifest.dependencies], ["positionManager", manifest.dependencies],
-    ] as const) {
-      if (!containsAddress(entries, delta[field])) {
-        throw new Error(`deltaPools.${index}.${field} is not bound to its manifest group`);
-      }
-    }
-    const pool = getAddress(delta.pool);
-    const sleeve = getAddress(delta.sleeve);
-    if (getAddress(delta.pairedAsset) === getAddress(manifest.dependencies.WETH.address)
-      || deltaPools.has(pool) || deltaSleeves.has(sleeve)) {
-      throw new Error(`deltaPools.${index} is duplicated or has WETH as its paired asset`);
-    }
-    deltaPools.add(pool);
-    deltaSleeves.add(sleeve);
+    for (const field of [
+      "factoryRuntimeCodeHash", "positionManagerRuntimeCodeHash",
+      "positionBuilderRuntimeCodeHash", "routeCreationCodeHash", "sleeveCreationCodeHash",
+      "adapterCreationCodeHash", "feedCreationCodeHash",
+    ] as const) validateBytes32(`deltaInfrastructure.${index}.${field}`, infrastructure[field]);
+    deltaFactories.add(factory);
   }
   if (!manifest.routeBindings || !Array.isArray(manifest.routeBindings.allocations)
     || !Array.isArray(manifest.routeBindings.rebalances)) {
@@ -1006,7 +1079,7 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
   }
   const routeEntries = [
     ...Object.values(manifest.dependencies), ...manifest.equityAssets,
-    ...Object.values(manifest.adapters), ...Object.values(manifest.pools),
+    ...Object.values(manifest.adapters),
   ];
   const routeEntry = (address: Address) => routeEntries.find((entry) =>
     getAddress(entry.address) === getAddress(address));
@@ -1042,7 +1115,6 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     }
   }
   for (const asset of [manifest.dependencies.USDG.address,
-    ...manifest.deltaPools.map((delta) => delta.pairedAsset),
     ...manifest.equityAssets.map((entry) => entry.address)]) {
     if (!rebalanceKeys.has(getAddress(asset))) {
       throw new Error(`missing WETH rebalance route for ${asset}`);
@@ -1060,7 +1132,7 @@ export async function verifyYieldBankManifest(
   const entries: [string, YieldBankManifestEntry][] = [];
   for (const [group, records] of Object.entries({
     contracts: manifest.contracts, dependencies: manifest.dependencies,
-    adapters: manifest.adapters, pools: manifest.pools,
+    adapters: manifest.adapters,
   })) {
     for (const [key, entry] of Object.entries(records)) entries.push([`${group}.${key}`, entry]);
   }
@@ -1147,6 +1219,34 @@ export async function verifyYieldBankManifest(
   const rebalanceValueGuard = await read<Address>(
     client, manifest.contracts.allocator.address, yieldBankAllocatorAbi, "rebalanceValueGuard",
   );
+  const [allocatorDeltaController, controllerIdentity, controllerCaps, strategyRegistrar,
+    priceRegistrar] =
+    await Promise.all([
+      read<Address>(client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
+        "deltaPoolController"),
+      Promise.all(
+        ["allocator", "collection", "timelock", "guardian", "weth", "eligibilityPolicy",
+          "priceHub", "strategyRegistry"].map((name) => read<Address>(
+          client, manifest.contracts.deltaPoolController.address,
+          yieldBankDeltaPoolControllerAbi, name,
+        )),
+      ),
+      Promise.all(
+        ["maximumAdapterCapBps", "maximumOperatorLossBps", "maximumPoolFeedHeartbeat",
+          "maximumPoolFeedGracePeriod", "minimumPoolTwapWindow",
+          "maximumPoolReferenceDeviationBps", "maximumPoolSpotDeviationBps"].map(
+          (name) => read<bigint>(
+            client, manifest.contracts.deltaPoolController.address,
+            yieldBankDeltaPoolControllerAbi, name,
+          ),
+        ),
+      ),
+      read<boolean>(client, manifest.contracts.strategyRegistry.address,
+        yieldBankStrategyRegistryAbi, "isRegistrar",
+        [manifest.contracts.deltaPoolController.address]),
+      read<boolean>(client, manifest.contracts.priceHub.address,
+        yieldBankPriceHubAbi, "isRegistrar", [manifest.contracts.deltaPoolController.address]),
+    ]);
   const sleevePolicies = [
     ["core", manifest.contracts.coreSleeve.address],
     ["marketMaking", manifest.contracts.marketMakingSleeve.address],
@@ -1181,6 +1281,41 @@ export async function verifyYieldBankManifest(
   const topologyResults = [
     valueResult("allocator.rebalanceValueGuard", manifest.contracts.allocator.address,
       addressWord(manifest.contracts.rebalanceValueGuard.address), addressWord(rebalanceValueGuard)),
+    valueResult("allocator.deltaPoolController", manifest.contracts.allocator.address,
+      addressWord(manifest.contracts.deltaPoolController.address),
+      addressWord(allocatorDeltaController)),
+    ...([
+      ["allocator", manifest.contracts.allocator.address],
+      ["collection", manifest.contracts.collection.address],
+      ["timelock", manifest.roles.timelock],
+      ["guardian", manifest.roles.guardian],
+      ["weth", manifest.dependencies.WETH.address],
+      ["eligibilityPolicy", manifest.dependencies.eligibilityPolicy.address],
+      ["priceHub", manifest.contracts.priceHub.address],
+      ["strategyRegistry", manifest.contracts.strategyRegistry.address],
+    ] as const).map(([field, expected], index) => valueResult(
+      `deltaPoolController.${field}`, manifest.contracts.deltaPoolController.address,
+      addressWord(expected), addressWord(controllerIdentity[index]!),
+    )),
+    valueResult("strategyRegistry.deltaPoolControllerRegistrar",
+      manifest.contracts.strategyRegistry.address, toHex(1, { size: 32 }),
+      toHex(strategyRegistrar ? 1 : 0, { size: 32 })),
+    valueResult("priceHub.deltaPoolControllerRegistrar", manifest.contracts.priceHub.address,
+      toHex(1, { size: 32 }), toHex(priceRegistrar ? 1 : 0, { size: 32 })),
+    ...([
+      ["maximumAdapterCapBps", manifest.policyCaps.marketMaking.maximumAdapterCapBps],
+      ["maximumOperatorLossBps", manifest.policyCaps.marketMaking.maximumOperatorLossBps],
+      ["maximumPoolFeedHeartbeat", manifest.policyCaps.deltaPoolFeed.maximumHeartbeat],
+      ["maximumPoolFeedGracePeriod", manifest.policyCaps.deltaPoolFeed.maximumGracePeriod],
+      ["minimumPoolTwapWindow", manifest.policyCaps.deltaPoolFeed.minimumTwapWindow],
+      ["maximumPoolReferenceDeviationBps",
+        manifest.policyCaps.deltaPoolFeed.maximumReferenceDeviationBps],
+      ["maximumPoolSpotDeviationBps",
+        manifest.policyCaps.deltaPoolFeed.maximumSpotDeviationBps],
+    ] as const).map(([field, expected], index) => valueResult(
+      `deltaPoolController.${field}`, manifest.contracts.deltaPoolController.address,
+      toHex(expected, { size: 32 }), toHex(controllerCaps[index]!, { size: 32 }),
+    )),
     valueResult("collection.collectionId", manifest.contracts.collection.address,
       manifest.collectionId, collectionId),
     valueResult("collection.maxSupply", manifest.contracts.collection.address,
@@ -1363,177 +1498,51 @@ export async function verifyYieldBankManifest(
       ),
     );
   }
-  const deltaResults = (await Promise.all(manifest.deltaPools.map(async (delta, deltaIndex) => {
-    const deltaBindings = [
-      ["sleeve", delta.sleeve],
-      ["accountingAsset", manifest.dependencies.WETH.address],
-      ["pairedAsset", delta.pairedAsset],
-      ["priceHub", manifest.contracts.priceHub.address],
-      ["pool", delta.pool],
-      ["factory", delta.factory],
-      ["positionManager", delta.positionManager],
-      ["positionBuilder", delta.positionBuilder],
-      ["entryRoute", delta.entryRoute],
-      ["exitRoute", delta.exitRoute],
-    ] as const;
-    const [actualAddresses, maximumPositions, strategyRecord, adapterState, adapterCapBps,
-      maximumStrategies, configuredAdapters] = await Promise.all([
-      Promise.all(deltaBindings.map(([functionName]) => read<Address>(
-        client, delta.adapter, yieldBankDeltaAdapterAbi, functionName,
-      ))),
-      read<bigint>(client, delta.adapter, yieldBankDeltaAdapterAbi, "maximumPositions"),
-      read<{
-        implementation: Address;
-        runtimeCodeHash: Hex;
-        sleeveCategory: Hex;
-        accountingAsset: Address;
-        state: number;
-        registeredAt: number;
-      }>(
-        client, manifest.contracts.strategyRegistry.address, yieldBankStrategyRegistryAbi,
-        "recordOf", [delta.adapter],
-      ),
-      read<bigint>(client, delta.sleeve, yieldBankSleeveAbi, "adapterState", [delta.adapter]),
-      read<bigint>(client, delta.sleeve, yieldBankSleeveAbi, "adapterCapBps", [delta.adapter]),
-      read<bigint>(client, delta.sleeve, yieldBankSleeveAbi, "maximumStrategies"),
-      read<readonly Address[]>(client, delta.sleeve, yieldBankSleeveAbi, "adapters"),
-    ]);
-    const adapterEntry = Object.values(manifest.adapters).find((entry) =>
-      getAddress(entry.address) === getAddress(delta.adapter))!;
-    const entryFor = (address: Address) => [
-      ...Object.values(manifest.contracts), ...Object.values(manifest.dependencies),
-      ...Object.values(manifest.adapters), ...Object.values(manifest.pools),
-    ].find((entry) => getAddress(entry.address) === getAddress(address))!;
-    const [adapterHashes, allocatorBinding, reversePool, poolFactory, token0, token1,
-      poolFee, poolTickSpacing, poolLiquidity, poolSlot0, factoryPool, builderFactory, builderManager,
-      builderWeth, managerFactory, managerWeth, entryRouteState, exitRouteState] = await Promise.all([
-      Promise.all([
-        "poolCodeHash", "factoryCodeHash", "positionManagerCodeHash",
-        "positionBuilderCodeHash", "entryRouteCodeHash", "exitRouteCodeHash",
-      ].map((functionName) => read<Hex>(
-        client, delta.adapter, yieldBankDeltaAdapterAbi, functionName,
-      ))),
-      read<readonly [Address, Address, Hex, Hex, Hex]>(
-        client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
-        "deltaPoolBinding", [delta.pool],
-      ),
-      read<Address>(client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
-        "deltaPoolOfSleeve", [delta.sleeve]),
-      read<Address>(client, delta.pool, yieldBankV3PoolAbi, "factory"),
-      read<Address>(client, delta.pool, yieldBankV3PoolAbi, "token0"),
-      read<Address>(client, delta.pool, yieldBankV3PoolAbi, "token1"),
-      read<number>(client, delta.pool, yieldBankV3PoolAbi, "fee"),
-      read<number>(client, delta.pool, yieldBankV3PoolAbi, "tickSpacing"),
-      read<bigint>(client, delta.pool, yieldBankV3PoolAbi, "liquidity"),
-      read<readonly [bigint, number, number, number, number, number, boolean]>(
-        client, delta.pool, yieldBankV3PoolAbi, "slot0"),
-      read<Address>(client, delta.factory, yieldBankV3FactoryAbi, "getPool",
-        [manifest.dependencies.WETH.address, delta.pairedAsset, delta.fee]),
-      read<Address>(client, delta.positionBuilder, yieldBankPositionBuilderAbi, "uniFactory"),
-      read<Address>(client, delta.positionBuilder, yieldBankPositionBuilderAbi, "positionManager"),
-      read<Address>(client, delta.positionBuilder, yieldBankPositionBuilderAbi, "weth"),
-      read<Address>(client, delta.positionManager, yieldBankPositionManagerAbi, "factory"),
-      read<Address>(client, delta.positionManager, yieldBankPositionManagerAbi, "WETH9"),
-      Promise.all(["pool", "factory", "inputAsset", "outputAsset"].map((functionName) =>
-        read<Address>(client, delta.entryRoute, yieldBankSinglePoolRouteAbi, functionName))),
-      Promise.all(["pool", "factory", "inputAsset", "outputAsset"].map((functionName) =>
-        read<Address>(client, delta.exitRoute, yieldBankSinglePoolRouteAbi, functionName))),
-    ]);
-    const results = deltaBindings.map(([field, expected], index) => valueResult(
-      `deltaPools.${deltaIndex}.${field}`, delta.adapter, addressWord(expected),
-      addressWord(actualAddresses[index]!),
-    ));
-    results.push(
-      valueResult(`deltaPools.${deltaIndex}.maximumPositions`, delta.adapter,
-        toHex(delta.maximumPositions, { size: 32 }), toHex(maximumPositions, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.adapterState`, delta.sleeve,
-        toHex(3, { size: 32 }), toHex(adapterState, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.adapterCapBps`, delta.sleeve,
-        toHex(delta.adapterCapBps, { size: 32 }), toHex(adapterCapBps, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.maximumStrategies`, delta.sleeve,
-        toHex(1, { size: 32 }), toHex(maximumStrategies, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.configuredAdapter`, delta.sleeve,
-        addressWord(delta.adapter),
-        configuredAdapters.length === 1 ? addressWord(configuredAdapters[0]!) : toHex(0, { size: 32 })),
-    );
-    const expectedHashes = [
-      entryFor(delta.pool).runtimeCodeHash, entryFor(delta.factory).runtimeCodeHash,
-      entryFor(delta.positionManager).runtimeCodeHash,
-      entryFor(delta.positionBuilder).runtimeCodeHash, entryFor(delta.entryRoute).runtimeCodeHash,
-      entryFor(delta.exitRoute).runtimeCodeHash,
-    ];
-    adapterHashes.forEach((actual, index) => results.push(valueResult(
-      `deltaPools.${deltaIndex}.adapterDependencyCodeHash.${index}`, delta.adapter,
-      expectedHashes[index]!, actual,
-    )));
-    const sleeveEntry = entryFor(delta.sleeve);
-    results.push(
-      valueResult(`deltaPools.${deltaIndex}.allocator.sleeve`, manifest.contracts.allocator.address,
-        addressWord(delta.sleeve), addressWord(allocatorBinding[0])),
-      valueResult(`deltaPools.${deltaIndex}.allocator.adapter`, manifest.contracts.allocator.address,
-        addressWord(delta.adapter), addressWord(allocatorBinding[1])),
-      valueResult(`deltaPools.${deltaIndex}.allocator.poolHash`, manifest.contracts.allocator.address,
-        entryFor(delta.pool).runtimeCodeHash, allocatorBinding[2]),
-      valueResult(`deltaPools.${deltaIndex}.allocator.sleeveHash`, manifest.contracts.allocator.address,
-        sleeveEntry.runtimeCodeHash, allocatorBinding[3]),
-      valueResult(`deltaPools.${deltaIndex}.allocator.adapterHash`, manifest.contracts.allocator.address,
-        adapterEntry.runtimeCodeHash, allocatorBinding[4]),
-      valueResult(`deltaPools.${deltaIndex}.allocator.reversePool`, manifest.contracts.allocator.address,
-        addressWord(delta.pool), addressWord(reversePool)),
-      valueResult(`deltaPools.${deltaIndex}.pool.factory`, delta.pool,
-        addressWord(delta.factory), addressWord(poolFactory)),
-      valueResult(`deltaPools.${deltaIndex}.pool.fee`, delta.pool,
-        toHex(delta.fee, { size: 32 }), toHex(poolFee, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.pool.tickSpacing`, delta.pool,
-        toHex(delta.tickSpacing, { size: 32 }), toHex(poolTickSpacing, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.pool.liquidity`, delta.pool,
-        toHex(1, { size: 32 }), toHex(poolLiquidity > 0n ? 1 : 0, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.pool.unlocked`, delta.pool,
-        toHex(1, { size: 32 }), toHex(poolSlot0[6] ? 1 : 0, { size: 32 })),
-      valueResult(`deltaPools.${deltaIndex}.factory.getPool`, delta.factory,
-        addressWord(delta.pool), addressWord(factoryPool)),
-    );
-    const tokenPairValid = [getAddress(token0), getAddress(token1)].sort().join(":")
-      === [getAddress(manifest.dependencies.WETH.address), getAddress(delta.pairedAsset)]
-        .sort().join(":");
-    results.push(valueResult(`deltaPools.${deltaIndex}.pool.tokens`, delta.pool,
-      toHex(1, { size: 32 }), toHex(tokenPairValid ? 1 : 0, { size: 32 })));
-    for (const [path, address, expected, actual] of [
-      ["builder.factory", delta.positionBuilder, delta.factory, builderFactory],
-      ["builder.positionManager", delta.positionBuilder, delta.positionManager, builderManager],
-      ["builder.weth", delta.positionBuilder, manifest.dependencies.WETH.address, builderWeth],
-      ["manager.factory", delta.positionManager, delta.factory, managerFactory],
-      ["manager.weth", delta.positionManager, manifest.dependencies.WETH.address, managerWeth],
-    ] as const) results.push(valueResult(`deltaPools.${deltaIndex}.${path}`, address,
-      addressWord(expected), addressWord(actual)));
-    for (const [label, route, state, input, output] of [
-      ["entry", delta.entryRoute, entryRouteState, manifest.dependencies.WETH.address, delta.pairedAsset],
-      ["exit", delta.exitRoute, exitRouteState, delta.pairedAsset, manifest.dependencies.WETH.address],
-    ] as const) {
-      for (const [field, expected, actual] of [
-        ["pool", delta.pool, state[0]!], ["factory", delta.factory, state[1]!],
-        ["inputAsset", input, state[2]!], ["outputAsset", output, state[3]!],
-      ] as const) results.push(valueResult(`deltaPools.${deltaIndex}.${label}Route.${field}`,
-        route, addressWord(expected), addressWord(actual)));
-    }
-    const strategyExpected = [
-      addressWord(delta.adapter), adapterEntry.runtimeCodeHash,
-      keccak256(stringToHex("YIELD_BANK_MARKET_MAKING")),
-      addressWord(manifest.dependencies.WETH.address), toHex(1, { size: 32 }),
-    ];
-    const strategyActual = [
-      addressWord(strategyRecord.implementation), strategyRecord.runtimeCodeHash,
-      strategyRecord.sleeveCategory, addressWord(strategyRecord.accountingAsset),
-      toHex(strategyRecord.state, { size: 32 }),
-    ];
-    ["implementation", "runtimeCodeHash", "sleeveCategory", "accountingAsset", "state"]
-      .forEach((field, index) => results.push(valueResult(
-        `deltaPools.${deltaIndex}.strategyRegistry.${field}`,
-        manifest.contracts.strategyRegistry.address,
-        strategyExpected[index]!, strategyActual[index]!,
-      )));
-    return results;
-  }))).flat();
+  const deltaInfrastructureResults = (await Promise.all(
+    manifest.deltaInfrastructure.map(async (infrastructure, index) => {
+      const [controllerState, builderFactory, builderManager, builderWeth, managerFactory,
+        managerWeth] = await Promise.all([
+        read<readonly [Address, Address, Hex, Hex, Hex, Hex, Hex, Hex, Hex, boolean]>(
+          client, manifest.contracts.deltaPoolController.address,
+          yieldBankDeltaPoolControllerAbi, "infrastructureOfFactory", [infrastructure.factory],
+        ),
+        read<Address>(client, infrastructure.positionBuilder, yieldBankPositionBuilderAbi, "uniFactory"),
+        read<Address>(client, infrastructure.positionBuilder, yieldBankPositionBuilderAbi, "positionManager"),
+        read<Address>(client, infrastructure.positionBuilder, yieldBankPositionBuilderAbi, "weth"),
+        read<Address>(client, infrastructure.positionManager, yieldBankPositionManagerAbi, "factory"),
+        read<Address>(client, infrastructure.positionManager, yieldBankPositionManagerAbi, "WETH9"),
+      ]);
+      const prefix = `deltaInfrastructure.${index}`;
+      return [
+        valueResult(`${prefix}.positionManager`, manifest.contracts.deltaPoolController.address,
+          addressWord(infrastructure.positionManager), addressWord(controllerState[0])),
+        valueResult(`${prefix}.positionBuilder`, manifest.contracts.deltaPoolController.address,
+          addressWord(infrastructure.positionBuilder), addressWord(controllerState[1])),
+        ...([
+          ["factoryRuntimeCodeHash", 2], ["positionManagerRuntimeCodeHash", 3],
+          ["positionBuilderRuntimeCodeHash", 4], ["routeCreationCodeHash", 5],
+          ["sleeveCreationCodeHash", 6], ["adapterCreationCodeHash", 7],
+          ["feedCreationCodeHash", 8],
+        ] as const).map(([field, stateIndex]) => valueResult(
+          `${prefix}.${field}`, manifest.contracts.deltaPoolController.address,
+          infrastructure[field], controllerState[stateIndex] as Hex,
+        )),
+        valueResult(`${prefix}.active`, manifest.contracts.deltaPoolController.address,
+          toHex(infrastructure.active ? 1 : 0, { size: 32 }),
+          toHex(controllerState[9] ? 1 : 0, { size: 32 })),
+        ...([
+          ["builder.factory", infrastructure.positionBuilder, infrastructure.factory, builderFactory],
+          ["builder.positionManager", infrastructure.positionBuilder,
+            infrastructure.positionManager, builderManager],
+          ["builder.weth", infrastructure.positionBuilder, infrastructure.weth, builderWeth],
+          ["manager.factory", infrastructure.positionManager, infrastructure.factory, managerFactory],
+          ["manager.weth", infrastructure.positionManager, infrastructure.weth, managerWeth],
+        ] as const).map(([field, address, expected, actual]) => valueResult(
+          `${prefix}.${field}`, address, addressWord(expected), addressWord(actual),
+        )),
+      ];
+    }),
+  )).flat();
   const allocationRouteResults = (await Promise.all(
     manifest.routeBindings.allocations.map(async (binding) => ({
       binding,
@@ -1573,7 +1582,7 @@ export async function verifyYieldBankManifest(
   return codeResults.concat(
     implementationResults,
     commitmentResults, topologyResults, economicsResults, royaltyEconomicsResults,
-    sleevePolicyResults, seaDropResults, deltaResults,
+    sleevePolicyResults, seaDropResults, deltaInfrastructureResults,
     allocationRouteResults, rebalanceRouteResults,
   );
 }
@@ -1611,15 +1620,18 @@ export async function readYieldBankToken(
   ]);
   const normalizedActiveDeltaPool = getAddress(activeDeltaPool);
   const zeroAddress = "0x0000000000000000000000000000000000000000" as Address;
-  const activeDelta = normalizedActiveDeltaPool === zeroAddress ? undefined
-    : manifest.deltaPools.find((delta) => getAddress(delta.pool) === normalizedActiveDeltaPool);
-  if (normalizedActiveDeltaPool !== zeroAddress && !activeDelta) {
-    throw new Error(`active Delta pool ${normalizedActiveDeltaPool} is absent from the verified manifest`);
+  const activeDeltaFoundation = normalizedActiveDeltaPool === zeroAddress ? undefined
+    : await read<readonly [Address, Address, Hex, Hex, Hex]>(
+      client, manifest.contracts.deltaPoolController.address,
+      yieldBankDeltaPoolControllerAbi, "foundationOf", [normalizedActiveDeltaPool],
+    );
+  if (activeDeltaFoundation && getAddress(activeDeltaFoundation[0]) === zeroAddress) {
+    throw new Error(`active Delta pool ${normalizedActiveDeltaPool} has no controller foundation`);
   }
   const sleeveAddresses = [
     manifest.contracts.coreSleeve.address,
     manifest.contracts.marketMakingSleeve.address,
-    ...(activeDelta ? [activeDelta.sleeve] : []),
+    ...(activeDeltaFoundation ? [activeDeltaFoundation[0]] : []),
     manifest.contracts.usdgSleeve.address,
   ];
   const now = options.now ?? Math.floor(Date.now() / 1000);
@@ -1680,7 +1692,7 @@ export async function readYieldBankToken(
   const currentAllocationBps = allocationBpsFromValues([
     valueFor(manifest.contracts.coreSleeve.address),
     valueFor(manifest.contracts.marketMakingSleeve.address)
-      + (activeDelta ? valueFor(activeDelta.sleeve) : 0n),
+      + (activeDeltaFoundation ? valueFor(activeDeltaFoundation[0]) : 0n),
     valueFor(manifest.contracts.usdgSleeve.address),
   ]);
   const allocationTarget: YieldBankAllocationTarget = {

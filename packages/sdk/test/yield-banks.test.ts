@@ -99,7 +99,7 @@ const feedBinding = (
 function manifest(): YieldBankReleaseManifest {
   const keys = [
     "registry", "factoryDeployer", "factory", "collection", "nft", "accountImplementation", "proceedsVault", "distributor",
-    "revenueRouter", "timelock", "allocator", "priceHub",
+    "revenueRouter", "timelock", "allocator", "deltaPoolController", "priceHub",
     "strategyRegistry", "renderer", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
     "rebalanceValueGuard",
   ] as const;
@@ -117,7 +117,7 @@ function manifest(): YieldBankReleaseManifest {
   const tokenGatedDrops = [] as const;
   const signedMintValidations = [] as const;
   const release: YieldBankReleaseManifest = {
-    schemaVersion: "1.0",
+    schemaVersion: "1.1",
     chainId: 4663,
     collectionId: keccak256(toBytes("collection")),
     factoryVersion: keccak256(toBytes("factory-v1")),
@@ -158,6 +158,13 @@ function manifest(): YieldBankReleaseManifest {
       core: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
       marketMaking: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
       usdg: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
+      deltaPoolFeed: {
+        maximumHeartbeat: 86_400,
+        maximumGracePeriod: 3_600,
+        minimumTwapWindow: 1_800,
+        maximumReferenceDeviationBps: 1_000,
+        maximumSpotDeviationBps: 1_000,
+      },
     },
     contracts: Object.fromEntries(keys.map((key, index) => [key, entry(addresses[index]!)])) as
       YieldBankReleaseManifest["contracts"],
@@ -216,18 +223,22 @@ function manifest(): YieldBankReleaseManifest {
       feedBinding("chainlink", addresses[0], addresses[7], true),
       feedBinding("chainlink", addresses[18], addresses[8]),
     ],
-    pools: { pairedWeth: entry(addresses[25]) },
-    deltaPools: [{
-      adapter: addresses[22], sleeve: addresses[16], pairedAsset: addresses[18], pool: addresses[25],
-      fee: 100, tickSpacing: 1,
-      positionBuilder: addresses[19], factory: addresses[20],
-      positionManager: addresses[21], entryRoute: addresses[23], exitRoute: addresses[24],
-      maximumPositions: 8, maximumStrategies: 1, adapterCapBps: 4_000,
+    deltaInfrastructure: [{
+      factory: addresses[20], positionManager: addresses[21], positionBuilder: addresses[19],
+      weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      factoryRuntimeCodeHash: runtimeCodeHash,
+      positionManagerRuntimeCodeHash: runtimeCodeHash,
+      positionBuilderRuntimeCodeHash: runtimeCodeHash,
+      routeCreationCodeHash: runtimeCodeHash,
+      sleeveCreationCodeHash: runtimeCodeHash,
+      adapterCreationCodeHash: runtimeCodeHash,
+      feedCreationCodeHash: runtimeCodeHash,
+      active: true,
     }],
     routeBindings: {
       allocations: [
         { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[15], route: addresses[23], runtimeCodeHash },
-        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[16], route: addresses[23], runtimeCodeHash },
+        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[17], route: addresses[23], runtimeCodeHash },
       ],
       rebalances: [
         { inputAsset: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", route: addresses[24], runtimeCodeHash },
@@ -341,7 +352,11 @@ test("Yield Banks manifest validates immutable economics and live code", async (
         if (binding.kind !== "beacon") throw new Error("expected beacon fixture");
         return binding.implementation;
       }
-      if (["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"].includes(functionName)) {
+      if ([release.contracts.coreSleeve.address, release.contracts.marketMakingSleeve.address,
+        release.contracts.usdgSleeve.address].some(
+        (sleeve) => sleeve.toLowerCase() === address.toLowerCase(),
+      ) && ["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"]
+        .includes(functionName)) {
         const policy = address.toLowerCase() === release.contracts.coreSleeve.address.toLowerCase()
           ? release.policyCaps.core
           : address.toLowerCase() === release.contracts.marketMakingSleeve.address.toLowerCase()
@@ -352,68 +367,56 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName in release.economics) {
         return release.economics[functionName as keyof typeof release.economics];
       }
-      const delta = release.deltaPools[0]!;
-      const deltaAddresses: Record<string, Address> = {
-        sleeve: delta.sleeve,
-        accountingAsset: release.dependencies.WETH.address,
-        pairedAsset: delta.pairedAsset,
-        priceHub: release.contracts.priceHub.address,
-        pool: delta.pool,
-        factory: delta.factory,
-        positionManager: delta.positionManager,
-        positionBuilder: delta.positionBuilder,
-        entryRoute: delta.entryRoute,
-        exitRoute: delta.exitRoute,
+      const infrastructure = release.deltaInfrastructure[0]!;
+      if (functionName === "deltaPoolController") {
+        return release.contracts.deltaPoolController.address;
+      }
+      const controllerCaps: Record<string, number> = {
+        maximumAdapterCapBps: release.policyCaps.marketMaking.maximumAdapterCapBps,
+        maximumOperatorLossBps: release.policyCaps.marketMaking.maximumOperatorLossBps,
+        maximumPoolFeedHeartbeat: release.policyCaps.deltaPoolFeed.maximumHeartbeat,
+        maximumPoolFeedGracePeriod: release.policyCaps.deltaPoolFeed.maximumGracePeriod,
+        minimumPoolTwapWindow: release.policyCaps.deltaPoolFeed.minimumTwapWindow,
+        maximumPoolReferenceDeviationBps:
+          release.policyCaps.deltaPoolFeed.maximumReferenceDeviationBps,
+        maximumPoolSpotDeviationBps: release.policyCaps.deltaPoolFeed.maximumSpotDeviationBps,
       };
-      if (functionName in deltaAddresses) return deltaAddresses[functionName];
+      if (address.toLowerCase() === release.contracts.deltaPoolController.address.toLowerCase()
+        && functionName in controllerCaps) return controllerCaps[functionName];
+      if (functionName === "isRegistrar") return true;
+      if (functionName === "infrastructureOfFactory") return [
+        infrastructure.positionManager,
+        infrastructure.positionBuilder,
+        infrastructure.factoryRuntimeCodeHash,
+        infrastructure.positionManagerRuntimeCodeHash,
+        infrastructure.positionBuilderRuntimeCodeHash,
+        infrastructure.routeCreationCodeHash,
+        infrastructure.sleeveCreationCodeHash,
+        infrastructure.adapterCreationCodeHash,
+        infrastructure.feedCreationCodeHash,
+        infrastructure.active,
+      ];
+      const controllerAddresses: Record<string, Address> = {
+        allocator: release.contracts.allocator.address,
+        collection: release.contracts.collection.address,
+        timelock: release.roles.timelock,
+        guardian: release.roles.guardian,
+        weth: release.dependencies.WETH.address,
+        eligibilityPolicy: release.dependencies.eligibilityPolicy.address,
+        priceHub: release.contracts.priceHub.address,
+        strategyRegistry: release.contracts.strategyRegistry.address,
+      };
+      if (address.toLowerCase() === release.contracts.deltaPoolController.address.toLowerCase()
+        && functionName in controllerAddresses) return controllerAddresses[functionName];
       if (functionName === "weth" || functionName === "WETH9") {
         return release.dependencies.WETH.address;
       }
-      const codeHashByFunction: Record<string, Hex> = {
-        poolCodeHash: release.pools.pairedWeth!.runtimeCodeHash,
-        factoryCodeHash: release.dependencies.v3Factory!.runtimeCodeHash,
-        positionManagerCodeHash: release.dependencies.v3PositionManager!.runtimeCodeHash,
-        positionBuilderCodeHash: release.dependencies.deltaPositionBuilder!.runtimeCodeHash,
-        entryRouteCodeHash: release.adapters.deltaEntryRoute!.runtimeCodeHash,
-        exitRouteCodeHash: release.adapters.deltaExitRoute!.runtimeCodeHash,
-      };
-      if (functionName in codeHashByFunction) return codeHashByFunction[functionName];
-      if (functionName === "maximumPositions") return BigInt(delta.maximumPositions);
       if (functionName === "rebalanceValueGuard") {
         return release.contracts.rebalanceValueGuard.address;
       }
-      if (functionName === "recordOf") return {
-        implementation: delta.adapter,
-        runtimeCodeHash: release.adapters.deltaV3LP!.runtimeCodeHash,
-        sleeveCategory: keccak256(toBytes("YIELD_BANK_MARKET_MAKING")),
-        accountingAsset: release.dependencies.WETH.address,
-        state: 1,
-        registeredAt: 1,
-      };
-      if (functionName === "adapterState") return 3n;
-      if (functionName === "adapterCapBps") return BigInt(delta.adapterCapBps);
-      if (functionName === "adapters") return [delta.adapter];
-      if (functionName === "deltaPoolBinding") return [
-        delta.sleeve, delta.adapter, release.pools.pairedWeth!.runtimeCodeHash,
-        release.contracts.marketMakingSleeve.runtimeCodeHash,
-        release.adapters.deltaV3LP!.runtimeCodeHash,
-      ];
-      if (functionName === "deltaPoolOfSleeve" || functionName === "getPool") return delta.pool;
-      if (functionName === "token0") return release.dependencies.WETH.address;
-      if (functionName === "token1") return delta.pairedAsset;
-      if (functionName === "fee") return delta.fee;
-      if (functionName === "tickSpacing") return delta.tickSpacing;
-      if (functionName === "liquidity") return 1n;
-      if (functionName === "slot0") return [1n, 0, 0, 2, 2, 0, true];
-      if (functionName === "uniFactory") return delta.factory;
-      if (functionName === "inputAsset") {
-        return address.toLowerCase() === delta.entryRoute.toLowerCase()
-          ? release.dependencies.WETH.address : delta.pairedAsset;
-      }
-      if (functionName === "outputAsset") {
-        return address.toLowerCase() === delta.entryRoute.toLowerCase()
-          ? delta.pairedAsset : release.dependencies.WETH.address;
-      }
+      if (functionName === "uniFactory") return infrastructure.factory;
+      if (functionName === "positionManager") return infrastructure.positionManager;
+      if (functionName === "factory") return infrastructure.factory;
       if (functionName === "routeBinding") {
         const binding = release.routeBindings.allocations.find((entry) =>
           entry.inputAsset.toLowerCase() === String(args?.[0]).toLowerCase()
@@ -484,7 +487,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
   assert.deepEqual(view.currentAllocationBps, [3_333, 3_333, 3_334]);
 });
 
-test("Yield Bank token fails closed when the onchain active Delta pool is absent from the manifest", async () => {
+test("Yield Bank token fails closed when the active Delta pool has no controller foundation", async () => {
   const release = manifest();
   const unknownPool = "0x00000000000000000000000000000000000000ff" as Address;
   await assert.rejects(() => readYieldBankToken({
@@ -501,9 +504,14 @@ test("Yield Bank token fails closed when the onchain active Delta pool is absent
         revision: 1n, executedRevision: 1n, requestedAt: 1, validUntil: 2, executedAt: 1,
       };
       if (functionName === "activeDeltaPoolOf") return unknownPool;
+      if (functionName === "foundationOf") return [
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        `0x${"0".repeat(64)}`, `0x${"0".repeat(64)}`, `0x${"0".repeat(64)}`,
+      ];
       throw new Error(`unexpected ${functionName}`);
     },
-  } as never, release, 1n), /active Delta pool .* absent from the verified manifest/);
+  } as never, release, 1n), /active Delta pool .* has no controller foundation/);
 });
 
 test("Yield Banks manifest binds OpenSea payout and hosted collection", () => {
