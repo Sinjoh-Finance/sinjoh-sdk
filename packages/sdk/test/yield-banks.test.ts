@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { decodeAbiParameters, keccak256, toBytes, type Address, type Hex } from "viem";
+import {
+  decodeAbiParameters, decodeFunctionData, keccak256, toBytes, type Address, type Hex,
+} from "viem";
 import {
   encodeYieldBankDeltaCollectionData,
   encodeYieldBankDeltaDepositData,
@@ -15,7 +17,16 @@ import {
   prepareYieldBankAdapterWithdrawal,
   prepareYieldBankClaim,
   prepareYieldBankNativeRoyaltySync,
+  prepareYieldBankNftOwnershipAcceptance,
+  prepareYieldBankNftOwnershipTransfer,
   prepareYieldBankRoyaltySync,
+  prepareYieldBankSeaDropAllowListClear,
+  prepareYieldBankSeaDropFeeRecipient,
+  prepareYieldBankSeaDropPayer,
+  prepareYieldBankSeaDropPayout,
+  prepareYieldBankSeaDropPublicDrop,
+  prepareYieldBankSeaDropSignedMintValidation,
+  prepareYieldBankSeaDropTokenGatedDrop,
   prepareYieldBankSettle,
   prepareYieldBankSleeveRedemption,
   prepareYieldBankTargetAllocation,
@@ -24,6 +35,8 @@ import {
   readYieldBankToken,
   validateYieldBankManifest,
   verifyYieldBankManifest,
+  yieldBankNftAbi,
+  yieldBankMintStagesHash,
   type YieldBankManifestEntry,
   type YieldBankReleaseManifest,
 } from "../src/index.js";
@@ -70,7 +83,20 @@ function manifest(): YieldBankReleaseManifest {
     "revenueRouter", "operationsReserve", "timelock", "allocator", "priceHub",
     "strategyRegistry", "renderer", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
   ] as const;
-  return {
+  const publicDrop = {
+    mintPrice: "300000000000000",
+    startTime: 1_786_214_195,
+    endTime: 1_789_065_395,
+    maxTotalMintableByWallet: 12,
+    feeBps: 1_000,
+    restrictFeeRecipients: true,
+  } as const;
+  const allowedFeeRecipients = [addresses[25]!] as const;
+  const allowListMerkleRoot = `0x${"0".repeat(64)}` as Hex;
+  const allowedPayers = [] as const;
+  const tokenGatedDrops = [] as const;
+  const signedMintValidations = [] as const;
+  const release: YieldBankReleaseManifest = {
     schemaVersion: "1.0",
     chainId: 4663,
     collectionId: keccak256(toBytes("collection")),
@@ -113,7 +139,16 @@ function manifest(): YieldBankReleaseManifest {
     openSea: {
       collectionSlug: "sinjoh-yield-banks",
       collectionUrl: "https://opensea.io/collection/sinjoh-yield-banks/overview",
-      mintStagesHash: keccak256(toBytes("mint-stages")),
+      mintStagesHash: yieldBankMintStagesHash(
+        publicDrop, allowedFeeRecipients, allowListMerkleRoot, allowedPayers,
+        tokenGatedDrops, signedMintValidations,
+      ),
+      publicDrop,
+      allowListMerkleRoot,
+      allowedFeeRecipients,
+      allowedPayers,
+      tokenGatedDrops,
+      signedMintValidations,
       creatorPayoutAddress: addresses[6],
       observedPrimaryPlatformFeeBps: 1000,
       observedSecondaryRoyaltyBps: 650,
@@ -125,12 +160,22 @@ function manifest(): YieldBankReleaseManifest {
       USDG: entry("0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"),
       seaDrop: entry("0x00005EA00Ac477B1030CE78506496e8C2dE24bf5"),
       seaport: entry("0x0000000000000068F116a894984e2DB1123eB395"),
+      eligibilityPolicy: entry(addresses[4]),
       INJOH: entry(addresses[18]),
       deltaPositionBuilder: entry(addresses[19]),
       v3Factory: entry(addresses[20]),
       v3PositionManager: entry(addresses[21]),
     },
-    equityAssets: [entry(addresses[0])],
+    equityAssets: [{
+      ...entry(addresses[0]),
+      implementationBinding: {
+        kind: "beacon",
+        beacon: addresses[1],
+        beaconRuntimeCodeHash: runtimeCodeHash,
+        implementation: addresses[2],
+        implementationRuntimeCodeHash: runtimeCodeHash,
+      },
+    }],
     adapters: {
       deltaV3LP: entry(addresses[22]),
       deltaEntryRoute: entry(addresses[23]),
@@ -156,11 +201,21 @@ function manifest(): YieldBankReleaseManifest {
       ],
     },
     roles: {
-      creator: addresses[0], sinjoh: addresses[1], operations: addresses[2],
+      creator: addresses[0], openSeaManager: addresses[9],
+      sinjoh: addresses[1], operations: addresses[2],
       allocationOperator: addresses[4], guardian: addresses[3], timelock: addresses[8],
     },
     auditHashes: [keccak256(toBytes("independent-audit"))],
   };
+  release.dependencies.USDG = {
+    ...release.dependencies.USDG,
+    implementationBinding: {
+      kind: "eip1967",
+      implementation: addresses[3],
+      implementationRuntimeCodeHash: runtimeCodeHash,
+    },
+  };
+  return release;
 }
 
 test("Yield Banks manifest validates immutable economics and live code", async () => {
@@ -168,6 +223,14 @@ test("Yield Banks manifest validates immutable economics and live code", async (
   validateYieldBankManifest(release);
   const results = await verifyYieldBankManifest({
     getCode: async () => runtime,
+    getStorageAt: async ({ address }: { address: Address }) => {
+      const expected = address.toLowerCase() === release.dependencies.USDG.address.toLowerCase()
+        ? release.dependencies.USDG.implementationBinding!
+        : release.equityAssets[0]!.implementationBinding!;
+      if (expected.kind === "immutable") throw new Error("unexpected immutable binding fixture");
+      const target = expected.kind === "beacon" ? expected.beacon : expected.implementation;
+      return `0x${target.slice(2).padStart(64, "0")}` as Hex;
+    },
     readContract: async ({ address, functionName, args }: { address: Address; functionName: string; args?: readonly unknown[] }) => {
       if (functionName === "factoryVersion") return release.factoryVersion;
       if (functionName === "collectionCreationCodeHash") return release.deployment.collectionCreationCodeHash;
@@ -184,10 +247,34 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName === "proceedsVault") return release.contracts.proceedsVault.address;
       if (functionName === "portfolioAllocator") return release.contracts.allocator.address;
       if (functionName === "accountImplementation") return release.contracts.accountImplementation.address;
+      if (functionName === "eligibilityPolicy") return release.dependencies.eligibilityPolicy.address;
+      if (functionName === "creator") return release.roles.creator;
+      if (functionName === "openSeaManager") return release.roles.openSeaManager;
+      if (functionName === "sinjohFeeRecipient") return release.roles.sinjoh;
+      if (functionName === "operationsReserve") return release.roles.operations;
+      if (functionName === "revenueRouter") return release.contracts.revenueRouter.address;
+      if (functionName === "collectionTimelock") return release.roles.timelock;
+      if (functionName === "guardian") return release.roles.guardian;
       if (functionName === "collection") return release.contracts.collection.address;
       if (functionName === "seaDrop") return release.dependencies.seaDrop.address;
       if (functionName === "royaltyReceiver") return release.contracts.revenueRouter.address;
       if (functionName === "royaltyBps") return BigInt(release.economics.secondaryRoyaltyBps);
+      if (functionName === "owner") return release.roles.timelock;
+      if (functionName === "getCreatorPayoutAddress") return release.contracts.proceedsVault.address;
+      if (functionName === "getPublicDrop") return {
+        ...release.openSea.publicDrop,
+        mintPrice: BigInt(release.openSea.publicDrop.mintPrice),
+      };
+      if (functionName === "getAllowedFeeRecipients") return release.openSea.allowedFeeRecipients;
+      if (functionName === "getAllowListMerkleRoot") return release.openSea.allowListMerkleRoot;
+      if (functionName === "getPayers") return release.openSea.allowedPayers;
+      if (functionName === "getSigners") return [];
+      if (functionName === "getTokenGatedAllowedTokens") return [];
+      if (functionName === "implementation") {
+        const binding = release.equityAssets[0]!.implementationBinding!;
+        if (binding.kind !== "beacon") throw new Error("expected beacon fixture");
+        return binding.implementation;
+      }
       if (["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"].includes(functionName)) {
         const policy = address.toLowerCase() === release.contracts.coreSleeve.address.toLowerCase()
           ? release.policyCaps.core
@@ -234,7 +321,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       throw new Error(`unexpected ${functionName}`);
     },
   } as never, release);
-  assert.equal(results.length, 101);
+  assert.ok(results.length > 110);
   assert.ok(results.every((result) => result.ok));
 
   release.economics.exitTaxBps = 501 as 500;
@@ -297,6 +384,122 @@ test("Yield Banks manifest binds OpenSea payout and hosted collection", () => {
   release.openSea.observedSecondaryRoyaltyBps = release.economics.secondaryRoyaltyBps;
   release.openSea.observedSecondaryRoyaltyRecipient = addresses[7];
   assert.throws(() => validateYieldBankManifest(release), /observedSecondaryRoyaltyRecipient/);
+});
+
+test("Yield Banks release validation rejects network, proxy, equity, and SeaDrop drift", () => {
+  const wrongNetwork = manifest();
+  (wrongNetwork as { chainId: number }).chainId = 46_630;
+  assert.throws(() => validateYieldBankManifest(wrongNetwork), /mainnet chain 4663/);
+
+  const missingProxyBinding = manifest();
+  delete missingProxyBinding.dependencies.USDG.implementationBinding;
+  assert.throws(() => validateYieldBankManifest(missingProxyBinding), /implementationBinding is required/);
+
+  const wrongEquityAccounting = manifest();
+  wrongEquityAccounting.equityModel.income = "cash-distribution";
+  assert.throws(() => validateYieldBankManifest(wrongEquityAccounting), /balance-appreciation/);
+
+  const publicStageDrift = manifest();
+  publicStageDrift.openSea.publicDrop.maxTotalMintableByWallet += 1;
+  assert.throws(() => validateYieldBankManifest(publicStageDrift), /mintStagesHash/);
+
+  const undeclaredPayer = manifest();
+  undeclaredPayer.openSea.allowedPayers = [addresses[24]!];
+  assert.throws(() => validateYieldBankManifest(undeclaredPayer), /mintStagesHash/);
+
+  const unsafeAllowlist = manifest();
+  unsafeAllowlist.openSea.allowListMerkleRoot = keccak256(toBytes("unsafe-allowlist"));
+  unsafeAllowlist.openSea.mintStagesHash = yieldBankMintStagesHash(
+    unsafeAllowlist.openSea.publicDrop,
+    unsafeAllowlist.openSea.allowedFeeRecipients,
+    unsafeAllowlist.openSea.allowListMerkleRoot,
+  );
+  assert.throws(() => validateYieldBankManifest(unsafeAllowlist), /empty SeaDrop allowlist root/);
+});
+
+test("SeaDrop commitment is deterministic across every enumerable mint path", () => {
+  const release = manifest();
+  const gated = [
+    {
+      allowedNftToken: addresses[20]!, mintPrice: "200000000000000", maxTotalMintableByWallet: 2,
+      startTime: 1_786_214_195, endTime: 1_789_065_395, dropStageIndex: 2,
+      maxTokenSupplyForStage: 100, feeBps: 1_000, restrictFeeRecipients: true,
+    },
+    {
+      allowedNftToken: addresses[19]!, mintPrice: "100000000000000", maxTotalMintableByWallet: 1,
+      startTime: 1_786_214_195, endTime: 1_789_065_395, dropStageIndex: 1,
+      maxTokenSupplyForStage: 50, feeBps: 500, restrictFeeRecipients: false,
+    },
+  ] as const;
+  const signed = [{
+    signer: addresses[22]!, minMintPrice: "100000000000000",
+    maxMaxTotalMintableByWallet: 4, minStartTime: 1_786_214_195,
+    maxEndTime: 1_789_065_395, maxMaxTokenSupplyForStage: 100,
+    minFeeBps: 500, maxFeeBps: 1_000,
+  }] as const;
+  const hash = yieldBankMintStagesHash(
+    release.openSea.publicDrop, release.openSea.allowedFeeRecipients,
+    release.openSea.allowListMerkleRoot, [addresses[24]!, addresses[23]!], gated, signed,
+  );
+  const reordered = yieldBankMintStagesHash(
+    release.openSea.publicDrop, release.openSea.allowedFeeRecipients,
+    release.openSea.allowListMerkleRoot, [addresses[23]!, addresses[24]!],
+    [gated[1], gated[0]], signed,
+  );
+  assert.equal(hash, reordered);
+  assert.throws(() => yieldBankMintStagesHash(
+    release.openSea.publicDrop, release.openSea.allowedFeeRecipients,
+    release.openSea.allowListMerkleRoot, [], [{ ...gated[0], feeBps: 10_000 }], signed,
+  ), /invalid token-gated/);
+});
+
+test("OpenSea setup and ownership handoff calldata decodes to the exact NFT calls", () => {
+  const nft = addresses[1];
+  const seaDrop = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5" as Address;
+  const publicDrop = {
+    mintPrice: 300_000_000_000_000n, startTime: 1_786_214_195,
+    endTime: 1_789_065_395, maxTotalMintableByWallet: 12,
+    feeBps: 1_000, restrictFeeRecipients: true,
+  } as const;
+  const calls = [
+    prepareYieldBankSeaDropPublicDrop(nft, seaDrop, publicDrop),
+    prepareYieldBankSeaDropAllowListClear(nft, seaDrop),
+    prepareYieldBankSeaDropTokenGatedDrop(nft, seaDrop, addresses[2], {
+      mintPrice: 200_000_000_000_000n, maxTotalMintableByWallet: 2,
+      startTime: 1_786_214_195, endTime: 1_789_065_395,
+      dropStageIndex: 1, maxTokenSupplyForStage: 100,
+      feeBps: 1_000, restrictFeeRecipients: true,
+    }),
+    prepareYieldBankSeaDropSignedMintValidation(nft, seaDrop, addresses[3], {
+      minMintPrice: 100_000_000_000_000n, maxMaxTotalMintableByWallet: 4,
+      minStartTime: 1_786_214_195, maxEndTime: 1_789_065_395,
+      maxMaxTokenSupplyForStage: 100, minFeeBps: 500, maxFeeBps: 1_000,
+    }),
+    prepareYieldBankSeaDropPayout(nft, seaDrop, addresses[4]),
+    prepareYieldBankSeaDropFeeRecipient(nft, seaDrop, addresses[5], true),
+    prepareYieldBankSeaDropPayer(nft, seaDrop, addresses[6], true),
+    prepareYieldBankNftOwnershipTransfer(nft, addresses[7]),
+    prepareYieldBankNftOwnershipAcceptance(nft),
+  ];
+  assert.deepEqual(calls.map((call) => decodeFunctionData({
+    abi: yieldBankNftAbi, data: call.data,
+  }).functionName), [
+    "updatePublicDrop", "updateAllowList", "updateTokenGatedDrop",
+    "updateSignedMintValidationParams", "updateCreatorPayoutAddress",
+    "updateAllowedFeeRecipient", "updatePayer", "transferOwnership", "acceptOwnership",
+  ]);
+  assert.ok(calls.every((call) => call.to === nft && call.value === 0n));
+  const decodedPublicDrop = decodeFunctionData({ abi: yieldBankNftAbi, data: calls[0]!.data });
+  assert.deepEqual(decodedPublicDrop.args, [seaDrop, publicDrop]);
+  assert.throws(() => prepareYieldBankSeaDropPublicDrop(nft, seaDrop, {
+    ...publicDrop, mintPrice: 0n,
+  }), /positive/);
+  assert.throws(
+    () => prepareYieldBankNftOwnershipTransfer(
+      nft, "0x0000000000000000000000000000000000000000",
+    ),
+    /nonzero/,
+  );
 });
 
 test("Yield Banks wallet and operator calls match the OpenSea-first flow", () => {

@@ -119,6 +119,13 @@ rebalance routes to match the allocator's live codehash-bound mappings.
 It also rejects an OpenSea-observed secondary royalty percentage or recipient that differs from the
 collection's immutable rate and revenue router.
 
+OpenSea setup calldata is available through the `prepareYieldBankSeaDrop*` helpers. They encode the
+NFT contract's exact public, token-gated, signed-mint, payout, fee-recipient, payer, and allowlist-
+clear calls. After setup, `prepareYieldBankNftOwnershipTransfer` creates the OpenSea-manager call
+that nominates the collection timelock; `prepareYieldBankNftOwnershipAcceptance` creates the target
+call the timelock must execute to accept ownership. Release verification fails until that handoff is
+complete and until every enumerable SeaDrop mint path matches the manifest.
+
 Every release manifest also declares the equity custody model, income behavior, and an HTTPS
 disclosure. The sleeve accepts only reviewed ERC-20 assets; the SDK does not infer that a token is a
 legal share or that it pays a separate cash dividend.

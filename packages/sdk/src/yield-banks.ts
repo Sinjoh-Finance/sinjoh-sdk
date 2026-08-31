@@ -21,6 +21,11 @@ export const yieldBankCollectionAbi = [
   { type: "function", name: "proceedsVault", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "portfolioAllocator", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "accountImplementation", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "eligibilityPolicy", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  ...[
+    "creator", "openSeaManager", "sinjohFeeRecipient", "operationsReserve", "revenueRouter",
+    "collectionTimelock", "guardian",
+  ].map((name) => ({ type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "address" }] } as const)),
   { type: "function", name: "claimPrimary", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
   { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
   { type: "function", name: "settleBatch", stateMutability: "nonpayable", inputs: [{ name: "tokenIds", type: "uint256[]" }], outputs: [] },
@@ -35,6 +40,54 @@ export const yieldBankNftAbi = [
   { type: "function", name: "collection", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "royaltyReceiver", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "royaltyBps", stateMutability: "view", inputs: [], outputs: [{ type: "uint96" }] },
+  { type: "function", name: "owner", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "updatePublicDrop", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "value", type: "tuple", components: [
+      { name: "mintPrice", type: "uint80" }, { name: "startTime", type: "uint48" },
+      { name: "endTime", type: "uint48" }, { name: "maxTotalMintableByWallet", type: "uint16" },
+      { name: "feeBps", type: "uint16" }, { name: "restrictFeeRecipients", type: "bool" },
+    ] },
+  ], outputs: [] },
+  { type: "function", name: "updateAllowList", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "value", type: "tuple", components: [
+      { name: "merkleRoot", type: "bytes32" }, { name: "publicKeyURIs", type: "string[]" },
+      { name: "allowListURI", type: "string" },
+    ] },
+  ], outputs: [] },
+  { type: "function", name: "updateTokenGatedDrop", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "token", type: "address" },
+    { name: "value", type: "tuple", components: [
+      { name: "mintPrice", type: "uint80" }, { name: "maxTotalMintableByWallet", type: "uint16" },
+      { name: "startTime", type: "uint48" }, { name: "endTime", type: "uint48" },
+      { name: "dropStageIndex", type: "uint8" }, { name: "maxTokenSupplyForStage", type: "uint32" },
+      { name: "feeBps", type: "uint16" }, { name: "restrictFeeRecipients", type: "bool" },
+    ] },
+  ], outputs: [] },
+  { type: "function", name: "updateCreatorPayoutAddress", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "value", type: "address" },
+  ], outputs: [] },
+  { type: "function", name: "updateAllowedFeeRecipient", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "value", type: "address" },
+    { name: "allowed", type: "bool" },
+  ], outputs: [] },
+  { type: "function", name: "updateSignedMintValidationParams", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "signer", type: "address" },
+    { name: "value", type: "tuple", components: [
+      { name: "minMintPrice", type: "uint80" },
+      { name: "maxMaxTotalMintableByWallet", type: "uint24" },
+      { name: "minStartTime", type: "uint40" }, { name: "maxEndTime", type: "uint40" },
+      { name: "maxMaxTokenSupplyForStage", type: "uint40" },
+      { name: "minFeeBps", type: "uint16" }, { name: "maxFeeBps", type: "uint16" },
+    ] },
+  ], outputs: [] },
+  { type: "function", name: "updatePayer", stateMutability: "nonpayable", inputs: [
+    { name: "impl", type: "address" }, { name: "payer", type: "address" },
+    { name: "allowed", type: "bool" },
+  ], outputs: [] },
+  { type: "function", name: "transferOwnership", stateMutability: "nonpayable", inputs: [
+    { name: "newOwner", type: "address" },
+  ], outputs: [] },
+  { type: "function", name: "acceptOwnership", stateMutability: "nonpayable", inputs: [], outputs: [] },
   { type: "function", name: "safeTransferFrom", stateMutability: "nonpayable", inputs: [{ name: "from", type: "address" }, { name: "to", type: "address" }, { name: "tokenId", type: "uint256" }], outputs: [] },
 ] as const;
 
@@ -85,6 +138,7 @@ export const yieldBankSleeveAbi = [
   { type: "function", name: "totalAssetsUsd18", stateMutability: "view", inputs: [], outputs: [{ name: "value", type: "uint256" }, { name: "pricedAt", type: "uint48" }] },
   { type: "function", name: "activeStrategyCount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "depositsPaused", stateMutability: "view", inputs: [], outputs: [{ type: "bool" }] },
+  { type: "function", name: "eligibilityPolicy", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "inventoryAssets", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "adapters", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "adapterState", stateMutability: "view", inputs: [{ name: "adapter", type: "address" }], outputs: [{ type: "uint8" }] },
@@ -208,6 +262,98 @@ export const yieldBankProtocolRegistryAbi = [
   ] },
 ] as const;
 
+export const yieldBankSeaDropReadAbi = [
+  { type: "function", name: "getCreatorPayoutAddress", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "address" }] },
+  { type: "function", name: "getAllowListMerkleRoot", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "getAllowedFeeRecipients", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "getPayers", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "getSigners", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "getTokenGatedAllowedTokens", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "getTokenGatedDrop", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }, { name: "allowedNftToken", type: "address" }], outputs: [{ type: "tuple", components: [
+    { name: "mintPrice", type: "uint80" },
+    { name: "maxTotalMintableByWallet", type: "uint16" },
+    { name: "startTime", type: "uint48" }, { name: "endTime", type: "uint48" },
+    { name: "dropStageIndex", type: "uint8" },
+    { name: "maxTokenSupplyForStage", type: "uint32" },
+    { name: "feeBps", type: "uint16" },
+    { name: "restrictFeeRecipients", type: "bool" },
+  ] }] },
+  { type: "function", name: "getSignedMintValidationParams", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }, { name: "signer", type: "address" }], outputs: [{ type: "tuple", components: [
+    { name: "minMintPrice", type: "uint80" },
+    { name: "maxMaxTotalMintableByWallet", type: "uint24" },
+    { name: "minStartTime", type: "uint40" }, { name: "maxEndTime", type: "uint40" },
+    { name: "maxMaxTokenSupplyForStage", type: "uint40" },
+    { name: "minFeeBps", type: "uint16" }, { name: "maxFeeBps", type: "uint16" },
+  ] }] },
+  { type: "function", name: "getPublicDrop", stateMutability: "view", inputs: [{ name: "nftContract", type: "address" }], outputs: [{ type: "tuple", components: [
+    { name: "mintPrice", type: "uint80" }, { name: "startTime", type: "uint48" },
+    { name: "endTime", type: "uint48" }, { name: "maxTotalMintableByWallet", type: "uint16" },
+    { name: "feeBps", type: "uint16" }, { name: "restrictFeeRecipients", type: "bool" },
+  ] }] },
+] as const;
+
+export interface YieldBankPublicDrop {
+  mintPrice: string;
+  startTime: number;
+  endTime: number;
+  maxTotalMintableByWallet: number;
+  feeBps: number;
+  restrictFeeRecipients: boolean;
+}
+
+export interface YieldBankTokenGatedDrop {
+  allowedNftToken: Address;
+  mintPrice: string;
+  maxTotalMintableByWallet: number;
+  startTime: number;
+  endTime: number;
+  dropStageIndex: number;
+  maxTokenSupplyForStage: number;
+  feeBps: number;
+  restrictFeeRecipients: boolean;
+}
+
+export interface YieldBankSignedMintValidation {
+  signer: Address;
+  minMintPrice: string;
+  maxMaxTotalMintableByWallet: number;
+  minStartTime: number;
+  maxEndTime: number;
+  maxMaxTokenSupplyForStage: number;
+  minFeeBps: number;
+  maxFeeBps: number;
+}
+
+export interface YieldBankSeaDropPublicDropConfig {
+  mintPrice: bigint;
+  startTime: number;
+  endTime: number;
+  maxTotalMintableByWallet: number;
+  feeBps: number;
+  restrictFeeRecipients: boolean;
+}
+
+export interface YieldBankSeaDropTokenGatedDropConfig {
+  mintPrice: bigint;
+  maxTotalMintableByWallet: number;
+  startTime: number;
+  endTime: number;
+  dropStageIndex: number;
+  maxTokenSupplyForStage: number;
+  feeBps: number;
+  restrictFeeRecipients: boolean;
+}
+
+export interface YieldBankSeaDropSignedMintConfig {
+  minMintPrice: bigint;
+  maxMaxTotalMintableByWallet: number;
+  minStartTime: number;
+  maxEndTime: number;
+  maxMaxTokenSupplyForStage: number;
+  minFeeBps: number;
+  maxFeeBps: number;
+}
+
 export interface YieldBankManifestEntry {
   address: Address;
   runtimeCodeHash: Hex;
@@ -216,11 +362,21 @@ export interface YieldBankManifestEntry {
   deploymentTransaction: Hex;
   verificationTransaction: Hex;
   auditHash?: Hex;
+  implementationBinding?:
+    | { kind: "immutable" }
+    | { kind: "eip1967"; implementation: Address; implementationRuntimeCodeHash: Hex }
+    | {
+      kind: "beacon";
+      beacon: Address;
+      beaconRuntimeCodeHash: Hex;
+      implementation: Address;
+      implementationRuntimeCodeHash: Hex;
+    };
 }
 
 export interface YieldBankReleaseManifest {
   schemaVersion: "1.0";
-  chainId: 4663 | 46630;
+  chainId: 4663;
   collectionId: Hex;
   factoryVersion: Hex;
   compiler: { version: string; optimizerRuns: number; sourceCommit: Hex; dependencyLockHash: Hex };
@@ -265,6 +421,12 @@ export interface YieldBankReleaseManifest {
     collectionSlug: string;
     collectionUrl: string;
     mintStagesHash: Hex;
+    publicDrop: YieldBankPublicDrop;
+    allowListMerkleRoot: Hex;
+    allowedFeeRecipients: readonly Address[];
+    allowedPayers: readonly Address[];
+    tokenGatedDrops: readonly YieldBankTokenGatedDrop[];
+    signedMintValidations: readonly YieldBankSignedMintValidation[];
     creatorPayoutAddress: Address;
     observedPrimaryPlatformFeeBps: number;
     observedSecondaryRoyaltyBps: number;
@@ -278,7 +440,7 @@ export interface YieldBankReleaseManifest {
     | "marketMakingSleeve" | "usdgSleeve",
     YieldBankManifestEntry
   >;
-  dependencies: Record<"WETH" | "USDG" | "seaDrop" | "seaport", YieldBankManifestEntry>
+  dependencies: Record<"WETH" | "USDG" | "seaDrop" | "seaport" | "eligibilityPolicy", YieldBankManifestEntry>
     & Record<string, YieldBankManifestEntry>;
   equityAssets: readonly YieldBankManifestEntry[];
   adapters: Record<string, YieldBankManifestEntry>;
@@ -289,7 +451,7 @@ export interface YieldBankReleaseManifest {
     allocations: readonly YieldBankAllocationRouteBinding[];
     rebalances: readonly YieldBankRebalanceRouteBinding[];
   };
-  roles: Record<"creator" | "sinjoh" | "operations" | "allocationOperator" | "guardian" | "timelock", Address>;
+  roles: Record<"creator" | "openSeaManager" | "sinjoh" | "operations" | "allocationOperator" | "guardian" | "timelock", Address>;
   auditHashes: readonly Hex[];
 }
 
@@ -327,7 +489,7 @@ export interface YieldBankManifestVerification {
   ok: boolean;
 }
 
-export type YieldBankReadClient = Pick<PublicClient, "readContract" | "getCode">;
+export type YieldBankReadClient = Pick<PublicClient, "readContract" | "getCode" | "getStorageAt">;
 
 export interface YieldBankAssetEntitlement {
   asset: Address;
@@ -465,10 +627,14 @@ const WETH = "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73" as Address;
 const USDG = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168" as Address;
 const ROBINHOOD_SEADROP = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5" as Address;
 const SEAPORT_1_6 = "0x0000000000000068F116a894984e2DB1123eB395" as Address;
+const EIP1967_IMPLEMENTATION_SLOT =
+  "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc" as Hex;
+const EIP1967_BEACON_SLOT =
+  "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50" as Hex;
 
 export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): void {
   if (manifest.schemaVersion !== "1.0") throw new Error("unsupported Yield Banks manifest schema");
-  if (manifest.chainId !== 4663 && manifest.chainId !== 46630) throw new Error("unsupported chain");
+  if (manifest.chainId !== 4663) throw new Error("Yield Banks release manifests require Robinhood mainnet chain 4663");
   for (const [name, hash] of Object.entries({
     collectionId: manifest.collectionId,
     factoryVersion: manifest.factoryVersion,
@@ -520,6 +686,10 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     || !["balance-appreciation", "cash-distribution", "mixed"].includes(manifest.equityModel.income)) {
     throw new Error("equityModel must explicitly describe custody and income behavior");
   }
+  if (manifest.equityModel.custody === "onchain-tokenized-equity"
+    && manifest.equityModel.income !== "balance-appreciation") {
+    throw new Error("Robinhood Stock Token income must use the multiplier-aware balance-appreciation model");
+  }
   try {
     const disclosure = new URL(manifest.equityModel.disclosureUri);
     if (disclosure.protocol !== "https:") throw new Error();
@@ -548,6 +718,25 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     throw new Error("openSea.collectionUrl must identify the recorded OpenSea collection overview");
   }
   validateBytes32("openSea.mintStagesHash", manifest.openSea.mintStagesHash);
+  validatePublicDrop(manifest.openSea.publicDrop, manifest.openSea.allowedFeeRecipients);
+  validateBytes32("openSea.allowListMerkleRoot", manifest.openSea.allowListMerkleRoot);
+  if (manifest.openSea.allowListMerkleRoot !== `0x${"0".repeat(64)}`) {
+    throw new Error("YieldBankNFT requires an empty SeaDrop allowlist root");
+  }
+  canonicalUniqueAddresses("openSea.allowedPayers", manifest.openSea.allowedPayers);
+  validateTokenGatedDrops(manifest.openSea.tokenGatedDrops,
+    manifest.openSea.allowedFeeRecipients);
+  validateSignedMintValidations(manifest.openSea.signedMintValidations);
+  if (yieldBankMintStagesHash(
+    manifest.openSea.publicDrop,
+    manifest.openSea.allowedFeeRecipients,
+    manifest.openSea.allowListMerkleRoot,
+    manifest.openSea.allowedPayers,
+    manifest.openSea.tokenGatedDrops,
+    manifest.openSea.signedMintValidations,
+  ).toLowerCase() !== manifest.openSea.mintStagesHash.toLowerCase()) {
+    throw new Error("openSea.mintStagesHash does not bind every recorded SeaDrop mint path");
+  }
   if (getAddress(manifest.openSea.creatorPayoutAddress)
       !== getAddress(manifest.contracts.proceedsVault.address)) {
     throw new Error("openSea.creatorPayoutAddress must equal contracts.proceedsVault.address");
@@ -556,6 +745,9 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       || manifest.openSea.observedPrimaryPlatformFeeBps < 0
       || manifest.openSea.observedPrimaryPlatformFeeBps > 10_000) {
     throw new Error("openSea.observedPrimaryPlatformFeeBps must be in 0..10000");
+  }
+  if (manifest.openSea.observedPrimaryPlatformFeeBps !== manifest.openSea.publicDrop.feeBps) {
+    throw new Error("openSea observed primary fee must match the onchain public drop fee");
   }
   if (manifest.openSea.observedSecondaryRoyaltyBps !== manifest.economics.secondaryRoyaltyBps) {
     throw new Error("openSea.observedSecondaryRoyaltyBps must equal economics.secondaryRoyaltyBps");
@@ -577,8 +769,20 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       throw new Error(`dependencies.${key} address mismatch`);
     }
   }
+  validateEntry("dependencies.eligibilityPolicy", manifest.dependencies.eligibilityPolicy);
+  validateImplementationBinding("dependencies.USDG", manifest.dependencies.USDG, true);
+  if (manifest.dependencies.USDG.implementationBinding?.kind !== "eip1967") {
+    throw new Error("dependencies.USDG must bind its active EIP-1967 implementation");
+  }
   if (manifest.equityAssets.length < 1) throw new Error("at least one reviewed equity asset is required");
-  manifest.equityAssets.forEach((entry, index) => validateEntry(`equityAssets.${index}`, entry));
+  manifest.equityAssets.forEach((entry, index) => {
+    validateEntry(`equityAssets.${index}`, entry);
+    validateImplementationBinding(`equityAssets.${index}`, entry, true);
+    if (manifest.equityModel.custody === "onchain-tokenized-equity"
+      && entry.implementationBinding?.kind !== "beacon") {
+      throw new Error(`equityAssets.${index} must bind its Stock Token beacon implementation`);
+    }
+  });
   if (Object.keys(manifest.feeds).length < 1) throw new Error("reviewed feeds are required");
   for (const [group, entries] of Object.entries({
     dependencies: manifest.dependencies,
@@ -688,13 +892,19 @@ export async function verifyYieldBankManifest(
       ok: actualCodeHash?.toLowerCase() === entry.runtimeCodeHash.toLowerCase(),
     };
   }));
+  const implementationResults = (await Promise.all(entries.map(([path, entry]) =>
+    verifyImplementationBinding(client, path, entry)))).flat();
   const factory = manifest.contracts.factory.address;
   const [factoryVersion, collectionCreationCodeHash, systemPlanHash, collectionRecord,
     collectionId, collectionMaxSupply, collectionNft, collectionDistributor,
     collectionProceedsVault, collectionPortfolioAllocator, collectionAccountImplementation,
-    collectionSecondaryRoyaltyBps,
+    collectionSecondaryRoyaltyBps, collectionEligibilityPolicy, collectionCreator,
+    collectionOpenSeaManager, collectionSinjohFeeRecipient, collectionOperationsReserve,
+    collectionRevenueRouter, collectionTimelock, collectionGuardian,
     nftMaxSupply, nftCollection, nftSeaDrop, royaltyReceiver,
-    royaltyBps] = await Promise.all([
+    royaltyBps, nftOwner, seaDropCreatorPayout, seaDropPublicDrop, seaDropAllowListMerkleRoot,
+    seaDropAllowedFeeRecipients, seaDropAllowedPayers, seaDropSigners,
+    seaDropTokenGatedTokens] = await Promise.all([
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "factoryVersion"),
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "collectionCreationCodeHash"),
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "systemPlanHash"),
@@ -710,11 +920,37 @@ export async function verifyYieldBankManifest(
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "portfolioAllocator"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "accountImplementation"),
     read<bigint>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "secondaryRoyaltyBps"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "eligibilityPolicy"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "creator"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "openSeaManager"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "sinjohFeeRecipient"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "operationsReserve"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "revenueRouter"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "collectionTimelock"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "guardian"),
     read<bigint>(client, manifest.contracts.nft.address, yieldBankNftAbi, "maxSupply"),
     read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "collection"),
     read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "seaDrop"),
     read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "royaltyReceiver"),
     read<bigint>(client, manifest.contracts.nft.address, yieldBankNftAbi, "royaltyBps"),
+    read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "owner"),
+    read<Address>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getCreatorPayoutAddress", [manifest.contracts.nft.address]),
+    read<{
+      mintPrice: bigint; startTime: bigint; endTime: bigint;
+      maxTotalMintableByWallet: bigint; feeBps: bigint; restrictFeeRecipients: boolean;
+    }>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getPublicDrop", [manifest.contracts.nft.address]),
+    read<Hex>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getAllowListMerkleRoot", [manifest.contracts.nft.address]),
+    read<readonly Address[]>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getAllowedFeeRecipients", [manifest.contracts.nft.address]),
+    read<readonly Address[]>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getPayers", [manifest.contracts.nft.address]),
+    read<readonly Address[]>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getSigners", [manifest.contracts.nft.address]),
+    read<readonly Address[]>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getTokenGatedAllowedTokens", [manifest.contracts.nft.address]),
   ]);
   const economicsKeys = [
     "primaryBackingBps", "primaryCreatorBps", "primarySinjohBps", "primaryOperationsBps",
@@ -738,6 +974,7 @@ export async function verifyYieldBankManifest(
     maximumStrategies: await read<number>(client, sleeve, yieldBankSleeveAbi, "maximumStrategies"),
     maximumAdapterCapBps: await read<number>(client, sleeve, yieldBankSleeveAbi, "maximumAdapterCapBps"),
     maximumOperatorLossBps: await read<number>(client, sleeve, yieldBankSleeveAbi, "maximumOperatorLossBps"),
+    eligibilityPolicy: await read<Address>(client, sleeve, yieldBankSleeveAbi, "eligibilityPolicy"),
   })));
   const commitments: [string, Hex, Hex][] = [
     ["factory.factoryVersion", manifest.factoryVersion, factoryVersion],
@@ -774,6 +1011,22 @@ export async function verifyYieldBankManifest(
       addressWord(manifest.contracts.allocator.address), addressWord(collectionPortfolioAllocator)),
     valueResult("collection.accountImplementation", manifest.contracts.collection.address,
       addressWord(manifest.contracts.accountImplementation.address), addressWord(collectionAccountImplementation)),
+    valueResult("collection.eligibilityPolicy", manifest.contracts.collection.address,
+      addressWord(manifest.dependencies.eligibilityPolicy.address), addressWord(collectionEligibilityPolicy)),
+    valueResult("collection.creator", manifest.contracts.collection.address,
+      addressWord(manifest.roles.creator), addressWord(collectionCreator)),
+    valueResult("collection.openSeaManager", manifest.contracts.collection.address,
+      addressWord(manifest.roles.openSeaManager), addressWord(collectionOpenSeaManager)),
+    valueResult("collection.sinjohFeeRecipient", manifest.contracts.collection.address,
+      addressWord(manifest.roles.sinjoh), addressWord(collectionSinjohFeeRecipient)),
+    valueResult("collection.operationsReserve", manifest.contracts.collection.address,
+      addressWord(manifest.roles.operations), addressWord(collectionOperationsReserve)),
+    valueResult("collection.revenueRouter", manifest.contracts.collection.address,
+      addressWord(manifest.contracts.revenueRouter.address), addressWord(collectionRevenueRouter)),
+    valueResult("collection.collectionTimelock", manifest.contracts.collection.address,
+      addressWord(manifest.roles.timelock), addressWord(collectionTimelock)),
+    valueResult("collection.guardian", manifest.contracts.collection.address,
+      addressWord(manifest.roles.guardian), addressWord(collectionGuardian)),
     valueResult("nft.maxSupply", manifest.contracts.nft.address,
       toHex(manifest.economics.maxSupply, { size: 32 }), toHex(nftMaxSupply, { size: 32 })),
     valueResult("nft.collection", manifest.contracts.nft.address,
@@ -784,6 +1037,10 @@ export async function verifyYieldBankManifest(
       addressWord(manifest.contracts.revenueRouter.address), addressWord(royaltyReceiver)),
     valueResult("nft.royaltyBps", manifest.contracts.nft.address,
       toHex(manifest.economics.secondaryRoyaltyBps, { size: 32 }), toHex(royaltyBps, { size: 32 })),
+    valueResult("nft.owner", manifest.contracts.nft.address,
+      addressWord(manifest.roles.timelock), addressWord(nftOwner)),
+    valueResult("seaDrop.creatorPayoutAddress", manifest.dependencies.seaDrop.address,
+      addressWord(manifest.contracts.proceedsVault.address), addressWord(seaDropCreatorPayout)),
     valueResult("registry.factory", manifest.contracts.registry.address,
       addressWord(manifest.contracts.factory.address), addressWord(collectionRecord[0])),
     valueResult("registry.factoryVersion", manifest.contracts.registry.address,
@@ -817,14 +1074,111 @@ export async function verifyYieldBankManifest(
   });
   const sleevePolicyResults = onchainSleevePolicies.flatMap((actual) => {
     const expected = manifest.policyCaps[actual.key];
-    return (["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"] as const)
+    const results = (["maximumStrategies", "maximumAdapterCapBps", "maximumOperatorLossBps"] as const)
       .map((field) => valueResult(
         `policyCaps.${actual.key}.${field}`,
         actual.sleeve,
         toHex(expected[field], { size: 32 }),
         toHex(actual[field], { size: 32 }),
       ));
+    results.push(valueResult(
+      `policyCaps.${actual.key}.eligibilityPolicy`, actual.sleeve,
+      addressWord(manifest.dependencies.eligibilityPolicy.address),
+      addressWord(actual.eligibilityPolicy),
+    ));
+    return results;
   });
+  const recordedRecipients = canonicalAddresses(manifest.openSea.allowedFeeRecipients);
+  const actualRecipients = canonicalAddresses(seaDropAllowedFeeRecipients);
+  const recordedPayers = canonicalAddresses(manifest.openSea.allowedPayers);
+  const actualPayers = canonicalAddresses(seaDropAllowedPayers);
+  const recordedSigners = canonicalAddresses(
+    manifest.openSea.signedMintValidations.map((params) => params.signer),
+  );
+  const actualSigners = canonicalAddresses(seaDropSigners);
+  const recordedTokenGatedTokens = canonicalAddresses(
+    manifest.openSea.tokenGatedDrops.map((stage) => stage.allowedNftToken),
+  );
+  const actualTokenGatedTokens = canonicalAddresses(seaDropTokenGatedTokens);
+  const [actualTokenGatedDrops, actualSignedMintValidations] = await Promise.all([
+    Promise.all(recordedTokenGatedTokens.map((token) => read<{
+      mintPrice: bigint; maxTotalMintableByWallet: bigint; startTime: bigint; endTime: bigint;
+      dropStageIndex: bigint; maxTokenSupplyForStage: bigint; feeBps: bigint;
+      restrictFeeRecipients: boolean;
+    }>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getTokenGatedDrop", [manifest.contracts.nft.address, token]))),
+    Promise.all(recordedSigners.map((signer) => read<{
+      minMintPrice: bigint; maxMaxTotalMintableByWallet: bigint; minStartTime: bigint;
+      maxEndTime: bigint; maxMaxTokenSupplyForStage: bigint; minFeeBps: bigint; maxFeeBps: bigint;
+    }>(client, manifest.dependencies.seaDrop.address, yieldBankSeaDropReadAbi,
+      "getSignedMintValidationParams", [manifest.contracts.nft.address, signer]))),
+  ]);
+  const seaDropResults = [
+    valueResult("seaDrop.publicDrop.mintPrice", manifest.dependencies.seaDrop.address,
+      toHex(BigInt(manifest.openSea.publicDrop.mintPrice), { size: 32 }),
+      toHex(seaDropPublicDrop.mintPrice, { size: 32 })),
+    ...(["startTime", "endTime", "maxTotalMintableByWallet", "feeBps"] as const).map(
+      (field) => valueResult(`seaDrop.publicDrop.${field}`, manifest.dependencies.seaDrop.address,
+        toHex(manifest.openSea.publicDrop[field], { size: 32 }),
+        toHex(seaDropPublicDrop[field], { size: 32 })),
+    ),
+    valueResult("seaDrop.publicDrop.restrictFeeRecipients", manifest.dependencies.seaDrop.address,
+      toHex(manifest.openSea.publicDrop.restrictFeeRecipients ? 1 : 0, { size: 32 }),
+      toHex(seaDropPublicDrop.restrictFeeRecipients ? 1 : 0, { size: 32 })),
+    valueResult("seaDrop.allowListMerkleRoot", manifest.dependencies.seaDrop.address,
+      manifest.openSea.allowListMerkleRoot, seaDropAllowListMerkleRoot),
+    valueResult("seaDrop.allowedFeeRecipients", manifest.dependencies.seaDrop.address,
+      keccak256(stringToHex(recordedRecipients.join(","))),
+      keccak256(stringToHex(actualRecipients.join(",")))),
+    valueResult("seaDrop.allowedPayers", manifest.dependencies.seaDrop.address,
+      keccak256(stringToHex(recordedPayers.join(","))),
+      keccak256(stringToHex(actualPayers.join(",")))),
+    valueResult("seaDrop.signers", manifest.dependencies.seaDrop.address,
+      keccak256(stringToHex(recordedSigners.join(","))),
+      keccak256(stringToHex(actualSigners.join(",")))),
+    valueResult("seaDrop.tokenGatedTokens", manifest.dependencies.seaDrop.address,
+      keccak256(stringToHex(recordedTokenGatedTokens.join(","))),
+      keccak256(stringToHex(actualTokenGatedTokens.join(",")))),
+  ];
+  const canonicalTokenGatedDrops = validateTokenGatedDrops(
+    manifest.openSea.tokenGatedDrops, manifest.openSea.allowedFeeRecipients,
+  );
+  for (let index = 0; index < canonicalTokenGatedDrops.length; index += 1) {
+    const expected = canonicalTokenGatedDrops[index]!;
+    const actual = actualTokenGatedDrops[index]!;
+    seaDropResults.push(
+      valueResult(`seaDrop.tokenGatedDrops.${index}.mintPrice`, manifest.dependencies.seaDrop.address,
+        toHex(BigInt(expected.mintPrice), { size: 32 }), toHex(actual.mintPrice, { size: 32 })),
+      ...(["maxTotalMintableByWallet", "startTime", "endTime", "dropStageIndex",
+        "maxTokenSupplyForStage", "feeBps"] as const).map((field) => valueResult(
+        `seaDrop.tokenGatedDrops.${index}.${field}`, manifest.dependencies.seaDrop.address,
+        toHex(expected[field], { size: 32 }), toHex(actual[field], { size: 32 }),
+      )),
+      valueResult(`seaDrop.tokenGatedDrops.${index}.restrictFeeRecipients`,
+        manifest.dependencies.seaDrop.address,
+        toHex(expected.restrictFeeRecipients ? 1 : 0, { size: 32 }),
+        toHex(actual.restrictFeeRecipients ? 1 : 0, { size: 32 })),
+    );
+  }
+  const canonicalSignedMintValidations = validateSignedMintValidations(
+    manifest.openSea.signedMintValidations,
+  );
+  for (let index = 0; index < canonicalSignedMintValidations.length; index += 1) {
+    const expected = canonicalSignedMintValidations[index]!;
+    const actual = actualSignedMintValidations[index]!;
+    seaDropResults.push(
+      valueResult(`seaDrop.signedMintValidations.${index}.minMintPrice`,
+        manifest.dependencies.seaDrop.address,
+        toHex(BigInt(expected.minMintPrice), { size: 32 }),
+        toHex(actual.minMintPrice, { size: 32 })),
+      ...(["maxMaxTotalMintableByWallet", "minStartTime", "maxEndTime",
+        "maxMaxTokenSupplyForStage", "minFeeBps", "maxFeeBps"] as const).map(
+        (field) => valueResult(`seaDrop.signedMintValidations.${index}.${field}`,
+          manifest.dependencies.seaDrop.address, toHex(expected[field], { size: 32 }),
+          toHex(actual[field], { size: 32 })),
+      ),
+    );
+  }
   const deltaBindings = [
     ["sleeve", manifest.contracts.marketMakingSleeve.address],
     ["accountingAsset", manifest.dependencies.WETH.address],
@@ -922,8 +1276,9 @@ export async function verifyYieldBankManifest(
     ),
   ]);
   return codeResults.concat(
+    implementationResults,
     commitmentResults, topologyResults, economicsResults, royaltyEconomicsResults,
-    sleevePolicyResults, deltaResults,
+    sleevePolicyResults, seaDropResults, deltaResults,
     allocationRouteResults, rebalanceRouteResults,
   );
 }
@@ -1051,6 +1406,62 @@ export function openSeaAssetUrl(nft: Address, tokenId: bigint): string {
   return `https://opensea.io/assets/robinhood/${getAddress(nft)}/${tokenId}`;
 }
 
+/** Canonical commitment to every enumerable SeaDrop mint path and authorization set. */
+export function yieldBankMintStagesHash(
+  publicDrop: YieldBankPublicDrop,
+  allowedFeeRecipients: readonly Address[],
+  allowListMerkleRoot: Hex = `0x${"0".repeat(64)}`,
+  allowedPayers: readonly Address[] = [],
+  tokenGatedDrops: readonly YieldBankTokenGatedDrop[] = [],
+  signedMintValidations: readonly YieldBankSignedMintValidation[] = [],
+): Hex {
+  validatePublicDrop(publicDrop, allowedFeeRecipients);
+  validateBytes32("allowListMerkleRoot", allowListMerkleRoot);
+  const canonicalPayers = canonicalUniqueAddresses("allowedPayers", allowedPayers);
+  const canonicalTokenGatedDrops = validateTokenGatedDrops(tokenGatedDrops, allowedFeeRecipients);
+  const canonicalSignedMintValidations = validateSignedMintValidations(signedMintValidations);
+  return keccak256(encodeAbiParameters(
+    [
+      { type: "tuple", components: [
+        { name: "mintPrice", type: "uint80" }, { name: "startTime", type: "uint48" },
+        { name: "endTime", type: "uint48" },
+        { name: "maxTotalMintableByWallet", type: "uint16" },
+        { name: "feeBps", type: "uint16" },
+        { name: "restrictFeeRecipients", type: "bool" },
+      ] },
+      { type: "bytes32" }, { type: "address[]" }, { type: "address[]" },
+      { type: "tuple[]", components: [
+        { name: "allowedNftToken", type: "address" }, { name: "mintPrice", type: "uint80" },
+        { name: "maxTotalMintableByWallet", type: "uint16" },
+        { name: "startTime", type: "uint48" }, { name: "endTime", type: "uint48" },
+        { name: "dropStageIndex", type: "uint8" },
+        { name: "maxTokenSupplyForStage", type: "uint32" },
+        { name: "feeBps", type: "uint16" },
+        { name: "restrictFeeRecipients", type: "bool" },
+      ] },
+      { type: "tuple[]", components: [
+        { name: "signer", type: "address" }, { name: "minMintPrice", type: "uint80" },
+        { name: "maxMaxTotalMintableByWallet", type: "uint24" },
+        { name: "minStartTime", type: "uint40" }, { name: "maxEndTime", type: "uint40" },
+        { name: "maxMaxTokenSupplyForStage", type: "uint40" },
+        { name: "minFeeBps", type: "uint16" }, { name: "maxFeeBps", type: "uint16" },
+      ] },
+    ],
+    [
+      { ...publicDrop, mintPrice: BigInt(publicDrop.mintPrice) },
+      allowListMerkleRoot,
+      canonicalAddresses(allowedFeeRecipients),
+      canonicalPayers,
+      canonicalTokenGatedDrops.map((stage) => ({
+        ...stage, mintPrice: BigInt(stage.mintPrice),
+      })),
+      canonicalSignedMintValidations.map((params) => ({
+        ...params, minMintPrice: BigInt(params.minMintPrice),
+      })),
+    ],
+  ));
+}
+
 export interface YieldBankAllocationCall { minimumOutput: bigint; minimumShares: bigint; routeData: Hex; sleeveData: Hex }
 
 export interface YieldBankAdapterRedemptionCall {
@@ -1080,6 +1491,145 @@ export interface YieldBankRebalanceExecution {
   allocations: readonly [YieldBankAllocationCall, YieldBankAllocationCall, YieldBankAllocationCall];
   minimumWethRecovered: bigint;
   deadline: bigint;
+}
+
+/** Encodes the paid public stage that OpenSea Studio submits through the NFT contract. */
+export function prepareYieldBankSeaDropPublicDrop(
+  nft: Address,
+  seaDrop: Address,
+  publicDrop: YieldBankSeaDropPublicDropConfig,
+) {
+  validateSeaDropPublicDropConfig(publicDrop);
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updatePublicDrop",
+      args: [getAddress(seaDrop), publicDrop],
+    }),
+    value: 0n,
+  } as const;
+}
+
+/** YieldBankNFT intentionally permits only clearing SeaDrop's opaque-price allowlist path. */
+export function prepareYieldBankSeaDropAllowListClear(nft: Address, seaDrop: Address) {
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updateAllowList",
+      args: [getAddress(seaDrop), {
+        merkleRoot: `0x${"0".repeat(64)}` as Hex,
+        publicKeyURIs: [],
+        allowListURI: "",
+      }],
+    }),
+    value: 0n,
+  } as const;
+}
+
+export function prepareYieldBankSeaDropTokenGatedDrop(
+  nft: Address,
+  seaDrop: Address,
+  allowedNftToken: Address,
+  stage: YieldBankSeaDropTokenGatedDropConfig,
+) {
+  validateSeaDropTokenGatedDropConfig(stage);
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updateTokenGatedDrop",
+      args: [getAddress(seaDrop), getAddress(allowedNftToken), stage],
+    }),
+    value: 0n,
+  } as const;
+}
+
+export function prepareYieldBankSeaDropSignedMintValidation(
+  nft: Address,
+  seaDrop: Address,
+  signer: Address,
+  validation: YieldBankSeaDropSignedMintConfig,
+) {
+  validateSeaDropSignedMintConfig(validation);
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updateSignedMintValidationParams",
+      args: [getAddress(seaDrop), getAddress(signer), validation],
+    }),
+    value: 0n,
+  } as const;
+}
+
+export function prepareYieldBankSeaDropPayout(
+  nft: Address,
+  seaDrop: Address,
+  proceedsVault: Address,
+) {
+  return prepareYieldBankNftAddressUpdate(
+    nft, "updateCreatorPayoutAddress", seaDrop, proceedsVault,
+  );
+}
+
+export function prepareYieldBankSeaDropFeeRecipient(
+  nft: Address,
+  seaDrop: Address,
+  feeRecipient: Address,
+  allowed: boolean,
+) {
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updateAllowedFeeRecipient",
+      args: [getAddress(seaDrop), getAddress(feeRecipient), allowed],
+    }),
+    value: 0n,
+  } as const;
+}
+
+export function prepareYieldBankSeaDropPayer(
+  nft: Address,
+  seaDrop: Address,
+  payer: Address,
+  allowed: boolean,
+) {
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi,
+      functionName: "updatePayer",
+      args: [getAddress(seaDrop), getAddress(payer), allowed],
+    }),
+    value: 0n,
+  } as const;
+}
+
+/** First half of the mandatory OpenSea-manager to timelock Ownable2Step handoff. */
+export function prepareYieldBankNftOwnershipTransfer(nft: Address, timelock: Address) {
+  const target = getAddress(timelock);
+  if (target === "0x0000000000000000000000000000000000000000") {
+    throw new Error("timelock must be nonzero");
+  }
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi, functionName: "transferOwnership", args: [target],
+    }),
+    value: 0n,
+  } as const;
+}
+
+/** Timelock target call that completes the Ownable2Step handoff. */
+export function prepareYieldBankNftOwnershipAcceptance(nft: Address) {
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({ abi: yieldBankNftAbi, functionName: "acceptOwnership" }),
+    value: 0n,
+  } as const;
 }
 
 export function prepareYieldBankAllocation(vault: Address, firstReceiptId: bigint, lastReceiptId: bigint, calls: readonly [YieldBankAllocationCall, YieldBankAllocationCall, YieldBankAllocationCall]) {
@@ -1494,6 +2044,291 @@ function validateEntry(path: string, entry: YieldBankManifestEntry | undefined):
   if (!entry.version || !entry.provenance) throw new Error(`${path} provenance is missing`);
   validateBytes32(`${path}.deploymentTransaction`, entry.deploymentTransaction);
   validateBytes32(`${path}.verificationTransaction`, entry.verificationTransaction);
+}
+
+function validateImplementationBinding(
+  path: string,
+  entry: YieldBankManifestEntry,
+  required: boolean,
+): void {
+  const binding = entry.implementationBinding;
+  if (!binding) {
+    if (required) throw new Error(`${path}.implementationBinding is required`);
+    return;
+  }
+  if (!["immutable", "eip1967", "beacon"].includes(binding.kind)) {
+    throw new Error(`${path}.implementationBinding is invalid`);
+  }
+  if (binding.kind === "immutable") return;
+  getAddress(binding.implementation);
+  validateBytes32(`${path}.implementationBinding.implementationRuntimeCodeHash`,
+    binding.implementationRuntimeCodeHash);
+  if (binding.kind === "beacon") {
+    getAddress(binding.beacon);
+    validateBytes32(`${path}.implementationBinding.beaconRuntimeCodeHash`,
+      binding.beaconRuntimeCodeHash);
+  }
+}
+
+function validatePublicDrop(
+  publicDrop: YieldBankPublicDrop,
+  allowedFeeRecipients: readonly Address[],
+): void {
+  if (!publicDrop || typeof publicDrop.mintPrice !== "string") {
+    throw new Error("openSea.publicDrop is required");
+  }
+  let mintPrice: bigint;
+  try { mintPrice = BigInt(publicDrop.mintPrice); }
+  catch { throw new Error("openSea.publicDrop.mintPrice must be a decimal uint80 string"); }
+  const uint48Max = 2 ** 48 - 1;
+  if (!/^\d+$/.test(publicDrop.mintPrice) || mintPrice < 1n || mintPrice > (1n << 80n) - 1n
+    || !Number.isSafeInteger(publicDrop.startTime) || publicDrop.startTime < 0
+    || publicDrop.startTime > uint48Max
+    || !Number.isSafeInteger(publicDrop.endTime) || publicDrop.endTime <= publicDrop.startTime
+    || publicDrop.endTime > uint48Max
+    || !Number.isInteger(publicDrop.maxTotalMintableByWallet)
+    || publicDrop.maxTotalMintableByWallet < 1
+    || publicDrop.maxTotalMintableByWallet > 65_535
+    || !Number.isInteger(publicDrop.feeBps) || publicDrop.feeBps < 0
+    || publicDrop.feeBps >= 10_000) {
+    throw new Error("openSea.publicDrop is invalid");
+  }
+  if (typeof publicDrop.restrictFeeRecipients !== "boolean"
+    || !Array.isArray(allowedFeeRecipients)) {
+    throw new Error("openSea public drop recipient restriction is invalid");
+  }
+  const canonical = canonicalUniqueAddresses("openSea.allowedFeeRecipients", allowedFeeRecipients);
+  if (publicDrop.restrictFeeRecipients && canonical.length === 0) {
+    throw new Error("restricted SeaDrop stages require an allowed fee recipient");
+  }
+}
+
+function validateSeaDropPublicDropConfig(value: YieldBankSeaDropPublicDropConfig): void {
+  validateUint("mintPrice", value.mintPrice, 80, true);
+  validateNumberUint("startTime", value.startTime, 48);
+  validateNumberUint("endTime", value.endTime, 48);
+  if (value.endTime <= value.startTime) throw new Error("public drop endTime must follow startTime");
+  validateNumberUint("maxTotalMintableByWallet", value.maxTotalMintableByWallet, 16, true);
+  validatePaidFeeBps(value.feeBps);
+  if (typeof value.restrictFeeRecipients !== "boolean") {
+    throw new Error("restrictFeeRecipients must be boolean");
+  }
+}
+
+function validateSeaDropTokenGatedDropConfig(value: YieldBankSeaDropTokenGatedDropConfig): void {
+  validateUint("mintPrice", value.mintPrice, 80, true);
+  validateNumberUint("maxTotalMintableByWallet", value.maxTotalMintableByWallet, 16, true);
+  validateNumberUint("startTime", value.startTime, 48);
+  validateNumberUint("endTime", value.endTime, 48);
+  if (value.endTime <= value.startTime) throw new Error("token-gated endTime must follow startTime");
+  validateNumberUint("dropStageIndex", value.dropStageIndex, 8);
+  validateNumberUint("maxTokenSupplyForStage", value.maxTokenSupplyForStage, 32, true);
+  validatePaidFeeBps(value.feeBps);
+  if (typeof value.restrictFeeRecipients !== "boolean") {
+    throw new Error("restrictFeeRecipients must be boolean");
+  }
+}
+
+function validateSeaDropSignedMintConfig(value: YieldBankSeaDropSignedMintConfig): void {
+  validateUint("minMintPrice", value.minMintPrice, 80, true);
+  validateNumberUint("maxMaxTotalMintableByWallet", value.maxMaxTotalMintableByWallet, 24, true);
+  validateNumberUint("minStartTime", value.minStartTime, 40);
+  validateNumberUint("maxEndTime", value.maxEndTime, 40);
+  if (value.maxEndTime <= value.minStartTime) {
+    throw new Error("signed-mint maxEndTime must follow minStartTime");
+  }
+  validateNumberUint("maxMaxTokenSupplyForStage", value.maxMaxTokenSupplyForStage, 40, true);
+  validatePaidFeeBps(value.maxFeeBps);
+  if (!Number.isInteger(value.minFeeBps) || value.minFeeBps < 0
+    || value.minFeeBps > value.maxFeeBps) {
+    throw new Error("signed-mint fee bounds are invalid");
+  }
+}
+
+function validateUint(name: string, value: bigint, bits: number, positive = false): void {
+  if (typeof value !== "bigint" || value < (positive ? 1n : 0n) || value >= 1n << BigInt(bits)) {
+    throw new Error(`${name} must fit uint${bits}${positive ? " and be positive" : ""}`);
+  }
+}
+
+function validateNumberUint(name: string, value: number, bits: number, positive = false): void {
+  if (!Number.isSafeInteger(value) || value < (positive ? 1 : 0)
+    || BigInt(value) >= 1n << BigInt(bits)) {
+    throw new Error(`${name} must fit uint${bits}${positive ? " and be positive" : ""}`);
+  }
+}
+
+function validatePaidFeeBps(value: number): void {
+  if (!Number.isInteger(value) || value < 0 || value >= 10_000) {
+    throw new Error("SeaDrop feeBps must be an integer below 10000");
+  }
+}
+
+function prepareYieldBankNftAddressUpdate(
+  nft: Address,
+  functionName: "updateCreatorPayoutAddress",
+  seaDrop: Address,
+  value: Address,
+) {
+  const target = getAddress(value);
+  if (target === "0x0000000000000000000000000000000000000000") {
+    throw new Error("SeaDrop address value must be nonzero");
+  }
+  return {
+    to: getAddress(nft),
+    data: encodeFunctionData({
+      abi: yieldBankNftAbi, functionName, args: [getAddress(seaDrop), target],
+    }),
+    value: 0n,
+  } as const;
+}
+
+function canonicalUniqueAddresses(path: string, addresses: readonly Address[]): Address[] {
+  if (!Array.isArray(addresses)) throw new Error(`${path} must be an array`);
+  const canonical = canonicalAddresses(addresses);
+  if (canonical.length !== addresses.length) throw new Error(`${path} must be unique`);
+  return canonical;
+}
+
+function validateTokenGatedDrops(
+  drops: readonly YieldBankTokenGatedDrop[],
+  allowedFeeRecipients: readonly Address[],
+): YieldBankTokenGatedDrop[] {
+  if (!Array.isArray(drops)) throw new Error("openSea.tokenGatedDrops must be an array");
+  const uint48Max = 2 ** 48 - 1;
+  const canonical = drops.map((drop) => ({
+    ...drop, allowedNftToken: getAddress(drop.allowedNftToken),
+  })).sort((left, right) => left.allowedNftToken.toLowerCase()
+    .localeCompare(right.allowedNftToken.toLowerCase()));
+  if (new Set(canonical.map((drop) => drop.allowedNftToken)).size !== canonical.length) {
+    throw new Error("openSea.tokenGatedDrops must use unique allowed NFT tokens");
+  }
+  for (const drop of canonical) {
+    let mintPrice: bigint;
+    try { mintPrice = BigInt(drop.mintPrice); }
+    catch { throw new Error(`invalid token-gated mint price for ${drop.allowedNftToken}`); }
+    if (!/^\d+$/.test(drop.mintPrice) || mintPrice < 1n || mintPrice > (1n << 80n) - 1n
+      || !Number.isInteger(drop.maxTotalMintableByWallet)
+      || drop.maxTotalMintableByWallet < 1 || drop.maxTotalMintableByWallet > 65_535
+      || !Number.isSafeInteger(drop.startTime) || drop.startTime < 0
+      || drop.startTime > uint48Max || !Number.isSafeInteger(drop.endTime)
+      || drop.endTime <= drop.startTime || drop.endTime > uint48Max
+      || !Number.isInteger(drop.dropStageIndex) || drop.dropStageIndex < 0
+      || drop.dropStageIndex > 255 || !Number.isInteger(drop.maxTokenSupplyForStage)
+      || drop.maxTokenSupplyForStage < 1 || drop.maxTokenSupplyForStage > 4_294_967_295
+      || !Number.isInteger(drop.feeBps) || drop.feeBps < 0 || drop.feeBps >= 10_000
+      || typeof drop.restrictFeeRecipients !== "boolean") {
+      throw new Error(`invalid token-gated SeaDrop stage for ${drop.allowedNftToken}`);
+    }
+    if (drop.restrictFeeRecipients && allowedFeeRecipients.length === 0) {
+      throw new Error(`restricted token-gated stage ${drop.allowedNftToken} requires a fee recipient`);
+    }
+  }
+  return canonical;
+}
+
+function validateSignedMintValidations(
+  validations: readonly YieldBankSignedMintValidation[],
+): YieldBankSignedMintValidation[] {
+  if (!Array.isArray(validations)) {
+    throw new Error("openSea.signedMintValidations must be an array");
+  }
+  const uint40Max = 2 ** 40 - 1;
+  const canonical = validations.map((params) => ({
+    ...params, signer: getAddress(params.signer),
+  })).sort((left, right) => left.signer.toLowerCase().localeCompare(right.signer.toLowerCase()));
+  if (new Set(canonical.map((params) => params.signer)).size !== canonical.length) {
+    throw new Error("openSea.signedMintValidations must use unique signers");
+  }
+  for (const params of canonical) {
+    let minMintPrice: bigint;
+    try { minMintPrice = BigInt(params.minMintPrice); }
+    catch { throw new Error(`invalid signed-mint price for ${params.signer}`); }
+    if (!/^\d+$/.test(params.minMintPrice) || minMintPrice < 1n
+      || minMintPrice > (1n << 80n) - 1n
+      || !Number.isInteger(params.maxMaxTotalMintableByWallet)
+      || params.maxMaxTotalMintableByWallet < 1
+      || params.maxMaxTotalMintableByWallet > 16_777_215
+      || !Number.isSafeInteger(params.minStartTime) || params.minStartTime < 0
+      || params.minStartTime > uint40Max || !Number.isSafeInteger(params.maxEndTime)
+      || params.maxEndTime <= params.minStartTime || params.maxEndTime > uint40Max
+      || !Number.isSafeInteger(params.maxMaxTokenSupplyForStage)
+      || params.maxMaxTokenSupplyForStage < 1
+      || params.maxMaxTokenSupplyForStage > uint40Max
+      || !Number.isInteger(params.minFeeBps) || params.minFeeBps < 0
+      || !Number.isInteger(params.maxFeeBps) || params.maxFeeBps < params.minFeeBps
+      || params.maxFeeBps >= 10_000) {
+      throw new Error(`invalid SeaDrop signed-mint validation for ${params.signer}`);
+    }
+  }
+  return canonical;
+}
+
+function canonicalAddresses(addresses: readonly Address[]): Address[] {
+  return [...new Set(addresses.map((address) => getAddress(address)))]
+    .sort((left, right) => left.toLowerCase().localeCompare(right.toLowerCase()));
+}
+
+async function verifyImplementationBinding(
+  client: YieldBankReadClient,
+  path: string,
+  entry: YieldBankManifestEntry,
+): Promise<YieldBankManifestVerification[]> {
+  const binding = entry.implementationBinding;
+  if (!binding || binding.kind === "immutable") return [];
+  const wordToAddress = (word: Hex | undefined): Address => getAddress(
+    `0x${(word ?? `0x${"0".repeat(64)}`).slice(-40)}`,
+  );
+  const results: YieldBankManifestVerification[] = [];
+  let implementation: Address;
+  if (binding.kind === "eip1967") {
+    implementation = wordToAddress(await client.getStorageAt({
+      address: entry.address, slot: EIP1967_IMPLEMENTATION_SLOT,
+    }));
+    results.push({
+      path: `${path}.implementationBinding`, address: entry.address,
+      expectedCodeHash: toHex(BigInt(binding.implementation), { size: 32 }),
+      actualCodeHash: toHex(BigInt(implementation), { size: 32 }),
+      ok: getAddress(implementation) === getAddress(binding.implementation),
+    });
+  } else {
+    const beacon = wordToAddress(await client.getStorageAt({
+      address: entry.address, slot: EIP1967_BEACON_SLOT,
+    }));
+    const beaconCode = await client.getCode({ address: beacon });
+    const beaconCodeHash = beaconCode && beaconCode !== "0x" ? keccak256(beaconCode) : null;
+    results.push({
+      path: `${path}.beaconBinding`, address: entry.address,
+      expectedCodeHash: toHex(BigInt(binding.beacon), { size: 32 }),
+      actualCodeHash: toHex(BigInt(beacon), { size: 32 }),
+      ok: getAddress(beacon) === getAddress(binding.beacon),
+    }, {
+      path: `${path}.beaconRuntimeCodeHash`, address: beacon,
+      expectedCodeHash: binding.beaconRuntimeCodeHash,
+      actualCodeHash: beaconCodeHash,
+      ok: beaconCodeHash?.toLowerCase() === binding.beaconRuntimeCodeHash.toLowerCase(),
+    });
+    implementation = await read<Address>(client, beacon, [
+      { type: "function", name: "implementation", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+    ] as const, "implementation");
+    results.push({
+      path: `${path}.implementationBinding`, address: beacon,
+      expectedCodeHash: toHex(BigInt(binding.implementation), { size: 32 }),
+      actualCodeHash: toHex(BigInt(implementation), { size: 32 }),
+      ok: getAddress(implementation) === getAddress(binding.implementation),
+    });
+  }
+  const implementationCode = await client.getCode({ address: implementation });
+  const implementationCodeHash = implementationCode && implementationCode !== "0x"
+    ? keccak256(implementationCode) : null;
+  results.push({
+    path: `${path}.implementationRuntimeCodeHash`, address: implementation,
+    expectedCodeHash: binding.implementationRuntimeCodeHash,
+    actualCodeHash: implementationCodeHash,
+    ok: implementationCodeHash?.toLowerCase()
+      === binding.implementationRuntimeCodeHash.toLowerCase(),
+  });
+  return results;
 }
 
 function validateBytes32(path: string, value: Hex): void {
