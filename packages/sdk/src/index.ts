@@ -184,6 +184,7 @@ export {
   type YieldBankSleeveRedemptionCall,
   type YieldBankDeltaDepositData, type YieldBankDeltaExitData,
   type YieldBankDeltaManifestBindings,
+  type YieldBankCoreConstituent, type YieldBankFeedBinding,
   type YieldBankDeltaLiquidityAction, type YieldBankDeltaRung,
   type YieldBankDeltaWithdrawalData,
 } from "./yield-banks.js";

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  decodeAbiParameters, decodeFunctionData, keccak256, toBytes, type Address, type Hex,
+  decodeAbiParameters, decodeFunctionData, decodeFunctionResult, encodeFunctionResult,
+  keccak256, toBytes, type Address, type Hex,
 } from "viem";
 import {
   encodeYieldBankDeltaCollectionData,
@@ -36,8 +37,10 @@ import {
   validateYieldBankManifest,
   verifyYieldBankManifest,
   yieldBankNftAbi,
+  yieldBankStrategyRegistryAbi,
   yieldBankMintStagesHash,
   type YieldBankManifestEntry,
+  type YieldBankFeedBinding,
   type YieldBankReleaseManifest,
 } from "../src/index.js";
 
@@ -76,12 +79,29 @@ const entry = (address: Address): YieldBankManifestEntry => ({
   address, runtimeCodeHash, version: "1.0.0", provenance: "git:yield-banks-v1",
   deploymentTransaction, verificationTransaction: deploymentTransaction,
 });
+const feedBinding = (
+  kind: "chainlink" | "delta-v3-twap",
+  asset: Address,
+  feed: Address,
+  weekdaysOnly = false,
+): YieldBankFeedBinding => ({
+  kind, asset, feed: entry(feed),
+  referenceSource: "0x0000000000000000000000000000000000000000",
+  heartbeat: 86_400, gracePeriod: 0, maxDeviationBps: 100,
+  weekdaysOnly, checkAssetOraclePause: weekdaysOnly,
+  description: "TEST / USD", decimals: 8,
+  sourceUrl: "https://docs.chain.link/data-feeds/price-feeds/addresses",
+  observedAt: "2026-08-28T16:00:00Z",
+  wethUsdFeed: "0x0000000000000000000000000000000000000000",
+  twapWindow: 0, maxSpotDeviationBps: 0, comparisonAmount: "0", minimumLiquidity: "0",
+});
 
 function manifest(): YieldBankReleaseManifest {
   const keys = [
     "registry", "factoryDeployer", "factory", "collection", "nft", "accountImplementation", "proceedsVault", "distributor",
-    "revenueRouter", "operationsReserve", "timelock", "allocator", "priceHub",
+    "revenueRouter", "timelock", "allocator", "priceHub",
     "strategyRegistry", "renderer", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
+    "rebalanceValueGuard",
   ] as const;
   const publicDrop = {
     mintPrice: "300000000000000",
@@ -118,14 +138,19 @@ function manifest(): YieldBankReleaseManifest {
       contractUriHash: keccak256(toBytes("ipfs://yield-banks/contract.json")),
     },
     economics: {
-      maxSupply: 777, secondaryRoyaltyBps: 650, primaryBackingBps: 7500, primaryCreatorBps: 1200,
-      primarySinjohBps: 800, primaryOperationsBps: 500, exitTaxBps: 500,
+      maxSupply: 777, secondaryRoyaltyBps: 650, primaryBackingBps: 7500, primaryCreatorBps: 1500,
+      primarySinjohBps: 1000, exitTaxBps: 500,
       royaltyBackingBps: 6000, royaltyCreatorBps: 2000,
-      royaltySinjohBps: 1000, royaltyOperationsBps: 1000,
+      royaltySinjohBps: 2000,
       coreWeightBps: 4000, marketMakingWeightBps: 3750, usdgWeightBps: 2250,
     },
+    redemption: {
+      token: "0x0000000000000000000000000000000000000000",
+      amount: 0,
+      tokenRuntimeCodeHash: `0x${"0".repeat(64)}` as Hex,
+    },
     equityModel: {
-      custody: "onchain-tokenized-equity",
+      custody: "robinhood-stock-token",
       income: "balance-appreciation",
       disclosureUri: "https://example.com/yield-banks/equity-disclosure",
     },
@@ -161,7 +186,7 @@ function manifest(): YieldBankReleaseManifest {
       seaDrop: entry("0x00005EA00Ac477B1030CE78506496e8C2dE24bf5"),
       seaport: entry("0x0000000000000068F116a894984e2DB1123eB395"),
       eligibilityPolicy: entry(addresses[4]),
-      INJOH: entry(addresses[18]),
+      pairedAsset: entry(addresses[18]),
       deltaPositionBuilder: entry(addresses[19]),
       v3Factory: entry(addresses[20]),
       v3PositionManager: entry(addresses[21]),
@@ -176,23 +201,33 @@ function manifest(): YieldBankReleaseManifest {
         implementationRuntimeCodeHash: runtimeCodeHash,
       },
     }],
+    coreConstituents: [{
+      asset: addresses[0], route: addresses[23], routeRuntimeCodeHash: runtimeCodeHash,
+      weightBps: 10_000,
+    }],
     adapters: {
       deltaV3LP: entry(addresses[22]),
       deltaEntryRoute: entry(addresses[23]),
       deltaExitRoute: entry(addresses[24]),
     },
-    feeds: { stockTokenOne: entry(addresses[5]) },
-    pools: { injohWeth: entry(addresses[25]) },
-    delta: {
-      adapter: addresses[22], injoh: addresses[18], pool: addresses[25],
+    feeds: [
+      feedBinding("chainlink", "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", addresses[5]),
+      feedBinding("chainlink", "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", addresses[6]),
+      feedBinding("chainlink", addresses[0], addresses[7], true),
+      feedBinding("chainlink", addresses[18], addresses[8]),
+    ],
+    pools: { pairedWeth: entry(addresses[25]) },
+    deltaPools: [{
+      adapter: addresses[22], sleeve: addresses[16], pairedAsset: addresses[18], pool: addresses[25],
+      fee: 100, tickSpacing: 1,
       positionBuilder: addresses[19], factory: addresses[20],
       positionManager: addresses[21], entryRoute: addresses[23], exitRoute: addresses[24],
-      maximumPositions: 8, adapterCapBps: 4_000,
-    },
+      maximumPositions: 8, maximumStrategies: 1, adapterCapBps: 4_000,
+    }],
     routeBindings: {
       allocations: [
         { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[15], route: addresses[23], runtimeCodeHash },
-        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[17], route: addresses[23], runtimeCodeHash },
+        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[16], route: addresses[23], runtimeCodeHash },
       ],
       rebalances: [
         { inputAsset: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", route: addresses[24], runtimeCodeHash },
@@ -202,7 +237,7 @@ function manifest(): YieldBankReleaseManifest {
     },
     roles: {
       creator: addresses[0], openSeaManager: addresses[9],
-      sinjoh: addresses[1], operations: addresses[2],
+      sinjoh: addresses[1],
       allocationOperator: addresses[4], guardian: addresses[3], timelock: addresses[8],
     },
     auditHashes: [keccak256(toBytes("independent-audit"))],
@@ -215,8 +250,38 @@ function manifest(): YieldBankReleaseManifest {
       implementationRuntimeCodeHash: runtimeCodeHash,
     },
   };
+  release.dependencies.WETH = {
+    ...release.dependencies.WETH,
+    implementationBinding: {
+      kind: "eip1967",
+      implementation: addresses[2],
+      implementationRuntimeCodeHash: runtimeCodeHash,
+    },
+  };
   return release;
 }
+
+test("Viem decodes StrategyRegistry records by their named tuple fields", () => {
+  const encoded = encodeFunctionResult({
+    abi: yieldBankStrategyRegistryAbi,
+    functionName: "recordOf",
+    result: {
+      implementation: addresses[22],
+      runtimeCodeHash,
+      sleeveCategory: keccak256(toBytes("YIELD_BANK_MARKET_MAKING")),
+      accountingAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      state: 1,
+      registeredAt: 7,
+    },
+  });
+  const decoded = decodeFunctionResult({
+    abi: yieldBankStrategyRegistryAbi, functionName: "recordOf", data: encoded,
+  });
+  assert.equal(Array.isArray(decoded), false);
+  assert.equal(decoded.implementation, addresses[22]);
+  assert.equal(decoded.runtimeCodeHash, runtimeCodeHash);
+  assert.equal(decoded.state, 1);
+});
 
 test("Yield Banks manifest validates immutable economics and live code", async () => {
   const release = manifest();
@@ -226,7 +291,9 @@ test("Yield Banks manifest validates immutable economics and live code", async (
     getStorageAt: async ({ address }: { address: Address }) => {
       const expected = address.toLowerCase() === release.dependencies.USDG.address.toLowerCase()
         ? release.dependencies.USDG.implementationBinding!
-        : release.equityAssets[0]!.implementationBinding!;
+        : address.toLowerCase() === release.dependencies.WETH.address.toLowerCase()
+          ? release.dependencies.WETH.implementationBinding!
+          : release.equityAssets[0]!.implementationBinding!;
       if (expected.kind === "immutable") throw new Error("unexpected immutable binding fixture");
       const target = expected.kind === "beacon" ? expected.beacon : expected.implementation;
       return `0x${target.slice(2).padStart(64, "0")}` as Hex;
@@ -251,7 +318,6 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName === "creator") return release.roles.creator;
       if (functionName === "openSeaManager") return release.roles.openSeaManager;
       if (functionName === "sinjohFeeRecipient") return release.roles.sinjoh;
-      if (functionName === "operationsReserve") return release.roles.operations;
       if (functionName === "revenueRouter") return release.contracts.revenueRouter.address;
       if (functionName === "collectionTimelock") return release.roles.timelock;
       if (functionName === "guardian") return release.roles.guardian;
@@ -286,27 +352,68 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName in release.economics) {
         return release.economics[functionName as keyof typeof release.economics];
       }
+      const delta = release.deltaPools[0]!;
       const deltaAddresses: Record<string, Address> = {
-        sleeve: release.contracts.marketMakingSleeve.address,
+        sleeve: delta.sleeve,
         accountingAsset: release.dependencies.WETH.address,
-        injoh: release.delta.injoh,
+        pairedAsset: delta.pairedAsset,
         priceHub: release.contracts.priceHub.address,
-        pool: release.delta.pool,
-        factory: release.delta.factory,
-        positionManager: release.delta.positionManager,
-        positionBuilder: release.delta.positionBuilder,
-        entryRoute: release.delta.entryRoute,
-        exitRoute: release.delta.exitRoute,
+        pool: delta.pool,
+        factory: delta.factory,
+        positionManager: delta.positionManager,
+        positionBuilder: delta.positionBuilder,
+        entryRoute: delta.entryRoute,
+        exitRoute: delta.exitRoute,
       };
       if (functionName in deltaAddresses) return deltaAddresses[functionName];
-      if (functionName === "maximumPositions") return BigInt(release.delta.maximumPositions);
-      if (functionName === "recordOf") return [
-        release.delta.adapter, release.adapters.deltaV3LP!.runtimeCodeHash,
-        keccak256(toBytes("YIELD_BANK_MARKET_MAKING")), release.dependencies.WETH.address,
-        1n, 1n,
-      ];
+      if (functionName === "weth" || functionName === "WETH9") {
+        return release.dependencies.WETH.address;
+      }
+      const codeHashByFunction: Record<string, Hex> = {
+        poolCodeHash: release.pools.pairedWeth!.runtimeCodeHash,
+        factoryCodeHash: release.dependencies.v3Factory!.runtimeCodeHash,
+        positionManagerCodeHash: release.dependencies.v3PositionManager!.runtimeCodeHash,
+        positionBuilderCodeHash: release.dependencies.deltaPositionBuilder!.runtimeCodeHash,
+        entryRouteCodeHash: release.adapters.deltaEntryRoute!.runtimeCodeHash,
+        exitRouteCodeHash: release.adapters.deltaExitRoute!.runtimeCodeHash,
+      };
+      if (functionName in codeHashByFunction) return codeHashByFunction[functionName];
+      if (functionName === "maximumPositions") return BigInt(delta.maximumPositions);
+      if (functionName === "rebalanceValueGuard") {
+        return release.contracts.rebalanceValueGuard.address;
+      }
+      if (functionName === "recordOf") return {
+        implementation: delta.adapter,
+        runtimeCodeHash: release.adapters.deltaV3LP!.runtimeCodeHash,
+        sleeveCategory: keccak256(toBytes("YIELD_BANK_MARKET_MAKING")),
+        accountingAsset: release.dependencies.WETH.address,
+        state: 1,
+        registeredAt: 1,
+      };
       if (functionName === "adapterState") return 3n;
-      if (functionName === "adapterCapBps") return BigInt(release.delta.adapterCapBps);
+      if (functionName === "adapterCapBps") return BigInt(delta.adapterCapBps);
+      if (functionName === "adapters") return [delta.adapter];
+      if (functionName === "deltaPoolBinding") return [
+        delta.sleeve, delta.adapter, release.pools.pairedWeth!.runtimeCodeHash,
+        release.contracts.marketMakingSleeve.runtimeCodeHash,
+        release.adapters.deltaV3LP!.runtimeCodeHash,
+      ];
+      if (functionName === "deltaPoolOfSleeve" || functionName === "getPool") return delta.pool;
+      if (functionName === "token0") return release.dependencies.WETH.address;
+      if (functionName === "token1") return delta.pairedAsset;
+      if (functionName === "fee") return delta.fee;
+      if (functionName === "tickSpacing") return delta.tickSpacing;
+      if (functionName === "liquidity") return 1n;
+      if (functionName === "slot0") return [1n, 0, 0, 2, 2, 0, true];
+      if (functionName === "uniFactory") return delta.factory;
+      if (functionName === "inputAsset") {
+        return address.toLowerCase() === delta.entryRoute.toLowerCase()
+          ? release.dependencies.WETH.address : delta.pairedAsset;
+      }
+      if (functionName === "outputAsset") {
+        return address.toLowerCase() === delta.entryRoute.toLowerCase()
+          ? delta.pairedAsset : release.dependencies.WETH.address;
+      }
       if (functionName === "routeBinding") {
         const binding = release.routeBindings.allocations.find((entry) =>
           entry.inputAsset.toLowerCase() === String(args?.[0]).toLowerCase()
@@ -322,7 +429,9 @@ test("Yield Banks manifest validates immutable economics and live code", async (
     },
   } as never, release);
   assert.ok(results.length > 110);
-  assert.ok(results.every((result) => result.ok));
+  assert.ok(results.every((result) => result.ok), JSON.stringify(
+    results.filter((result) => !result.ok), null, 2,
+  ));
 
   release.economics.exitTaxBps = 501 as 500;
   assert.throws(() => validateYieldBankManifest(release), /economics mismatch/);
@@ -332,6 +441,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
   const release = manifest();
   const target = {
     requester: addresses[2],
+    deltaPool: "0x0000000000000000000000000000000000000000" as Address,
     coreWeightBps: 2_500,
     marketMakingWeightBps: 0,
     usdgWeightBps: 7_500,
@@ -354,6 +464,9 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
       if (functionName === "pendingBackingOf") return 0n;
       if (functionName === "primaryStateOf") return 2n;
       if (functionName === "allocationTargetOf") return target;
+      if (functionName === "activeDeltaPoolOf") {
+        return "0x0000000000000000000000000000000000000000";
+      }
       if (functionName === "balanceOf") return 100n;
       if (functionName === "pending" || functionName === "cumulativeSettled") return 0n;
       if (functionName === "totalSupply") return 1_000n;
@@ -369,6 +482,28 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
   assert.deepEqual(view.allocationTarget, { ...target, pending: true });
   assert.equal(view.portfolioValueUsd18, 300_000n);
   assert.deepEqual(view.currentAllocationBps, [3_333, 3_333, 3_334]);
+});
+
+test("Yield Bank token fails closed when the onchain active Delta pool is absent from the manifest", async () => {
+  const release = manifest();
+  const unknownPool = "0x00000000000000000000000000000000000000ff" as Address;
+  await assert.rejects(() => readYieldBankToken({
+    readContract: async ({ functionName }: { functionName: string }) => {
+      if (functionName === "state" || functionName === "tokenState") return 1n;
+      if (functionName === "liveSupply" || functionName === "mintedSupply") return 1n;
+      if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "accountOf" || functionName === "ownerOf") return addresses[1];
+      if (functionName === "tokenURI") return "ipfs://yield-banks/1";
+      if (functionName === "pendingBackingOf" || functionName === "primaryStateOf") return 0n;
+      if (functionName === "allocationTargetOf") return {
+        requester: addresses[1], deltaPool: unknownPool, coreWeightBps: 0,
+        marketMakingWeightBps: 10_000, usdgWeightBps: 0, maximumAdapterLossBps: 100,
+        revision: 1n, executedRevision: 1n, requestedAt: 1, validUntil: 2, executedAt: 1,
+      };
+      if (functionName === "activeDeltaPoolOf") return unknownPool;
+      throw new Error(`unexpected ${functionName}`);
+    },
+  } as never, release, 1n), /active Delta pool .* absent from the verified manifest/);
 });
 
 test("Yield Banks manifest binds OpenSea payout and hosted collection", () => {
@@ -515,10 +650,11 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   const adapterCollection = prepareYieldBankAdapterCollection(addresses[4], addresses[5], addresses[6]);
   const adapterExit = prepareYieldBankAdapterExit(addresses[4], addresses[5], addresses[6], 100);
   const sleeveRedemption = prepareYieldBankSleeveRedemption(
-    addresses[5], 10n, addresses[3], addresses[3], 1n,
+    addresses[5], 10n, addresses[3], addresses[3], [1n],
   );
   const targetAllocation = prepareYieldBankTargetAllocation(
-    addresses[11], 42n, [2_500, 0, 7_500], 100, 1_900_000_000n,
+    addresses[11], 42n, [2_500, 0, 7_500],
+    "0x0000000000000000000000000000000000000000", 100, 1_900_000_000n,
   );
   const royaltySync = prepareYieldBankRoyaltySync(addresses[11], addresses[1], "0x1234");
   const nativeRoyaltySync = prepareYieldBankNativeRoyaltySync(addresses[11], "0x1234");
@@ -531,6 +667,7 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
       { minimumOutputs: [1n], adapterCalls: [] },
       { minimumOutputs: [1n], adapterCalls: [] },
     ],
+    deltaPoolRedemption: { minimumOutputs: [], adapterCalls: [] },
     conversions: [{ asset: addresses[1], minimumWethOut: 1n, routeData: "0x" }],
     allocations: [
       { minimumOutput: 1n, minimumShares: 1n, routeData: "0x", sleeveData: "0x" },
@@ -565,7 +702,8 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.throws(() => prepareYieldBankBurn(collection, 0n), /positive/);
   assert.throws(
     () => prepareYieldBankTargetAllocation(
-      addresses[11], 42n, [5_000, 5_000, 1], 100, 1_900_000_000n,
+      addresses[11], 42n, [5_000, 5_000, 1],
+      "0x0000000000000000000000000000000000000000", 100, 1_900_000_000n,
     ),
     /totaling 10000/,
   );
@@ -575,7 +713,7 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
 test("Delta operator calldata encodes every manual position and slippage decision", () => {
   const deposit = encodeYieldBankDeltaDepositData({
     wethToConvert: 25n,
-    minimumInjohOut: 24n,
+    minimumPairedAssetOut: 24n,
     routeData: "0x1234",
     rungs: [{
       tickLower: -600, tickUpper: 0, amount0: 10n, amount1: 15n,
@@ -590,7 +728,7 @@ test("Delta operator calldata encodes every manual position and slippage decisio
   });
   const [decoded] = decodeAbiParameters([{ type: "tuple", components: [
     { name: "wethToConvert", type: "uint256" },
-    { name: "minimumInjohOut", type: "uint256" },
+    { name: "minimumPairedAssetOut", type: "uint256" },
     { name: "routeData", type: "bytes" },
     { name: "rungs", type: "tuple[]", components: [
       { name: "tickLower", type: "int24" }, { name: "tickUpper", type: "int24" },
@@ -608,7 +746,7 @@ test("Delta operator calldata encodes every manual position and slippage decisio
 
   assert.match(encodeYieldBankDeltaDepositData({
     wethToConvert: 2n,
-    minimumInjohOut: 1n,
+    minimumPairedAssetOut: 1n,
     routeData: "0x",
     rungs: [{
       tickLower: -600, tickUpper: 600, amount0: 1n, amount1: 1n,
@@ -626,7 +764,7 @@ test("Delta operator calldata encodes every manual position and slippage decisio
     tokenId: 7n, liquidity: 1_000n, amount0Minimum: 50n, amount1Minimum: 40n,
   } as const;
   assert.match(encodeYieldBankDeltaWithdrawalData({
-    actions: [action], injohToConvert: 40n, minimumWethOut: 38n,
+    actions: [action], pairedAssetToConvert: 40n, minimumWethOut: 38n,
     wethToReturn: 88n, routeData: "0xab", deadline: 1_800_000_001n,
   }), /^0x[0-9a-f]+$/);
   assert.match(encodeYieldBankDeltaCollectionData([7n, 8n]), /^0x[0-9a-f]+$/);
@@ -635,7 +773,7 @@ test("Delta operator calldata encodes every manual position and slippage decisio
   }), /^0x[0-9a-f]+$/);
   assert.throws(() => encodeYieldBankDeltaCollectionData([7n, 7n]), /unique positive/);
   assert.throws(() => encodeYieldBankDeltaDepositData({
-    wethToConvert: 1n, minimumInjohOut: 1n, routeData: "0x",
+    wethToConvert: 1n, minimumPairedAssetOut: 1n, routeData: "0x",
     rungs: [{
       tickLower: -60, tickUpper: 60, amount0: 1n, amount1: 0n,
       amount0Minimum: 2n, amount1Minimum: 0n,
