@@ -18,6 +18,7 @@ export const yieldBankCollectionAbi = [
   { type: "function", name: "nft", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "distributor", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "proceedsVault", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "portfolioAllocator", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "claimPrimary", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
   { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
   { type: "function", name: "settleBatch", stateMutability: "nonpayable", inputs: [{ name: "tokenIds", type: "uint256[]" }], outputs: [] },
@@ -117,6 +118,51 @@ export const yieldBankStrategyRegistryAbi = [
 ] as const;
 
 export const yieldBankAllocatorAbi = [
+  { type: "function", name: "routeBinding", stateMutability: "view", inputs: [
+    { name: "inputAsset", type: "address" }, { name: "sleeve", type: "address" },
+  ], outputs: [{ name: "route", type: "address" }, { name: "runtimeCodeHash", type: "bytes32" }] },
+  { type: "function", name: "rebalanceRoute", stateMutability: "view", inputs: [
+    { name: "inputAsset", type: "address" },
+  ], outputs: [{ name: "route", type: "address" }, { name: "runtimeCodeHash", type: "bytes32" }] },
+  { type: "function", name: "allocationTargetOf", stateMutability: "view", inputs: [
+    { name: "tokenId", type: "uint256" },
+  ], outputs: [{ name: "target", type: "tuple", components: [
+    { name: "requester", type: "address" },
+    { name: "coreWeightBps", type: "uint16" },
+    { name: "marketMakingWeightBps", type: "uint16" },
+    { name: "usdgWeightBps", type: "uint16" },
+    { name: "revision", type: "uint64" },
+    { name: "executedRevision", type: "uint64" },
+    { name: "requestedAt", type: "uint48" },
+    { name: "executedAt", type: "uint48" },
+  ] }] },
+  { type: "function", name: "setTargetAllocation", stateMutability: "nonpayable", inputs: [
+    { name: "tokenId", type: "uint256" }, { name: "weights", type: "uint16[3]" },
+  ], outputs: [{ name: "revision", type: "uint64" }] },
+  { type: "function", name: "executeTargetAllocation", stateMutability: "nonpayable", inputs: [
+    { name: "tokenId", type: "uint256" },
+    { name: "expectedRevision", type: "uint64" },
+    { name: "execution", type: "tuple", components: [
+      { name: "redemptions", type: "tuple[3]", components: [
+        { name: "minimumOutputs", type: "uint256[]" },
+        { name: "adapterCalls", type: "tuple[]", components: [
+          { name: "adapter", type: "address" }, { name: "maxLossBps", type: "uint16" },
+          { name: "data", type: "bytes" },
+        ] },
+      ] },
+      { name: "conversions", type: "tuple[]", components: [
+        { name: "asset", type: "address" }, { name: "minimumWethOut", type: "uint256" },
+        { name: "routeData", type: "bytes" },
+      ] },
+      { name: "allocations", type: "tuple[3]", components: [
+        { name: "minimumOutput", type: "uint256" }, { name: "minimumShares", type: "uint256" },
+        { name: "routeData", type: "bytes" }, { name: "sleeveData", type: "bytes" },
+      ] },
+      { name: "minimumWethRecovered", type: "uint256" }, { name: "deadline", type: "uint256" },
+    ] },
+  ], outputs: [
+    { name: "wethRecovered", type: "uint256" }, { name: "shares", type: "uint256[3]" },
+  ] },
   { type: "function", name: "depositToAdapter", stateMutability: "nonpayable", inputs: [
     { name: "sleeve", type: "address" }, { name: "adapter", type: "address" },
     { name: "assets", type: "uint256" }, { name: "minPositionUnits", type: "uint256" },
@@ -220,8 +266,25 @@ export interface YieldBankReleaseManifest {
   feeds: Record<string, YieldBankManifestEntry>;
   pools: Record<string, YieldBankManifestEntry>;
   delta: YieldBankDeltaManifestBindings;
+  routeBindings: {
+    allocations: readonly YieldBankAllocationRouteBinding[];
+    rebalances: readonly YieldBankRebalanceRouteBinding[];
+  };
   roles: Record<"creator" | "sinjoh" | "operations" | "allocationOperator" | "guardian" | "timelock", Address>;
   auditHashes: readonly Hex[];
+}
+
+export interface YieldBankAllocationRouteBinding {
+  inputAsset: Address;
+  sleeve: Address;
+  route: Address;
+  runtimeCodeHash: Hex;
+}
+
+export interface YieldBankRebalanceRouteBinding {
+  inputAsset: Address;
+  route: Address;
+  runtimeCodeHash: Hex;
 }
 
 export interface YieldBankDeltaManifestBindings {
@@ -267,6 +330,30 @@ export interface YieldBankSleeveView extends YieldBankAssetEntitlement {
   adapters: readonly Address[];
   proRataUnderlying: readonly YieldBankUnderlyingPosition[];
   strategyPositions: readonly YieldBankStrategyPosition[];
+  positionUsd18: bigint;
+}
+
+export interface YieldBankAllocationTarget {
+  requester: Address;
+  coreWeightBps: number;
+  marketMakingWeightBps: number;
+  usdgWeightBps: number;
+  revision: bigint;
+  executedRevision: bigint;
+  requestedAt: number;
+  executedAt: number;
+  pending: boolean;
+}
+
+interface YieldBankAllocationTargetResult {
+  requester: Address;
+  coreWeightBps: number;
+  marketMakingWeightBps: number;
+  usdgWeightBps: number;
+  revision: bigint;
+  executedRevision: bigint;
+  requestedAt: number;
+  executedAt: number;
 }
 
 export interface YieldBankUnderlyingPosition {
@@ -339,6 +426,9 @@ export interface YieldBankTokenView {
   primaryState: number;
   tokenUri: string;
   sleeves: readonly YieldBankSleeveView[];
+  allocationTarget: YieldBankAllocationTarget;
+  portfolioValueUsd18: bigint;
+  currentAllocationBps: readonly [number, number, number];
   proofOfBackingSolvent: boolean;
 }
 
@@ -484,6 +574,53 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
   if (getAddress(delta.injoh) === getAddress(manifest.dependencies.WETH.address)) {
     throw new Error("delta.injoh must differ from WETH");
   }
+  if (!manifest.routeBindings || !Array.isArray(manifest.routeBindings.allocations)
+    || !Array.isArray(manifest.routeBindings.rebalances)) {
+    throw new Error("routeBindings are required");
+  }
+  const routeEntries = [
+    ...Object.values(manifest.dependencies), ...manifest.stockTokens,
+    ...Object.values(manifest.adapters), ...Object.values(manifest.pools),
+  ];
+  const routeEntry = (address: Address) => routeEntries.find((entry) =>
+    getAddress(entry.address) === getAddress(address));
+  const allocationKeys = new Set<string>();
+  for (const [index, binding] of manifest.routeBindings.allocations.entries()) {
+    getAddress(binding.inputAsset);
+    getAddress(binding.sleeve);
+    getAddress(binding.route);
+    validateBytes32(`routeBindings.allocations.${index}.runtimeCodeHash`, binding.runtimeCodeHash);
+    const key = `${getAddress(binding.inputAsset)}:${getAddress(binding.sleeve)}`;
+    if (allocationKeys.has(key)) throw new Error(`duplicate allocation route ${key}`);
+    allocationKeys.add(key);
+    const entry = routeEntry(binding.route);
+    if (!entry || entry.runtimeCodeHash.toLowerCase() !== binding.runtimeCodeHash.toLowerCase()) {
+      throw new Error(`allocation route ${binding.route} is not a matching manifest dependency`);
+    }
+  }
+  for (const sleeve of [manifest.contracts.coreSleeve.address, manifest.contracts.usdgSleeve.address]) {
+    const key = `${getAddress(manifest.dependencies.WETH.address)}:${getAddress(sleeve)}`;
+    if (!allocationKeys.has(key)) throw new Error(`missing WETH allocation route for ${sleeve}`);
+  }
+  const rebalanceKeys = new Set<string>();
+  for (const [index, binding] of manifest.routeBindings.rebalances.entries()) {
+    getAddress(binding.inputAsset);
+    getAddress(binding.route);
+    validateBytes32(`routeBindings.rebalances.${index}.runtimeCodeHash`, binding.runtimeCodeHash);
+    const key = getAddress(binding.inputAsset);
+    if (rebalanceKeys.has(key)) throw new Error(`duplicate rebalance route ${key}`);
+    rebalanceKeys.add(key);
+    const entry = routeEntry(binding.route);
+    if (!entry || entry.runtimeCodeHash.toLowerCase() !== binding.runtimeCodeHash.toLowerCase()) {
+      throw new Error(`rebalance route ${binding.route} is not a matching manifest dependency`);
+    }
+  }
+  for (const asset of [manifest.dependencies.USDG.address, delta.injoh,
+    ...manifest.stockTokens.map((entry) => entry.address)]) {
+    if (!rebalanceKeys.has(getAddress(asset))) {
+      throw new Error(`missing WETH rebalance route for ${asset}`);
+    }
+  }
   if (manifest.auditHashes.length === 0) throw new Error("audit hashes are required");
   manifest.auditHashes.forEach((hash, index) => validateBytes32(`auditHashes.${index}`, hash));
 }
@@ -512,7 +649,7 @@ export async function verifyYieldBankManifest(
   const factory = manifest.contracts.factory.address;
   const [factoryVersion, collectionCreationCodeHash, systemPlanHash, collectionRecord,
     collectionId, collectionMaxSupply, collectionNft, collectionDistributor,
-    collectionProceedsVault, nftMaxSupply, nftCollection, nftSeaDrop, royaltyReceiver,
+    collectionProceedsVault, collectionPortfolioAllocator, nftMaxSupply, nftCollection, nftSeaDrop, royaltyReceiver,
     royaltyBps] = await Promise.all([
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "factoryVersion"),
     read<Hex>(client, factory, yieldBankSystemFactoryAbi, "collectionCreationCodeHash"),
@@ -526,6 +663,7 @@ export async function verifyYieldBankManifest(
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "nft"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "distributor"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "proceedsVault"),
+    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "portfolioAllocator"),
     read<bigint>(client, manifest.contracts.nft.address, yieldBankNftAbi, "maxSupply"),
     read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "collection"),
     read<Address>(client, manifest.contracts.nft.address, yieldBankNftAbi, "seaDrop"),
@@ -572,6 +710,8 @@ export async function verifyYieldBankManifest(
       addressWord(manifest.contracts.distributor.address), addressWord(collectionDistributor)),
     valueResult("collection.proceedsVault", manifest.contracts.collection.address,
       addressWord(manifest.contracts.proceedsVault.address), addressWord(collectionProceedsVault)),
+    valueResult("collection.portfolioAllocator", manifest.contracts.collection.address,
+      addressWord(manifest.contracts.allocator.address), addressWord(collectionPortfolioAllocator)),
     valueResult("nft.maxSupply", manifest.contracts.nft.address,
       toHex(manifest.economics.maxSupply, { size: 32 }), toHex(nftMaxSupply, { size: 32 })),
     valueResult("nft.collection", manifest.contracts.nft.address,
@@ -673,8 +813,45 @@ export async function verifyYieldBankManifest(
     "marketMakingSleeve.adapterCapBps", manifest.contracts.marketMakingSleeve.address,
     toHex(manifest.delta.adapterCapBps, { size: 32 }), toHex(adapterCapBps, { size: 32 }),
   ));
+  const allocationRouteResults = (await Promise.all(
+    manifest.routeBindings.allocations.map(async (binding) => ({
+      binding,
+      actual: await read<readonly [Address, Hex]>(
+        client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
+        "routeBinding", [binding.inputAsset, binding.sleeve],
+      ),
+    })),
+  )).flatMap(({ binding, actual }) => [
+    valueResult(
+      `allocator.routeBinding.${binding.inputAsset}.${binding.sleeve}.route`,
+      manifest.contracts.allocator.address, addressWord(binding.route), addressWord(actual[0]),
+    ),
+    valueResult(
+      `allocator.routeBinding.${binding.inputAsset}.${binding.sleeve}.runtimeCodeHash`,
+      manifest.contracts.allocator.address, binding.runtimeCodeHash, actual[1],
+    ),
+  ]);
+  const rebalanceRouteResults = (await Promise.all(
+    manifest.routeBindings.rebalances.map(async (binding) => ({
+      binding,
+      actual: await read<readonly [Address, Hex]>(
+        client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
+        "rebalanceRoute", [binding.inputAsset],
+      ),
+    })),
+  )).flatMap(({ binding, actual }) => [
+    valueResult(
+      `allocator.rebalanceRoute.${binding.inputAsset}.route`,
+      manifest.contracts.allocator.address, addressWord(binding.route), addressWord(actual[0]),
+    ),
+    valueResult(
+      `allocator.rebalanceRoute.${binding.inputAsset}.runtimeCodeHash`,
+      manifest.contracts.allocator.address, binding.runtimeCodeHash, actual[1],
+    ),
+  ]);
   return codeResults.concat(
     commitmentResults, topologyResults, economicsResults, royaltyEconomicsResults, deltaResults,
+    allocationRouteResults, rebalanceRouteResults,
   );
 }
 
@@ -690,7 +867,8 @@ export async function readYieldBankToken(
   const nft = manifest.contracts.nft.address;
   const distributor = manifest.contracts.distributor.address;
   const proceedsVault = manifest.contracts.proceedsVault.address;
-  const [collectionState, tokenState, liveSupply, mintedSupply, maxSupply, account, owner, tokenUri, pendingBacking, primaryState] = await Promise.all([
+  const [collectionState, tokenState, liveSupply, mintedSupply, maxSupply, account, owner, tokenUri,
+    pendingBacking, primaryState, rawAllocationTarget] = await Promise.all([
     read<bigint>(client, collection, yieldBankCollectionAbi, "state"),
     read<bigint>(client, collection, yieldBankCollectionAbi, "tokenState", [tokenId]),
     read<bigint>(client, collection, yieldBankCollectionAbi, "liveSupply"),
@@ -701,6 +879,10 @@ export async function readYieldBankToken(
     read<string>(client, nft, yieldBankNftAbi, "tokenURI", [tokenId]),
     read<bigint>(client, proceedsVault, yieldBankProceedsVaultAbi, "pendingBackingOf", [tokenId]),
     read<bigint>(client, proceedsVault, yieldBankProceedsVaultAbi, "primaryStateOf", [tokenId]),
+    read<YieldBankAllocationTargetResult>(
+      client, manifest.contracts.allocator.address, yieldBankAllocatorAbi,
+      "allocationTargetOf", [tokenId],
+    ),
   ]);
   const sleeveAddresses = [
     manifest.contracts.coreSleeve.address,
@@ -755,14 +937,31 @@ export async function readYieldBankToken(
       navStale: pricedAt === 0 || now - pricedAt > staleAfter,
       activeStrategyCount, depositsPaused, inventoryAssets, adapters,
       proRataUnderlying, strategyPositions,
+      positionUsd18: totalSupply === 0n ? 0n : totalAssetsUsd18 * entitlement / totalSupply,
       solvent,
     };
   }));
+  const portfolioValueUsd18 = sleeves.reduce((total, sleeve) => total + sleeve.positionUsd18, 0n);
+  const currentAllocationBps = allocationBpsFromValues(
+    sleeves.map((sleeve) => sleeve.positionUsd18) as [bigint, bigint, bigint],
+  );
+  const allocationTarget: YieldBankAllocationTarget = {
+    requester: rawAllocationTarget.requester,
+    coreWeightBps: Number(rawAllocationTarget.coreWeightBps),
+    marketMakingWeightBps: Number(rawAllocationTarget.marketMakingWeightBps),
+    usdgWeightBps: Number(rawAllocationTarget.usdgWeightBps),
+    revision: rawAllocationTarget.revision,
+    executedRevision: rawAllocationTarget.executedRevision,
+    requestedAt: Number(rawAllocationTarget.requestedAt),
+    executedAt: Number(rawAllocationTarget.executedAt),
+    pending: rawAllocationTarget.revision > rawAllocationTarget.executedRevision,
+  };
   return {
     collection, nft, distributor, account, tokenId, owner,
     collectionState: Number(collectionState), tokenState: Number(tokenState), liveSupply, mintedSupply,
     maxSupply, proceedsVault, pendingBacking, primaryState: Number(primaryState), tokenUri,
     sleeves: sleeves.map(({ solvent: _solvent, ...sleeve }) => sleeve),
+    allocationTarget, portfolioValueUsd18, currentAllocationBps,
     proofOfBackingSolvent: sleeves.every(({ solvent }) => solvent),
   };
 }
@@ -778,12 +977,112 @@ export function openSeaAssetUrl(nft: Address, tokenId: bigint): string {
 }
 
 export interface YieldBankAllocationCall { minimumOutput: bigint; minimumShares: bigint; routeData: Hex; sleeveData: Hex }
+
+export interface YieldBankAdapterRedemptionCall {
+  adapter: Address;
+  maxLossBps: number;
+  data: Hex;
+}
+
+export interface YieldBankSleeveRedemptionCall {
+  minimumOutputs: readonly bigint[];
+  adapterCalls: readonly YieldBankAdapterRedemptionCall[];
+}
+
+export interface YieldBankRebalanceConversionCall {
+  asset: Address;
+  minimumWethOut: bigint;
+  routeData: Hex;
+}
+
+export interface YieldBankRebalanceExecution {
+  redemptions: readonly [
+    YieldBankSleeveRedemptionCall,
+    YieldBankSleeveRedemptionCall,
+    YieldBankSleeveRedemptionCall,
+  ];
+  conversions: readonly YieldBankRebalanceConversionCall[];
+  allocations: readonly [YieldBankAllocationCall, YieldBankAllocationCall, YieldBankAllocationCall];
+  minimumWethRecovered: bigint;
+  deadline: bigint;
+}
+
 export function prepareYieldBankAllocation(vault: Address, firstReceiptId: bigint, lastReceiptId: bigint, calls: readonly [YieldBankAllocationCall, YieldBankAllocationCall, YieldBankAllocationCall]) {
   if (firstReceiptId < 1n || lastReceiptId < firstReceiptId || lastReceiptId - firstReceiptId + 1n > 20n) throw new Error("invalid receipt range");
   if (calls.some((call) => call.minimumOutput <= 0n || call.minimumShares <= 0n)) {
     throw new Error("every allocation leg requires positive minimum output and share floors");
   }
   return { to: vault, data: encodeFunctionData({ abi: yieldBankProceedsVaultAbi, functionName: "allocateReceipts", args: [firstReceiptId, lastReceiptId, calls] }), value: 0n } as const;
+}
+
+/** Prepares the NFT owner's target allocation request. Execution remains a separate manual operator action. */
+export function prepareYieldBankTargetAllocation(
+  allocator: Address,
+  tokenId: bigint,
+  weights: readonly [number, number, number],
+) {
+  if (tokenId < 1n) throw new Error("tokenId must be positive");
+  validateAllocationWeights(weights);
+  return {
+    to: allocator,
+    data: encodeFunctionData({
+      abi: yieldBankAllocatorAbi,
+      functionName: "setTargetAllocation",
+      args: [tokenId, weights],
+    }),
+    value: 0n,
+  } as const;
+}
+
+/** Encodes the reviewed slippage, adapter-unwind, and route inputs for manual execution. */
+export function prepareYieldBankTargetExecution(
+  allocator: Address,
+  tokenId: bigint,
+  expectedRevision: bigint,
+  execution: YieldBankRebalanceExecution,
+) {
+  if (tokenId < 1n || expectedRevision < 1n) {
+    throw new Error("tokenId and expectedRevision must be positive");
+  }
+  if (execution.deadline <= 0n || execution.minimumWethRecovered <= 0n) {
+    throw new Error("rebalance requires a positive deadline and WETH recovery floor");
+  }
+  if (execution.conversions.length > 24) throw new Error("rebalance supports at most 24 conversions");
+  const conversionAssets = new Set<string>();
+  for (const conversion of execution.conversions) {
+    const asset = getAddress(conversion.asset);
+    if (conversion.minimumWethOut <= 0n || conversionAssets.has(asset)) {
+      throw new Error("rebalance conversions require unique assets and positive WETH floors");
+    }
+    conversionAssets.add(asset);
+  }
+  for (const redemption of execution.redemptions) {
+    if (redemption.minimumOutputs.some((amount) => amount < 0n)) {
+      throw new Error("redemption output floors cannot be negative");
+    }
+    const adapters = new Set<string>();
+    for (const adapterCall of redemption.adapterCalls) {
+      validateLossBps(adapterCall.maxLossBps);
+      const adapter = getAddress(adapterCall.adapter);
+      if (adapters.has(adapter)) throw new Error("adapter redemption calls must be unique per sleeve");
+      adapters.add(adapter);
+    }
+  }
+  for (const allocation of execution.allocations) {
+    if (allocation.minimumOutput < 0n || allocation.minimumShares < 0n
+      || (allocation.minimumOutput === 0n) !== (allocation.minimumShares === 0n)) {
+      throw new Error("each active allocation requires both output and share floors");
+    }
+  }
+  return {
+    to: allocator,
+    data: encodeFunctionData({
+      abi: yieldBankAllocatorAbi,
+      functionName: "executeTargetAllocation",
+      args: [tokenId, expectedRevision, execution],
+    }),
+    value: 0n,
+  } as const;
 }
 
 export function prepareYieldBankClaim(collection: Address, tokenId: bigint) {
@@ -1031,6 +1330,23 @@ function validateLossBps(value: number): void {
   if (!Number.isInteger(value) || value < 0 || value > 10_000) {
     throw new Error("maxLossBps must be integer basis points");
   }
+}
+
+function validateAllocationWeights(weights: readonly [number, number, number]): void {
+  if (weights.some((weight) => !Number.isInteger(weight) || weight < 0 || weight > 10_000)
+    || weights[0] + weights[1] + weights[2] !== 10_000) {
+    throw new Error("allocation weights must be integer basis points totaling 10000");
+  }
+}
+
+function allocationBpsFromValues(
+  values: readonly [bigint, bigint, bigint],
+): readonly [number, number, number] {
+  const total = values[0] + values[1] + values[2];
+  if (total === 0n) return [0, 0, 0];
+  const core = Number(values[0] * 10_000n / total);
+  const marketCumulative = Number((values[0] + values[1]) * 10_000n / total);
+  return [core, marketCumulative - core, 10_000 - marketCumulative];
 }
 
 function validateDeltaActions(actions: readonly YieldBankDeltaLiquidityAction[]): void {

@@ -16,7 +16,10 @@ import {
   prepareYieldBankClaim,
   prepareYieldBankSettle,
   prepareYieldBankSleeveRedemption,
+  prepareYieldBankTargetAllocation,
+  prepareYieldBankTargetExecution,
   prepareYieldBankTransfer,
+  readYieldBankToken,
   validateYieldBankManifest,
   verifyYieldBankManifest,
   type YieldBankManifestEntry,
@@ -132,6 +135,17 @@ function manifest(): YieldBankReleaseManifest {
       positionManager: addresses[21], entryRoute: addresses[23], exitRoute: addresses[24],
       maximumPositions: 8, adapterCapBps: 4_000,
     },
+    routeBindings: {
+      allocations: [
+        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[15], route: addresses[23], runtimeCodeHash },
+        { inputAsset: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", sleeve: addresses[17], route: addresses[23], runtimeCodeHash },
+      ],
+      rebalances: [
+        { inputAsset: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", route: addresses[24], runtimeCodeHash },
+        { inputAsset: addresses[18], route: addresses[24], runtimeCodeHash },
+        { inputAsset: addresses[0], route: addresses[24], runtimeCodeHash },
+      ],
+    },
     roles: {
       creator: addresses[0], sinjoh: addresses[1], operations: addresses[2],
       allocationOperator: addresses[4], guardian: addresses[3], timelock: addresses[8],
@@ -145,7 +159,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
   validateYieldBankManifest(release);
   const results = await verifyYieldBankManifest({
     getCode: async () => runtime,
-    readContract: async ({ address, functionName }: { address: Address; functionName: string }) => {
+    readContract: async ({ address, functionName, args }: { address: Address; functionName: string; args?: readonly unknown[] }) => {
       if (functionName === "factoryVersion") return release.factoryVersion;
       if (functionName === "collectionCreationCodeHash") return release.deployment.collectionCreationCodeHash;
       if (functionName === "systemPlanHash") return release.deployment.systemPlanHash;
@@ -159,6 +173,7 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       if (functionName === "nft") return release.contracts.nft.address;
       if (functionName === "distributor") return release.contracts.distributor.address;
       if (functionName === "proceedsVault") return release.contracts.proceedsVault.address;
+      if (functionName === "portfolioAllocator") return release.contracts.allocator.address;
       if (functionName === "collection") return release.contracts.collection.address;
       if (functionName === "seaDrop") return release.dependencies.seaDrop.address;
       if (functionName === "royaltyReceiver") return release.contracts.revenueRouter.address;
@@ -187,14 +202,66 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       ];
       if (functionName === "adapterState") return 3n;
       if (functionName === "adapterCapBps") return BigInt(release.delta.adapterCapBps);
+      if (functionName === "routeBinding") {
+        const binding = release.routeBindings.allocations.find((entry) =>
+          entry.inputAsset.toLowerCase() === String(args?.[0]).toLowerCase()
+          && entry.sleeve.toLowerCase() === String(args?.[1]).toLowerCase());
+        if (binding) return [binding.route, binding.runtimeCodeHash];
+      }
+      if (functionName === "rebalanceRoute") {
+        const binding = release.routeBindings.rebalances.find((entry) =>
+          entry.inputAsset.toLowerCase() === String(args?.[0]).toLowerCase());
+        if (binding) return [binding.route, binding.runtimeCodeHash];
+      }
       throw new Error(`unexpected ${functionName}`);
     },
   } as never, release);
-  assert.equal(results.length, 79);
+  assert.equal(results.length, 90);
   assert.ok(results.every((result) => result.ok));
 
   release.economics.exitTaxBps = 501 as 500;
   assert.throws(() => validateYieldBankManifest(release), /economics mismatch/);
+});
+
+test("Yield Bank token reads named allocation tuples in Viem's object shape", async () => {
+  const release = manifest();
+  const target = {
+    requester: addresses[2],
+    coreWeightBps: 2_500,
+    marketMakingWeightBps: 0,
+    usdgWeightBps: 7_500,
+    revision: 4n,
+    executedRevision: 3n,
+    requestedAt: 1_700_000_000,
+    executedAt: 1_699_999_000,
+  } as const;
+  const view = await readYieldBankToken({
+    readContract: async ({ functionName }: { functionName: string }) => {
+      if (functionName === "state") return 1n;
+      if (functionName === "tokenState") return 2n;
+      if (functionName === "liveSupply" || functionName === "mintedSupply") return 10n;
+      if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "accountOf") return addresses[1];
+      if (functionName === "ownerOf") return addresses[2];
+      if (functionName === "tokenURI") return "ipfs://yield-banks/42";
+      if (functionName === "pendingBackingOf") return 0n;
+      if (functionName === "primaryStateOf") return 2n;
+      if (functionName === "allocationTargetOf") return target;
+      if (functionName === "balanceOf") return 100n;
+      if (functionName === "pending" || functionName === "cumulativeSettled") return 0n;
+      if (functionName === "totalSupply") return 1_000n;
+      if (functionName === "totalAssetsUsd18") return [1_000_000n, 1_700_000_000n];
+      if (functionName === "activeStrategyCount") return 0n;
+      if (functionName === "depositsPaused") return false;
+      if (functionName === "inventoryAssets" || functionName === "adapters") return [];
+      if (functionName === "solvent") return true;
+      throw new Error(`unexpected ${functionName}`);
+    },
+  } as never, release, 42n, { now: 1_700_000_100 });
+
+  assert.deepEqual(view.allocationTarget, { ...target, pending: true });
+  assert.equal(view.portfolioValueUsd18, 300_000n);
+  assert.deepEqual(view.currentAllocationBps, [3_333, 3_333, 3_334]);
 });
 
 test("Yield Banks manifest binds OpenSea payout and hosted collection", () => {
@@ -221,6 +288,27 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   const sleeveRedemption = prepareYieldBankSleeveRedemption(
     addresses[5], 10n, addresses[3], addresses[3], 1n,
   );
+  const targetAllocation = prepareYieldBankTargetAllocation(
+    addresses[11], 42n, [2_500, 0, 7_500],
+  );
+  const emptyAllocation = {
+    minimumOutput: 0n, minimumShares: 0n, routeData: "0x", sleeveData: "0x",
+  } as const;
+  const targetExecution = prepareYieldBankTargetExecution(addresses[11], 42n, 3n, {
+    redemptions: [
+      { minimumOutputs: [1n], adapterCalls: [] },
+      { minimumOutputs: [1n], adapterCalls: [] },
+      { minimumOutputs: [1n], adapterCalls: [] },
+    ],
+    conversions: [{ asset: addresses[1], minimumWethOut: 1n, routeData: "0x" }],
+    allocations: [
+      { minimumOutput: 1n, minimumShares: 1n, routeData: "0x", sleeveData: "0x" },
+      emptyAllocation,
+      { minimumOutput: 1n, minimumShares: 1n, routeData: "0x", sleeveData: "0x" },
+    ],
+    minimumWethRecovered: 1n,
+    deadline: 1_800_000_000n,
+  });
   assert.equal(settle.value, 0n);
   assert.equal(transfer.value, 0n);
   assert.equal(burn.value, 0n);
@@ -231,6 +319,8 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.equal(adapterCollection.value, 0n);
   assert.equal(adapterExit.value, 0n);
   assert.equal(sleeveRedemption.value, 0n);
+  assert.equal(targetAllocation.value, 0n);
+  assert.equal(targetExecution.value, 0n);
   assert.throws(
     () => prepareYieldBankAllocation(addresses[4], 1n, 2n, [
       { ...guarded, minimumOutput: 0n }, guarded, guarded,
@@ -240,6 +330,10 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
   assert.notEqual(settle.data, burn.data);
   assert.throws(() => prepareYieldBankSettle(collection, 0n), /positive/);
   assert.throws(() => prepareYieldBankBurn(collection, 0n), /positive/);
+  assert.throws(
+    () => prepareYieldBankTargetAllocation(addresses[11], 42n, [5_000, 5_000, 1]),
+    /totaling 10000/,
+  );
   assert.equal(openSeaCollectionUrl("sinjoh-yield-banks"), "https://opensea.io/collection/sinjoh-yield-banks/overview");
 });
 

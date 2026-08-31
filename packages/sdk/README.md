@@ -104,6 +104,17 @@ The API client needs no RPC provider. Use it for discovery, aggregates, and
 history; use `createSinjohClient` for live contract reads, verification, planning,
 and prepared calls. See the [API reference](../../docs/api.md).
 
+## Yield Banks owner allocations
+
+`readYieldBankToken` returns the NFT owner, current per-sleeve USD18 value, current percentage mix,
+saved target, and target execution revision. A holder calls `prepareYieldBankTargetAllocation` with
+three integer basis-point weights totaling 10,000. That transaction records intent but does not move
+funds. The manual allocation operator uses `prepareYieldBankTargetExecution` with the expected
+revision, complete sleeve unwind data, reverse conversions, slippage floors, loss limits, and a
+deadline. The same saved target can be manually re-synced after later distributions create drift.
+Release verification also requires the manifest's exact WETH entry routes and reverse-to-WETH
+rebalance routes to match the allocator's live codehash-bound mappings.
+
 ## Safety rules
 
 1. Call `verify()` before trusting packaged addresses and require every result to pass.
