@@ -20,6 +20,7 @@ import {
   prepareYieldBankNativeRoyaltySync,
   prepareYieldBankNftOwnershipAcceptance,
   prepareYieldBankNftOwnershipTransfer,
+  prepareYieldBankPublicCollectionCreation,
   prepareYieldBankRoyaltySync,
   prepareYieldBankSeaDropAllowListClear,
   prepareYieldBankSeaDropFeeRecipient,
@@ -37,11 +38,14 @@ import {
   validateYieldBankManifest,
   verifyYieldBankManifest,
   yieldBankNftAbi,
+  yieldBankPublicFactoryAbi,
   yieldBankStrategyRegistryAbi,
   yieldBankMintStagesHash,
   type YieldBankManifestEntry,
   type YieldBankFeedBinding,
   type YieldBankReleaseManifest,
+  type YieldBankPublicFactoryCollectionRequest,
+  type YieldBankPublicFactoryCreationCode,
 } from "../src/index.js";
 
 const addresses = [
@@ -94,6 +98,48 @@ const feedBinding = (
   observedAt: "2026-08-28T16:00:00Z",
   wethUsdFeed: "0x0000000000000000000000000000000000000000",
   twapWindow: 0, maxSpotDeviationBps: 0, comparisonAmount: "0", minimumLiquidity: "0",
+});
+
+test("prepares a permissionless public Yield Bank collection transaction", () => {
+  const code = Object.fromEntries([
+    "supportBundle", "revenueRouter", "portfolioAllocator", "collectionTimelock",
+    "coreSleeve", "marketMakingSleeve", "usdgSleeve", "accountImplementation",
+    "deltaPoolController", "collection",
+  ].map((name) => [name, "0x6000"])) as unknown as YieldBankPublicFactoryCreationCode;
+  const sleeve = {
+    name: "1", symbol: "1", maximumStrategies: 0,
+    maximumAdapterCapBps: 0, maximumOperatorLossBps: 0,
+  } as const;
+  const request: YieldBankPublicFactoryCollectionRequest = {
+    name: "A", symbol: "A", maxSupply: 3n, secondaryRoyaltyBps: 500n,
+    primaryBackingBps: 8_000, primaryCreatorBps: 1_000, primarySinjohBps: 1_000,
+    royaltyBackingBps: 7_000, royaltyCreatorBps: 2_000, royaltySinjohBps: 1_000,
+    coreWeightBps: 4_000, marketMakingWeightBps: 3_000, usdgWeightBps: 3_000,
+    creator: addresses[0], openSeaManager: addresses[0], sinjohFeeRecipient: addresses[1],
+    allocationOperator: addresses[0], timelockProposer: addresses[0], guardian: addresses[0],
+    redemptionToken: "0x0000000000000000000000000000000000000000",
+    redemptionTokenAmount: 0n, redemptionTokenCodeHash: `0x${"0".repeat(64)}`,
+    eligibilityPolicy: "0x0000000000000000000000000000000000000000",
+    eligibilityPolicyCodeHash: `0x${"0".repeat(64)}`,
+    coreSleeve: { ...sleeve, name: "B", symbol: "B", maximumStrategies: 8,
+      maximumAdapterCapBps: 10_000 },
+    marketMakingSleeve: { ...sleeve, name: "C", symbol: "C", maximumStrategies: 8,
+      maximumAdapterCapBps: 10_000 },
+    usdgSleeve: sleeve,
+    deltaRisk: {
+      maximumAdapterCapBps: 10_000, maximumOperatorLossBps: 0,
+      maximumPoolFeedHeartbeat: 86_400, maximumPoolFeedGracePeriod: 86_400,
+      minimumPoolTwapWindow: 300, maximumPoolReferenceDeviationBps: 1_000,
+      maximumPoolSpotDeviationBps: 1_000,
+    },
+  };
+  const userSalt = keccak256(toBytes("1"));
+  const transaction = prepareYieldBankPublicCollectionCreation(addresses[2], code, request, userSalt);
+  const decoded = decodeFunctionData({ abi: yieldBankPublicFactoryAbi, data: transaction.data });
+  assert.equal(transaction.to, addresses[2]);
+  assert.equal(transaction.value, 0n);
+  assert.equal(decoded.functionName, "createCollection");
+  assert.equal(decoded.args?.[2], userSalt);
 });
 
 function manifest(): YieldBankReleaseManifest {

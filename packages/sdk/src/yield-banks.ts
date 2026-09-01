@@ -399,6 +399,104 @@ export const yieldBankSystemFactoryAbi = [
   { type: "function", name: "systemPlanHash", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
 ] as const;
 
+const yieldBankPublicFactoryCreationCodeComponents = [
+  { name: "supportBundle", type: "bytes" },
+  { name: "revenueRouter", type: "bytes" },
+  { name: "portfolioAllocator", type: "bytes" },
+  { name: "collectionTimelock", type: "bytes" },
+  { name: "coreSleeve", type: "bytes" },
+  { name: "marketMakingSleeve", type: "bytes" },
+  { name: "usdgSleeve", type: "bytes" },
+  { name: "accountImplementation", type: "bytes" },
+  { name: "deltaPoolController", type: "bytes" },
+  { name: "collection", type: "bytes" },
+] as const;
+
+const yieldBankPublicFactorySleeveComponents = [
+  { name: "name", type: "string" },
+  { name: "symbol", type: "string" },
+  { name: "maximumStrategies", type: "uint8" },
+  { name: "maximumAdapterCapBps", type: "uint16" },
+  { name: "maximumOperatorLossBps", type: "uint16" },
+] as const;
+
+const yieldBankPublicFactoryDeltaRiskComponents = [
+  { name: "maximumAdapterCapBps", type: "uint16" },
+  { name: "maximumOperatorLossBps", type: "uint16" },
+  { name: "maximumPoolFeedHeartbeat", type: "uint32" },
+  { name: "maximumPoolFeedGracePeriod", type: "uint32" },
+  { name: "minimumPoolTwapWindow", type: "uint32" },
+  { name: "maximumPoolReferenceDeviationBps", type: "uint16" },
+  { name: "maximumPoolSpotDeviationBps", type: "uint16" },
+] as const;
+
+const yieldBankPublicFactoryRequestComponents = [
+  { name: "name", type: "string" },
+  { name: "symbol", type: "string" },
+  { name: "maxSupply", type: "uint256" },
+  { name: "secondaryRoyaltyBps", type: "uint96" },
+  { name: "primaryBackingBps", type: "uint16" },
+  { name: "primaryCreatorBps", type: "uint16" },
+  { name: "primarySinjohBps", type: "uint16" },
+  { name: "royaltyBackingBps", type: "uint16" },
+  { name: "royaltyCreatorBps", type: "uint16" },
+  { name: "royaltySinjohBps", type: "uint16" },
+  { name: "coreWeightBps", type: "uint16" },
+  { name: "marketMakingWeightBps", type: "uint16" },
+  { name: "usdgWeightBps", type: "uint16" },
+  { name: "creator", type: "address" },
+  { name: "openSeaManager", type: "address" },
+  { name: "sinjohFeeRecipient", type: "address" },
+  { name: "allocationOperator", type: "address" },
+  { name: "timelockProposer", type: "address" },
+  { name: "guardian", type: "address" },
+  { name: "redemptionToken", type: "address" },
+  { name: "redemptionTokenAmount", type: "uint256" },
+  { name: "redemptionTokenCodeHash", type: "bytes32" },
+  { name: "eligibilityPolicy", type: "address" },
+  { name: "eligibilityPolicyCodeHash", type: "bytes32" },
+  { name: "coreSleeve", type: "tuple", components: yieldBankPublicFactorySleeveComponents },
+  { name: "marketMakingSleeve", type: "tuple", components: yieldBankPublicFactorySleeveComponents },
+  { name: "usdgSleeve", type: "tuple", components: yieldBankPublicFactorySleeveComponents },
+  { name: "deltaRisk", type: "tuple", components: yieldBankPublicFactoryDeltaRiskComponents },
+] as const;
+
+const yieldBankPublicFactorySystemAddressComponents = [
+  "supportBundle", "revenueRouter", "portfolioAllocator", "collectionTimelock",
+  "coreSleeve", "marketMakingSleeve", "usdgSleeve", "accountImplementation",
+  "deltaPoolController", "collection",
+].map((name) => ({ name, type: "address" } as const));
+
+const yieldBankPublicFactoryCreationCodeHashComponents = [
+  "supportBundle", "revenueRouter", "portfolioAllocator", "collectionTimelock",
+  "coreSleeve", "marketMakingSleeve", "usdgSleeve", "accountImplementation",
+  "deltaPoolController", "collection",
+].map((name) => ({ name, type: "bytes32" } as const));
+
+export const yieldBankPublicFactoryAbi = [
+  ...["registry", "weth", "usdg", "seaDrop"].map((name) => ({
+    type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "address" }],
+  } as const)),
+  { type: "function", name: "factoryVersion", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "creationCodeHashes", stateMutability: "view", inputs: [], outputs: [
+    { type: "tuple", components: yieldBankPublicFactoryCreationCodeHashComponents },
+  ] },
+  { type: "function", name: "deploymentId", stateMutability: "view", inputs: [
+    { name: "caller", type: "address" }, { name: "userSalt", type: "bytes32" },
+  ], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "deploymentUsed", stateMutability: "view", inputs: [
+    { name: "deploymentId", type: "bytes32" },
+  ], outputs: [{ name: "used", type: "bool" }] },
+  { type: "function", name: "predictAddresses", stateMutability: "view", inputs: [
+    { name: "caller", type: "address" }, { name: "userSalt", type: "bytes32" },
+  ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
+  { type: "function", name: "createCollection", stateMutability: "nonpayable", inputs: [
+    { name: "code", type: "tuple", components: yieldBankPublicFactoryCreationCodeComponents },
+    { name: "request", type: "tuple", components: yieldBankPublicFactoryRequestComponents },
+    { name: "userSalt", type: "bytes32" },
+  ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
+] as const;
+
 export const yieldBankProtocolRegistryAbi = [
   { type: "function", name: "collections", stateMutability: "view", inputs: [{ name: "collection", type: "address" }], outputs: [
     { name: "factory", type: "address" }, { name: "factoryVersion", type: "bytes32" },
@@ -497,6 +595,81 @@ export interface YieldBankSeaDropSignedMintConfig {
   maxMaxTokenSupplyForStage: number;
   minFeeBps: number;
   maxFeeBps: number;
+}
+
+export interface YieldBankPublicFactoryCreationCode {
+  supportBundle: Hex;
+  revenueRouter: Hex;
+  portfolioAllocator: Hex;
+  collectionTimelock: Hex;
+  coreSleeve: Hex;
+  marketMakingSleeve: Hex;
+  usdgSleeve: Hex;
+  accountImplementation: Hex;
+  deltaPoolController: Hex;
+  collection: Hex;
+}
+
+export interface YieldBankPublicFactorySleeveConfig {
+  name: string;
+  symbol: string;
+  maximumStrategies: number;
+  maximumAdapterCapBps: number;
+  maximumOperatorLossBps: number;
+}
+
+export interface YieldBankPublicFactoryDeltaRiskConfig {
+  maximumAdapterCapBps: number;
+  maximumOperatorLossBps: number;
+  maximumPoolFeedHeartbeat: number;
+  maximumPoolFeedGracePeriod: number;
+  minimumPoolTwapWindow: number;
+  maximumPoolReferenceDeviationBps: number;
+  maximumPoolSpotDeviationBps: number;
+}
+
+export interface YieldBankPublicFactoryCollectionRequest {
+  name: string;
+  symbol: string;
+  maxSupply: bigint;
+  secondaryRoyaltyBps: bigint;
+  primaryBackingBps: number;
+  primaryCreatorBps: number;
+  primarySinjohBps: number;
+  royaltyBackingBps: number;
+  royaltyCreatorBps: number;
+  royaltySinjohBps: number;
+  coreWeightBps: number;
+  marketMakingWeightBps: number;
+  usdgWeightBps: number;
+  creator: Address;
+  openSeaManager: Address;
+  sinjohFeeRecipient: Address;
+  allocationOperator: Address;
+  timelockProposer: Address;
+  guardian: Address;
+  redemptionToken: Address;
+  redemptionTokenAmount: bigint;
+  redemptionTokenCodeHash: Hex;
+  eligibilityPolicy: Address;
+  eligibilityPolicyCodeHash: Hex;
+  coreSleeve: YieldBankPublicFactorySleeveConfig;
+  marketMakingSleeve: YieldBankPublicFactorySleeveConfig;
+  usdgSleeve: YieldBankPublicFactorySleeveConfig;
+  deltaRisk: YieldBankPublicFactoryDeltaRiskConfig;
+}
+
+export interface YieldBankPublicFactorySystemAddresses {
+  supportBundle: Address;
+  revenueRouter: Address;
+  portfolioAllocator: Address;
+  collectionTimelock: Address;
+  coreSleeve: Address;
+  marketMakingSleeve: Address;
+  usdgSleeve: Address;
+  accountImplementation: Address;
+  deltaPoolController: Address;
+  collection: Address;
 }
 
 export interface YieldBankManifestEntry {
@@ -1815,6 +1988,126 @@ export interface YieldBankRebalanceExecution {
   allocations: readonly [YieldBankAllocationCall, YieldBankAllocationCall, YieldBankAllocationCall];
   minimumWethRecovered: bigint;
   deadline: bigint;
+}
+
+/** Builds the permissionless public-factory transaction from an independently owned wallet. */
+export function prepareYieldBankPublicCollectionCreation(
+  factory: Address,
+  creationCode: YieldBankPublicFactoryCreationCode,
+  request: YieldBankPublicFactoryCollectionRequest,
+  userSalt: Hex,
+) {
+  const zeroAddress = "0x0000000000000000000000000000000000000000" as Address;
+  const zeroHash = `0x${"0".repeat(64)}` as Hex;
+  validateBytes32("userSalt", userSalt);
+  if (userSalt.toLowerCase() === zeroHash) throw new Error("userSalt must be nonzero");
+  if (new TextEncoder().encode(request.name).length < 1
+      || new TextEncoder().encode(request.name).length > 128
+      || new TextEncoder().encode(request.symbol).length < 1
+      || new TextEncoder().encode(request.symbol).length > 32) {
+    throw new Error("collection name or symbol length is invalid");
+  }
+  if (request.maxSupply < 1n || request.maxSupply > 18_446_744_073_709_551_615n) {
+    throw new Error("maxSupply must be in 1..2^64-1");
+  }
+  const bps = [
+    request.primaryBackingBps, request.primaryCreatorBps, request.primarySinjohBps,
+    request.royaltyBackingBps, request.royaltyCreatorBps, request.royaltySinjohBps,
+    request.coreWeightBps, request.marketMakingWeightBps, request.usdgWeightBps,
+  ];
+  if (request.secondaryRoyaltyBps < 0n || request.secondaryRoyaltyBps > 10_000n
+      || bps.some((value) => !Number.isInteger(value) || value < 0 || value > 10_000)
+      || request.primaryBackingBps === 0
+      || request.primaryBackingBps + request.primaryCreatorBps + request.primarySinjohBps !== 10_000
+      || request.royaltyBackingBps === 0
+      || request.royaltyBackingBps + request.royaltyCreatorBps + request.royaltySinjohBps !== 10_000
+      || request.coreWeightBps === 0 || request.marketMakingWeightBps === 0
+      || request.usdgWeightBps === 0
+      || request.coreWeightBps + request.marketMakingWeightBps + request.usdgWeightBps !== 10_000) {
+    throw new Error("collection basis-point configuration is invalid");
+  }
+  for (const [name, sleeve] of Object.entries({
+    coreSleeve: request.coreSleeve,
+    marketMakingSleeve: request.marketMakingSleeve,
+    usdgSleeve: request.usdgSleeve,
+  })) {
+    if (!Number.isInteger(sleeve.maximumStrategies) || sleeve.maximumStrategies < 0
+        || sleeve.maximumStrategies > 8 || !Number.isInteger(sleeve.maximumAdapterCapBps)
+        || sleeve.maximumAdapterCapBps < 0 || sleeve.maximumAdapterCapBps > 10_000
+        || (sleeve.maximumStrategies !== 0 && sleeve.maximumAdapterCapBps === 0)
+        || !Number.isInteger(sleeve.maximumOperatorLossBps)
+        || sleeve.maximumOperatorLossBps < 0 || sleeve.maximumOperatorLossBps > 10_000) {
+      throw new Error(`${name} risk configuration is invalid`);
+    }
+  }
+  const delta = request.deltaRisk;
+  if (!Number.isInteger(delta.maximumAdapterCapBps) || delta.maximumAdapterCapBps < 1
+      || delta.maximumAdapterCapBps > 10_000
+      || !Number.isInteger(delta.maximumOperatorLossBps) || delta.maximumOperatorLossBps < 0
+      || delta.maximumOperatorLossBps > 10_000
+      || !Number.isInteger(delta.maximumPoolFeedHeartbeat) || delta.maximumPoolFeedHeartbeat < 1
+      || !Number.isInteger(delta.maximumPoolFeedGracePeriod)
+      || delta.maximumPoolFeedGracePeriod < 0
+      || !Number.isInteger(delta.minimumPoolTwapWindow) || delta.minimumPoolTwapWindow < 1
+      || delta.minimumPoolTwapWindow > 86_400
+      || !Number.isInteger(delta.maximumPoolReferenceDeviationBps)
+      || delta.maximumPoolReferenceDeviationBps < 1
+      || delta.maximumPoolReferenceDeviationBps > 10_000
+      || !Number.isInteger(delta.maximumPoolSpotDeviationBps)
+      || delta.maximumPoolSpotDeviationBps < 1
+      || delta.maximumPoolSpotDeviationBps > 2_000) {
+    throw new Error("Delta risk configuration is invalid");
+  }
+  for (const [name, code] of Object.entries(creationCode)) {
+    if (!/^0x(?:[0-9a-fA-F]{2})+$/.test(code)) throw new Error(`${name} creation code is invalid`);
+  }
+  for (const [name, address] of Object.entries({
+    creator: request.creator,
+    openSeaManager: request.openSeaManager,
+    sinjohFeeRecipient: request.sinjohFeeRecipient,
+    allocationOperator: request.allocationOperator,
+    timelockProposer: request.timelockProposer,
+    guardian: request.guardian,
+  })) {
+    if (getAddress(address) === zeroAddress) throw new Error(`${name} must be nonzero`);
+  }
+  const redemptionToken = getAddress(request.redemptionToken);
+  const noRedemptionToken = redemptionToken === zeroAddress
+    && request.redemptionTokenAmount === 0n
+    && request.redemptionTokenCodeHash.toLowerCase() === zeroHash;
+  const configuredRedemptionToken = redemptionToken !== zeroAddress
+    && request.redemptionTokenAmount > 0n
+    && request.redemptionTokenCodeHash.toLowerCase() !== zeroHash;
+  if (!noRedemptionToken && !configuredRedemptionToken) {
+    throw new Error("redemption token address, amount, and code hash must be configured together");
+  }
+  validateBytes32("redemptionTokenCodeHash", request.redemptionTokenCodeHash);
+  validateBytes32("eligibilityPolicyCodeHash", request.eligibilityPolicyCodeHash);
+  const eligibilityPolicy = getAddress(request.eligibilityPolicy);
+  if ((eligibilityPolicy === zeroAddress)
+      !== (request.eligibilityPolicyCodeHash.toLowerCase() === zeroHash)) {
+    throw new Error("eligibility policy address and code hash must be configured together");
+  }
+  const normalizedRequest = {
+    ...request,
+    creator: getAddress(request.creator),
+    openSeaManager: getAddress(request.openSeaManager),
+    sinjohFeeRecipient: getAddress(request.sinjohFeeRecipient),
+    allocationOperator: getAddress(request.allocationOperator),
+    timelockProposer: getAddress(request.timelockProposer),
+    guardian: getAddress(request.guardian),
+    redemptionToken,
+    eligibilityPolicy,
+  };
+  return {
+    to: getAddress(factory),
+    data: encodeFunctionData({
+      abi: yieldBankPublicFactoryAbi,
+      functionName: "createCollection",
+      args: [creationCode, normalizedRequest, userSalt],
+    }),
+    value: 0n,
+  } as const;
 }
 
 /** Encodes the paid public stage that OpenSea Studio submits through the NFT contract. */
