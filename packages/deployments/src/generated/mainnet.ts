@@ -22,6 +22,18 @@ export const mainnet = {
     }
   },
   contracts: {
+    "yieldBanks.registry": {
+      "address": "0x09e4542f9fEA13A00aAF400E81bDC10434af5278",
+      "runtimeCodeHash": "0x946ec7768669b7520fa5744c788a77b2f865c6482b094f759ef323d6a5ecfef0",
+      "purpose": "Canonical registry for permissionless, versioned Yield Bank collection factories."
+    },
+    "yieldBanks.publicFactory": {
+      "address": "0x5Ef0056E4619a92CDeEa6139c29EDC76b19820c1",
+      "deploymentBlock": 52917622,
+      "deploymentTransaction": "0xec15a893131cf834145d0e1ff23bbb0ffdd6f058987a52803babd8d80025f7b9",
+      "runtimeCodeHash": "0xc63a5edf6f11a0a49b11ab8dfd48502d5fcfef52aa4338d3a9631ccf19194dd9",
+      "purpose": "Permissionless staged factory for configurable Yield Bank NFT collections."
+    },
     "launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
       "deploymentBlock": 41666632,
