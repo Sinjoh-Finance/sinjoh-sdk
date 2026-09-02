@@ -409,19 +409,6 @@ export const yieldBankSystemFactoryAbi = [
   { type: "function", name: "systemPlanHash", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
 ] as const;
 
-const yieldBankPublicFactoryCreationCodeComponents = [
-  { name: "supportBundle", type: "bytes" },
-  { name: "revenueRouter", type: "bytes" },
-  { name: "portfolioAllocator", type: "bytes" },
-  { name: "collectionTimelock", type: "bytes" },
-  { name: "coreSleeve", type: "bytes" },
-  { name: "marketMakingSleeve", type: "bytes" },
-  { name: "usdgSleeve", type: "bytes" },
-  { name: "accountImplementation", type: "bytes" },
-  { name: "deltaPoolController", type: "bytes" },
-  { name: "collection", type: "bytes" },
-] as const;
-
 const yieldBankPublicFactorySleeveComponents = [
   { name: "maximumStrategies", type: "uint8" },
   { name: "maximumAdapterCapBps", type: "uint16" },
@@ -495,6 +482,12 @@ export const yieldBankPublicFactoryAbi = [
   { type: "function", name: "creationCodeHashes", stateMutability: "view", inputs: [], outputs: [
     { type: "tuple", components: yieldBankPublicFactoryCreationCodeHashComponents },
   ] },
+  { type: "function", name: "creationCodeStores", stateMutability: "view", inputs: [], outputs: [
+    { type: "tuple", components: yieldBankPublicFactorySystemAddressComponents },
+  ] },
+  { type: "function", name: "creationCodeStoreRuntimeCodeHashes", stateMutability: "view", inputs: [], outputs: [
+    { type: "tuple", components: yieldBankPublicFactoryCreationCodeHashComponents },
+  ] },
   { type: "function", name: "deploymentId", stateMutability: "view", inputs: [
     { name: "caller", type: "address" }, { name: "userSalt", type: "bytes32" },
   ], outputs: [{ type: "bytes32" }] },
@@ -505,7 +498,6 @@ export const yieldBankPublicFactoryAbi = [
     { name: "caller", type: "address" }, { name: "userSalt", type: "bytes32" },
   ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
   { type: "function", name: "createCollection", stateMutability: "nonpayable", inputs: [
-    { name: "code", type: "tuple", components: yieldBankPublicFactoryCreationCodeComponents },
     { name: "request", type: "tuple", components: yieldBankPublicFactoryRequestComponents },
     { name: "userSalt", type: "bytes32" },
   ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
@@ -609,19 +601,6 @@ export interface YieldBankSeaDropSignedMintConfig {
   maxMaxTokenSupplyForStage: number;
   minFeeBps: number;
   maxFeeBps: number;
-}
-
-export interface YieldBankPublicFactoryCreationCode {
-  supportBundle: Hex;
-  revenueRouter: Hex;
-  portfolioAllocator: Hex;
-  collectionTimelock: Hex;
-  coreSleeve: Hex;
-  marketMakingSleeve: Hex;
-  usdgSleeve: Hex;
-  accountImplementation: Hex;
-  deltaPoolController: Hex;
-  collection: Hex;
 }
 
 export interface YieldBankPublicFactorySleeveConfig {
@@ -2125,7 +2104,6 @@ export interface YieldBankRebalanceExecution {
 /** Builds the permissionless public-factory transaction from an independently owned wallet. */
 export function prepareYieldBankPublicCollectionCreation(
   factory: Address,
-  creationCode: YieldBankPublicFactoryCreationCode,
   request: YieldBankPublicFactoryCollectionRequest,
   userSalt: Hex,
 ) {
@@ -2190,9 +2168,6 @@ export function prepareYieldBankPublicCollectionCreation(
       || delta.maximumPoolSpotDeviationBps > 2_000) {
     throw new Error("Delta risk configuration is invalid");
   }
-  for (const [name, code] of Object.entries(creationCode)) {
-    if (!/^0x(?:[0-9a-fA-F]{2})+$/.test(code)) throw new Error(`${name} creation code is invalid`);
-  }
   for (const [name, address] of Object.entries({
     creator: request.creator,
     openSeaManager: request.openSeaManager,
@@ -2240,7 +2215,7 @@ export function prepareYieldBankPublicCollectionCreation(
     data: encodeFunctionData({
       abi: yieldBankPublicFactoryAbi,
       functionName: "createCollection",
-      args: [creationCode, normalizedRequest, userSalt],
+      args: [normalizedRequest, userSalt],
     }),
     value: 0n,
   } as const;

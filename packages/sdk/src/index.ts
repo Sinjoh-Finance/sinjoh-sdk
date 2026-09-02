@@ -183,7 +183,6 @@ export {
   type YieldBankReleaseManifest, type YieldBankSleevePolicy, type YieldBankSleeveView,
   type YieldBankPublicFactoryCollectionRequest,
   type YieldBankFeeWeightRange,
-  type YieldBankPublicFactoryCreationCode,
   type YieldBankPublicFactoryDeltaRiskConfig,
   type YieldBankPublicFactorySleeveConfig,
   type YieldBankPublicFactorySystemAddresses,

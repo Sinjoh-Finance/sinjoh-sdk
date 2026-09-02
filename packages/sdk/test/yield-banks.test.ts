@@ -46,7 +46,6 @@ import {
   type YieldBankFeedBinding,
   type YieldBankReleaseManifest,
   type YieldBankPublicFactoryCollectionRequest,
-  type YieldBankPublicFactoryCreationCode,
 } from "../src/index.js";
 
 const addresses = [
@@ -102,11 +101,6 @@ const feedBinding = (
 });
 
 test("prepares a permissionless public Yield Bank collection transaction", () => {
-  const code = Object.fromEntries([
-    "supportBundle", "revenueRouter", "portfolioAllocator", "collectionTimelock",
-    "coreSleeve", "marketMakingSleeve", "usdgSleeve", "accountImplementation",
-    "deltaPoolController", "collection",
-  ].map((name) => [name, "0x6000"])) as unknown as YieldBankPublicFactoryCreationCode;
   const sleeve = {
     maximumStrategies: 0,
     maximumAdapterCapBps: 0, maximumOperatorLossBps: 0,
@@ -142,39 +136,40 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     },
   };
   const userSalt = keccak256(toBytes("1"));
-  const transaction = prepareYieldBankPublicCollectionCreation(addresses[2], code, request, userSalt);
+  const transaction = prepareYieldBankPublicCollectionCreation(addresses[2], request, userSalt);
   const decoded = decodeFunctionData({ abi: yieldBankPublicFactoryAbi, data: transaction.data });
   assert.equal(transaction.to, addresses[2]);
   assert.equal(transaction.value, 0n);
   assert.equal(decoded.functionName, "createCollection");
-  assert.equal(decoded.args?.[2], userSalt);
-  const decodedRequest = decoded.args?.[1];
+  assert.equal(decoded.args?.[1], userSalt);
+  const decodedRequest = decoded.args?.[0];
   assert.ok(decodedRequest && typeof decodedRequest === "object" && "feeWeightRanges" in decodedRequest);
   assert.deepEqual(decodedRequest.feeWeightRanges, request.feeWeightRanges);
+  assert.ok(transaction.data.length < 10_000);
 
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, { ...request, feeWeightRanges: [{ endTokenId: 2n, feeWeight: 1n }] },
+    addresses[2], { ...request, feeWeightRanges: [{ endTokenId: 2n, feeWeight: 1n }] },
     userSalt,
   ), /final fee-weight range must end at maxSupply/);
   assert.doesNotThrow(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, { ...request, name: "Piggy 🐷 / Bank", symbol: "🐷BANK" }, userSalt,
+    addresses[2], { ...request, name: "Piggy 🐷 / Bank", symbol: "🐷BANK" }, userSalt,
   ));
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, { ...request, name: "" }, userSalt,
+    addresses[2], { ...request, name: "" }, userSalt,
   ), /collection name or symbol byte length is invalid/);
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, {
+    addresses[2], {
       ...request,
       maxSupply: 1n,
       feeWeightRanges: [{ endTokenId: 1n, feeWeight: 1_000_000_000_000_000_000_000_000_001n }],
     }, userSalt,
   ), /cannot exceed the distributor precision scale/);
   assert.doesNotThrow(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, { ...request, timelockDelay: 31 * 24 * 60 * 60 }, userSalt,
+    addresses[2], { ...request, timelockDelay: 31 * 24 * 60 * 60 }, userSalt,
   ));
   assert.throws(
     () => prepareYieldBankPublicCollectionCreation(
-      addresses[2], code,
+      addresses[2],
       { ...request, timelockDelay: 281_474_976_710_656 }, userSalt,
     ),
     /fit uint48/,
