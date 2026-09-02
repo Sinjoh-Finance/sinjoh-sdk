@@ -15,8 +15,8 @@ export const yieldBankCollectionAbi = [
   { type: "function", name: "feeWeightRange", stateMutability: "view", inputs: [{ name: "index", type: "uint256" }], outputs: [{ name: "endTokenId", type: "uint64" }, { name: "weight", type: "uint96" }] },
   { type: "function", name: "feeWeightOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "uint96" }] },
   { type: "function", name: "secondaryRoyaltyBps", stateMutability: "view", inputs: [], outputs: [{ type: "uint96" }] },
+  { type: "function", name: "exitTaxBps", stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }] },
   ...[
-    "primaryBackingBps", "primaryCreatorBps", "primarySinjohBps",
     "coreWeightBps", "marketMakingWeightBps", "usdgWeightBps",
   ].map((name) => ({ type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }] } as const)),
   { type: "function", name: "accountOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "address" }] },
@@ -28,13 +28,11 @@ export const yieldBankCollectionAbi = [
   { type: "function", name: "accountImplementation", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "eligibilityPolicy", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   ...[
-    "creator", "openSeaManager", "sinjohFeeRecipient", "revenueRouter",
+    "creator", "sinjohFeeRecipient", "revenueRouter",
     "collectionTimelock", "guardian",
   ].map((name) => ({ type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "address" }] } as const)),
-  { type: "function", name: "claimPrimary", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
-  { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [] },
-  { type: "function", name: "settleBatch", stateMutability: "nonpayable", inputs: [{ name: "tokenIds", type: "uint256[]" }], outputs: [] },
   { type: "function", name: "burnToken", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }, { name: "proof", type: "bytes" }], outputs: [] },
+  { type: "function", name: "burnTokenWithAssets", stateMutability: "nonpayable", inputs: [{ name: "tokenId", type: "uint256" }, { name: "proof", type: "bytes" }, { name: "additionalAssets", type: "address[]" }], outputs: [] },
 ] as const;
 
 export const yieldBankNftAbi = [
@@ -102,9 +100,13 @@ export const yieldBankRevenueRouterAbi = [
   ].map((name) => ({ type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }] } as const)),
   { type: "function", name: "syncRoyalty", stateMutability: "nonpayable", inputs: [{ name: "asset", type: "address" }, { name: "sourceData", type: "bytes" }], outputs: [{ name: "amount", type: "uint256" }] },
   { type: "function", name: "syncNativeRoyalty", stateMutability: "nonpayable", inputs: [{ name: "sourceData", type: "bytes" }], outputs: [{ name: "amount", type: "uint256" }] },
+  { type: "function", name: "deliverToTreasuries", stateMutability: "nonpayable", inputs: [{ name: "tokenIds", type: "uint256[]" }], outputs: [] },
 ] as const;
 
 export const yieldBankProceedsVaultAbi = [
+  ...["primaryBackingBps", "primaryCreatorBps", "primarySinjohBps"].map((name) => ({
+    type: "function", name, stateMutability: "view", inputs: [], outputs: [{ type: "uint16" }],
+  } as const)),
   { type: "function", name: "pendingBackingOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "primaryStateOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "uint8" }] },
   { type: "function", name: "receiptCount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
@@ -126,7 +128,7 @@ export const yieldBankDistributorAbi = [
   { type: "function", name: "distributionAssetCount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   { type: "function", name: "distributionAssets", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
   { type: "function", name: "pending", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }, { name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
-  { type: "function", name: "cumulativeSettled", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }, { name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "cumulativeDelivered", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }, { name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "accountedBalance", stateMutability: "view", inputs: [{ name: "asset", type: "address" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "solvent", stateMutability: "view", inputs: [{ name: "asset", type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "feeWeightOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "uint96" }] },
@@ -134,6 +136,8 @@ export const yieldBankDistributorAbi = [
 
 export const yieldBankAccountAbi = [
   { type: "function", name: "trackedAssets", stateMutability: "view", inputs: [], outputs: [{ type: "address[]" }] },
+  { type: "function", name: "redemptionBeneficiary", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "recoverDirectAsset", stateMutability: "nonpayable", inputs: [{ name: "asset", type: "address" }], outputs: [{ name: "amount", type: "uint256" }] },
 ] as const;
 
 export const yieldBankSleeveAbi = [
@@ -446,6 +450,7 @@ const yieldBankPublicFactoryRequestComponents = [
   { name: "primaryBackingBps", type: "uint16" },
   { name: "primaryCreatorBps", type: "uint16" },
   { name: "primarySinjohBps", type: "uint16" },
+  { name: "exitTaxBps", type: "uint16" },
   { name: "royaltyBackingBps", type: "uint16" },
   { name: "royaltyCreatorBps", type: "uint16" },
   { name: "royaltySinjohBps", type: "uint16" },
@@ -457,6 +462,7 @@ const yieldBankPublicFactoryRequestComponents = [
   { name: "sinjohFeeRecipient", type: "address" },
   { name: "allocationOperator", type: "address" },
   { name: "timelockProposer", type: "address" },
+  { name: "timelockDelay", type: "uint48" },
   { name: "guardian", type: "address" },
   { name: "redemptionToken", type: "address" },
   { name: "redemptionTokenAmount", type: "uint256" },
@@ -643,6 +649,7 @@ export interface YieldBankPublicFactoryCollectionRequest {
   primaryBackingBps: number;
   primaryCreatorBps: number;
   primarySinjohBps: number;
+  exitTaxBps: number;
   royaltyBackingBps: number;
   royaltyCreatorBps: number;
   royaltySinjohBps: number;
@@ -654,6 +661,7 @@ export interface YieldBankPublicFactoryCollectionRequest {
   sinjohFeeRecipient: Address;
   allocationOperator: Address;
   timelockProposer: Address;
+  timelockDelay: number;
   guardian: Address;
   redemptionToken: Address;
   redemptionTokenAmount: bigint;
@@ -711,7 +719,7 @@ export interface YieldBankSleevePolicy {
 }
 
 export interface YieldBankReleaseManifest {
-  schemaVersion: "1.2";
+  schemaVersion: "1.3";
   chainId: 4663;
   collectionId: Hex;
   factoryVersion: Hex;
@@ -739,7 +747,7 @@ export interface YieldBankReleaseManifest {
     royaltyBackingBps: number;
     royaltyCreatorBps: number;
     royaltySinjohBps: number;
-    exitTaxBps: 500;
+    exitTaxBps: number;
     coreWeightBps: number;
     marketMakingWeightBps: number;
     usdgWeightBps: number;
@@ -758,6 +766,10 @@ export interface YieldBankReleaseManifest {
     core: YieldBankSleevePolicy;
     marketMaking: YieldBankSleevePolicy;
     usdg: YieldBankSleevePolicy;
+    deltaPool: {
+      maximumAdapterCapBps: number;
+      maximumOperatorLossBps: number;
+    };
     deltaPoolFeed: {
       maximumHeartbeat: number;
       maximumGracePeriod: number;
@@ -785,7 +797,7 @@ export interface YieldBankReleaseManifest {
   contracts: Record<
     | "registry" | "factoryDeployer" | "factory" | "collection" | "nft" | "accountImplementation" | "proceedsVault"
     | "distributor" | "revenueRouter" | "timelock"
-    | "allocator" | "deltaPoolController" | "priceHub" | "strategyRegistry" | "renderer" | "coreSleeve"
+    | "allocator" | "deltaPoolController" | "priceHub" | "strategyRegistry" | "metadata" | "coreSleeve"
     | "marketMakingSleeve" | "usdgSleeve" | "rebalanceValueGuard",
     YieldBankManifestEntry
   >;
@@ -872,9 +884,9 @@ export type YieldBankReadClient = Pick<PublicClient, "readContract" | "getCode" 
 
 export interface YieldBankAssetEntitlement {
   asset: Address;
-  settled: bigint;
+  held: bigint;
   pending: bigint;
-  cumulativeSettled: bigint;
+  cumulativeDelivered: bigint;
   exitTaxEstimate: bigint;
 }
 
@@ -1003,7 +1015,7 @@ export interface YieldBankTokenView {
 const requiredContractKeys = [
   "registry", "factoryDeployer", "factory", "collection", "nft", "accountImplementation", "proceedsVault", "distributor",
   "revenueRouter", "timelock", "allocator", "priceHub",
-  "strategyRegistry", "renderer", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
+  "strategyRegistry", "metadata", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
   "rebalanceValueGuard",
 ] as const;
 
@@ -1056,7 +1068,7 @@ export function yieldBankFeeWeightScheduleHash(
 }
 
 export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): void {
-  if (manifest.schemaVersion !== "1.2") throw new Error("unsupported Yield Banks manifest schema");
+  if (manifest.schemaVersion !== "1.3") throw new Error("unsupported Yield Banks manifest schema");
   if (manifest.chainId !== 4663) throw new Error("Yield Banks release manifests require Robinhood mainnet chain 4663");
   for (const [name, hash] of Object.entries({
     collectionId: manifest.collectionId,
@@ -1106,7 +1118,7 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     economics.secondaryRoyaltyBps,
     economics.primaryBackingBps, economics.primaryCreatorBps, economics.primarySinjohBps,
     economics.royaltyBackingBps, economics.royaltyCreatorBps,
-    economics.royaltySinjohBps, economics.coreWeightBps,
+    economics.royaltySinjohBps, economics.exitTaxBps, economics.coreWeightBps,
     economics.marketMakingWeightBps, economics.usdgWeightBps,
   ];
   if (!Number.isSafeInteger(economics.maxSupply) || economics.maxSupply <= 0
@@ -1117,11 +1129,9 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
     || economics.royaltyBackingBps <= 0
     || economics.royaltyBackingBps + economics.royaltyCreatorBps
       + economics.royaltySinjohBps !== 10_000
-    || economics.coreWeightBps <= 0 || economics.marketMakingWeightBps <= 0
-    || economics.usdgWeightBps <= 0
     || economics.coreWeightBps + economics.marketMakingWeightBps
       + economics.usdgWeightBps !== 10_000
-    || economics.exitTaxBps !== 500) {
+    ) {
     throw new Error("Yield Banks immutable economics mismatch");
   }
   if (!manifest.equityModel
@@ -1150,6 +1160,15 @@ export function validateYieldBankManifest(manifest: YieldBankReleaseManifest): v
       || (policy.maximumStrategies !== 0 && policy.maximumAdapterCapBps === 0)) {
       throw new Error(`policyCaps.${name} is invalid`);
     }
+  }
+  const deltaPoolPolicy = manifest.policyCaps.deltaPool;
+  if (!Number.isInteger(deltaPoolPolicy.maximumAdapterCapBps)
+    || deltaPoolPolicy.maximumAdapterCapBps < 1
+    || deltaPoolPolicy.maximumAdapterCapBps > 10_000
+    || !Number.isInteger(deltaPoolPolicy.maximumOperatorLossBps)
+    || deltaPoolPolicy.maximumOperatorLossBps < 0
+    || deltaPoolPolicy.maximumOperatorLossBps > 10_000) {
+    throw new Error("policyCaps.deltaPool is invalid");
   }
   const poolFeedPolicy = manifest.policyCaps.deltaPoolFeed;
   if (!Number.isInteger(poolFeedPolicy.maximumHeartbeat)
@@ -1403,7 +1422,7 @@ export async function verifyYieldBankManifest(
     collectionNft, collectionDistributor,
     collectionProceedsVault, collectionPortfolioAllocator, collectionAccountImplementation,
     collectionSecondaryRoyaltyBps, collectionEligibilityPolicy, collectionCreator,
-    collectionOpenSeaManager, collectionSinjohFeeRecipient,
+    collectionSinjohFeeRecipient,
     collectionRevenueRouter, collectionTimelock, collectionGuardian,
     nftMaxSupply, nftCollection, nftSeaDrop, royaltyReceiver,
     royaltyBps, nftOwner, seaDropCreatorPayout, seaDropPublicDrop, seaDropAllowListMerkleRoot,
@@ -1428,7 +1447,6 @@ export async function verifyYieldBankManifest(
     read<bigint>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "secondaryRoyaltyBps"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "eligibilityPolicy"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "creator"),
-    read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "openSeaManager"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "sinjohFeeRecipient"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "revenueRouter"),
     read<Address>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, "collectionTimelock"),
@@ -1464,15 +1482,19 @@ export async function verifyYieldBankManifest(
         "feeWeightRange", [BigInt(index)],
       )),
   );
-  const economicsKeys = [
+  const collectionEconomicsKeys = [
+    "exitTaxBps", "coreWeightBps", "marketMakingWeightBps", "usdgWeightBps",
+  ] as const;
+  const primaryEconomicsKeys = [
     "primaryBackingBps", "primaryCreatorBps", "primarySinjohBps",
-    "coreWeightBps", "marketMakingWeightBps", "usdgWeightBps",
   ] as const;
   const royaltyEconomicsKeys = [
     "royaltyBackingBps", "royaltyCreatorBps", "royaltySinjohBps",
   ] as const;
-  const onchainEconomics = await Promise.all(economicsKeys.map((key) =>
+  const onchainCollectionEconomics = await Promise.all(collectionEconomicsKeys.map((key) =>
     read<number>(client, manifest.contracts.collection.address, yieldBankCollectionAbi, key)));
+  const onchainPrimaryEconomics = await Promise.all(primaryEconomicsKeys.map((key) =>
+    read<number>(client, manifest.contracts.proceedsVault.address, yieldBankProceedsVaultAbi, key)));
   const onchainRoyaltyEconomics = await Promise.all(royaltyEconomicsKeys.map((key) =>
     read<number>(client, manifest.contracts.revenueRouter.address, yieldBankRevenueRouterAbi, key)));
   const rebalanceValueGuard = await read<Address>(
@@ -1562,8 +1584,8 @@ export async function verifyYieldBankManifest(
     valueResult("priceHub.deltaPoolControllerRegistrar", manifest.contracts.priceHub.address,
       toHex(1, { size: 32 }), toHex(priceRegistrar ? 1 : 0, { size: 32 })),
     ...([
-      ["maximumAdapterCapBps", manifest.policyCaps.marketMaking.maximumAdapterCapBps],
-      ["maximumOperatorLossBps", manifest.policyCaps.marketMaking.maximumOperatorLossBps],
+      ["maximumAdapterCapBps", manifest.policyCaps.deltaPool.maximumAdapterCapBps],
+      ["maximumOperatorLossBps", manifest.policyCaps.deltaPool.maximumOperatorLossBps],
       ["maximumPoolFeedHeartbeat", manifest.policyCaps.deltaPoolFeed.maximumHeartbeat],
       ["maximumPoolFeedGracePeriod", manifest.policyCaps.deltaPoolFeed.maximumGracePeriod],
       ["minimumPoolTwapWindow", manifest.policyCaps.deltaPoolFeed.minimumTwapWindow],
@@ -1609,8 +1631,6 @@ export async function verifyYieldBankManifest(
       addressWord(manifest.dependencies.eligibilityPolicy.address), addressWord(collectionEligibilityPolicy)),
     valueResult("collection.creator", manifest.contracts.collection.address,
       addressWord(manifest.roles.creator), addressWord(collectionCreator)),
-    valueResult("collection.openSeaManager", manifest.contracts.collection.address,
-      addressWord(manifest.roles.openSeaManager), addressWord(collectionOpenSeaManager)),
     valueResult("collection.sinjohFeeRecipient", manifest.contracts.collection.address,
       addressWord(manifest.roles.sinjoh), addressWord(collectionSinjohFeeRecipient)),
     valueResult("collection.revenueRouter", manifest.contracts.collection.address,
@@ -1642,12 +1662,21 @@ export async function verifyYieldBankManifest(
     valueResult("registry.registered", manifest.contracts.registry.address,
       toHex(1, { size: 32 }), toHex(collectionRecord[5] ? 1 : 0, { size: 32 })),
   ];
-  const economicsResults = economicsKeys.map((key, index) => {
+  const economicsResults = [
+    ...collectionEconomicsKeys.map((key, index) => ({
+      key, path: `collection.${key}`, address: manifest.contracts.collection.address,
+      actual: onchainCollectionEconomics[index]!,
+    })),
+    ...primaryEconomicsKeys.map((key, index) => ({
+      key, path: `proceedsVault.${key}`, address: manifest.contracts.proceedsVault.address,
+      actual: onchainPrimaryEconomics[index]!,
+    })),
+  ].map(({ key, path, address, actual: actualValue }) => {
     const expected = toHex(manifest.economics[key], { size: 32 });
-    const actual = toHex(onchainEconomics[index]!, { size: 32 });
+    const actual = toHex(actualValue, { size: 32 });
     return {
-      path: `collection.${key}`,
-      address: manifest.contracts.collection.address,
+      path,
+      address,
       expectedCodeHash: expected,
       actualCodeHash: actual,
       ok: expected === actual,
@@ -1872,7 +1901,7 @@ export async function readYieldBankToken(
   const nft = manifest.contracts.nft.address;
   const distributor = manifest.contracts.distributor.address;
   const proceedsVault = manifest.contracts.proceedsVault.address;
-  const [collectionState, tokenState, liveSupply, mintedSupply, maxSupply, feeWeight,
+  const [collectionState, tokenState, liveSupply, mintedSupply, maxSupply, feeWeight, exitTaxBps,
     account, owner, tokenUri,
     pendingBacking, primaryState, rawAllocationTarget, activeDeltaPool] = await Promise.all([
     read<bigint>(client, collection, yieldBankCollectionAbi, "state"),
@@ -1881,6 +1910,7 @@ export async function readYieldBankToken(
     read<bigint>(client, collection, yieldBankCollectionAbi, "mintedSupply"),
     read<bigint>(client, collection, yieldBankCollectionAbi, "maxSupply"),
     read<bigint>(client, collection, yieldBankCollectionAbi, "feeWeightOf", [tokenId]),
+    read<bigint>(client, collection, yieldBankCollectionAbi, "exitTaxBps"),
     read<Address>(client, collection, yieldBankCollectionAbi, "accountOf", [tokenId]),
     read<Address>(client, nft, yieldBankNftAbi, "ownerOf", [tokenId]),
     read<string>(client, nft, yieldBankNftAbi, "tokenURI", [tokenId]),
@@ -1912,11 +1942,11 @@ export async function readYieldBankToken(
   const now = options.now ?? Math.floor(Date.now() / 1000);
   const staleAfter = options.staleAfterSeconds ?? 86_400;
   const sleeves = await Promise.all(sleeveAddresses.map(async (sleeve) => {
-    const [settled, pending, cumulativeSettled, totalSupply, navTuple, activeStrategyCount,
+    const [held, pending, cumulativeDelivered, totalSupply, navTuple, activeStrategyCount,
       depositsPaused, inventoryAssets, adapters, solvent] = await Promise.all([
       read<bigint>(client, sleeve, yieldBankSleeveAbi, "balanceOf", [account]),
       read<bigint>(client, distributor, yieldBankDistributorAbi, "pending", [tokenId, sleeve]),
-      read<bigint>(client, distributor, yieldBankDistributorAbi, "cumulativeSettled", [tokenId, sleeve]),
+      read<bigint>(client, distributor, yieldBankDistributorAbi, "cumulativeDelivered", [tokenId, sleeve]),
       read<bigint>(client, sleeve, yieldBankSleeveAbi, "totalSupply"),
       read<readonly [bigint, bigint]>(client, sleeve, yieldBankSleeveAbi, "totalAssetsUsd18"),
       read<bigint>(client, sleeve, yieldBankSleeveAbi, "activeStrategyCount"),
@@ -1927,7 +1957,7 @@ export async function readYieldBankToken(
     ]);
     const [totalAssetsUsd18, pricedAtRaw] = navTuple;
     const pricedAt = Number(pricedAtRaw);
-    const entitlement = settled + pending;
+    const entitlement = held + pending;
     const proRataUnderlying = await Promise.all(inventoryAssets.map(async (asset) => {
       const sleeveBalance = await read<bigint>(
         client, asset, yieldBankErc20Abi, "balanceOf", [sleeve],
@@ -1951,8 +1981,8 @@ export async function readYieldBankToken(
       };
     }));
     return {
-      sleeve, asset: sleeve, settled, pending, cumulativeSettled,
-      exitTaxEstimate: liveSupply === 1n ? 0n : entitlement * 500n / 10_000n,
+      sleeve, asset: sleeve, held, pending, cumulativeDelivered,
+      exitTaxEstimate: liveSupply === 1n ? 0n : entitlement * exitTaxBps / 10_000n,
       totalSupply, totalAssetsUsd18, pricedAt,
       navStale: pricedAt === 0 || now - pricedAt > staleAfter,
       activeStrategyCount, depositsPaused, inventoryAssets, adapters,
@@ -2106,10 +2136,8 @@ export function prepareYieldBankPublicCollectionCreation(
   if (new TextEncoder().encode(request.name).length < 1
       || new TextEncoder().encode(request.name).length > 128
       || new TextEncoder().encode(request.symbol).length < 1
-      || new TextEncoder().encode(request.symbol).length > 32
-      || !/^[A-Za-z0-9 _.-]+$/.test(request.name)
-      || !/^[A-Za-z0-9_-]+$/.test(request.symbol)) {
-    throw new Error("collection name or symbol format is invalid");
+      || new TextEncoder().encode(request.symbol).length > 32) {
+    throw new Error("collection name or symbol byte length is invalid");
   }
   if (request.maxSupply < 1n || request.maxSupply > 18_446_744_073_709_551_615n) {
     throw new Error("maxSupply must be in 1..2^64-1");
@@ -2117,6 +2145,7 @@ export function prepareYieldBankPublicCollectionCreation(
   validateFeeWeightRanges(request.feeWeightRanges, request.maxSupply);
   const bps = [
     request.primaryBackingBps, request.primaryCreatorBps, request.primarySinjohBps,
+    request.exitTaxBps,
     request.royaltyBackingBps, request.royaltyCreatorBps, request.royaltySinjohBps,
     request.coreWeightBps, request.marketMakingWeightBps, request.usdgWeightBps,
   ];
@@ -2126,8 +2155,6 @@ export function prepareYieldBankPublicCollectionCreation(
       || request.primaryBackingBps + request.primaryCreatorBps + request.primarySinjohBps !== 10_000
       || request.royaltyBackingBps === 0
       || request.royaltyBackingBps + request.royaltyCreatorBps + request.royaltySinjohBps !== 10_000
-      || request.coreWeightBps === 0 || request.marketMakingWeightBps === 0
-      || request.usdgWeightBps === 0
       || request.coreWeightBps + request.marketMakingWeightBps + request.usdgWeightBps !== 10_000) {
     throw new Error("collection basis-point configuration is invalid");
   }
@@ -2175,6 +2202,10 @@ export function prepareYieldBankPublicCollectionCreation(
     guardian: request.guardian,
   })) {
     if (getAddress(address) === zeroAddress) throw new Error(`${name} must be nonzero`);
+  }
+  if (!Number.isInteger(request.timelockDelay)
+      || request.timelockDelay < 0 || request.timelockDelay > 281_474_976_710_655) {
+    throw new Error("timelockDelay must fit uint48 seconds");
   }
   const redemptionToken = getAddress(request.redemptionToken);
   const noRedemptionToken = redemptionToken === zeroAddress
@@ -2479,14 +2510,22 @@ export function prepareYieldBankTargetExecution(
   } as const;
 }
 
-export function prepareYieldBankClaim(collection: Address, tokenId: bigint) {
-  if (tokenId < 1n) throw new Error("tokenId must be positive");
-  return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "claimPrimary", args: [tokenId] }), value: 0n } as const;
-}
-
-export function prepareYieldBankSettle(collection: Address, tokenId: bigint) {
-  if (tokenId < 1n) throw new Error("tokenId must be positive");
-  return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "settle", args: [tokenId] }), value: 0n } as const;
+/** Pushes already-accrued collection revenue into the immutable per-NFT treasuries. */
+export function prepareYieldBankFeeDelivery(revenueRouter: Address, tokenIds: readonly bigint[]) {
+  if (tokenIds.length === 0 || tokenIds.length > 20
+    || tokenIds.some((tokenId) => tokenId < 1n)
+    || new Set(tokenIds).size !== tokenIds.length) {
+    throw new Error("fee delivery requires 1..20 unique positive token IDs");
+  }
+  return {
+    to: revenueRouter,
+    data: encodeFunctionData({
+      abi: yieldBankRevenueRouterAbi,
+      functionName: "deliverToTreasuries",
+      args: [tokenIds],
+    }),
+    value: 0n,
+  } as const;
 }
 
 export function prepareYieldBankTransfer(
@@ -2506,9 +2545,32 @@ export function prepareYieldBankTransfer(
   } as const;
 }
 
-export function prepareYieldBankBurn(collection: Address, tokenId: bigint, proof: Hex = "0x") {
+export function prepareYieldBankBurn(
+  collection: Address,
+  tokenId: bigint,
+  proof: Hex = "0x",
+  directAssets: readonly Address[] = [],
+) {
   if (tokenId < 1n) throw new Error("tokenId must be positive");
-  return { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "burnToken", args: [tokenId, proof] }), value: 0n } as const;
+  if (new Set(directAssets.map((asset) => getAddress(asset))).size !== directAssets.length) {
+    throw new Error("direct redemption assets must be unique");
+  }
+  return directAssets.length === 0
+    ? { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "burnToken", args: [tokenId, proof] }), value: 0n } as const
+    : { to: collection, data: encodeFunctionData({ abi: yieldBankCollectionAbi, functionName: "burnTokenWithAssets", args: [tokenId, proof, directAssets] }), value: 0n } as const;
+}
+
+/** Recovers an untracked ERC-20 sent to a treasury after its NFT has been redeemed. */
+export function prepareYieldBankDirectAssetRecovery(account: Address, asset: Address) {
+  return {
+    to: account,
+    data: encodeFunctionData({
+      abi: yieldBankAccountAbi,
+      functionName: "recoverDirectAsset",
+      args: [getAddress(asset)],
+    }),
+    value: 0n,
+  } as const;
 }
 
 export function prepareYieldBankSleeveRedemption(

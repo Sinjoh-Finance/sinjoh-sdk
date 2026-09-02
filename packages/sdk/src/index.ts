@@ -151,7 +151,7 @@ export {
 
 export {
   openSeaAssetUrl, openSeaCollectionUrl, prepareYieldBankAllocation, prepareYieldBankBurn,
-  prepareYieldBankClaim, prepareYieldBankSettle, prepareYieldBankTransfer,
+  prepareYieldBankDirectAssetRecovery, prepareYieldBankFeeDelivery, prepareYieldBankTransfer,
   prepareYieldBankNativeRoyaltySync, prepareYieldBankRoyaltySync,
   prepareYieldBankNftOwnershipAcceptance, prepareYieldBankNftOwnershipTransfer,
   prepareYieldBankSeaDropAllowListClear, prepareYieldBankSeaDropFeeRecipient,

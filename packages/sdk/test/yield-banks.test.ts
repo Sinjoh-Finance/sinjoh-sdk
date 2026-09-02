@@ -16,7 +16,8 @@ import {
   prepareYieldBankAdapterDeposit,
   prepareYieldBankAdapterExit,
   prepareYieldBankAdapterWithdrawal,
-  prepareYieldBankClaim,
+  prepareYieldBankDirectAssetRecovery,
+  prepareYieldBankFeeDelivery,
   prepareYieldBankNativeRoyaltySync,
   prepareYieldBankNftOwnershipAcceptance,
   prepareYieldBankNftOwnershipTransfer,
@@ -29,7 +30,6 @@ import {
   prepareYieldBankSeaDropPublicDrop,
   prepareYieldBankSeaDropSignedMintValidation,
   prepareYieldBankSeaDropTokenGatedDrop,
-  prepareYieldBankSettle,
   prepareYieldBankSleeveRedemption,
   prepareYieldBankTargetAllocation,
   prepareYieldBankTargetExecution,
@@ -119,10 +119,12 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     ],
     secondaryRoyaltyBps: 500n,
     primaryBackingBps: 8_000, primaryCreatorBps: 1_000, primarySinjohBps: 1_000,
+    exitTaxBps: 500,
     royaltyBackingBps: 7_000, royaltyCreatorBps: 2_000, royaltySinjohBps: 1_000,
     coreWeightBps: 4_000, marketMakingWeightBps: 3_000, usdgWeightBps: 3_000,
     creator: addresses[0], openSeaManager: addresses[0], sinjohFeeRecipient: addresses[1],
-    allocationOperator: addresses[0], timelockProposer: addresses[0], guardian: addresses[0],
+    allocationOperator: addresses[0], timelockProposer: addresses[0], timelockDelay: 0,
+    guardian: addresses[0],
     redemptionToken: "0x0000000000000000000000000000000000000000",
     redemptionTokenAmount: 0n, redemptionTokenCodeHash: `0x${"0".repeat(64)}`,
     eligibilityPolicy: "0x0000000000000000000000000000000000000000",
@@ -154,9 +156,12 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     addresses[2], code, { ...request, feeWeightRanges: [{ endTokenId: 2n, feeWeight: 1n }] },
     userSalt,
   ), /final fee-weight range must end at maxSupply/);
+  assert.doesNotThrow(() => prepareYieldBankPublicCollectionCreation(
+    addresses[2], code, { ...request, name: "Piggy 🐷 / Bank", symbol: "🐷BANK" }, userSalt,
+  ));
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
-    addresses[2], code, { ...request, name: "<script>" }, userSalt,
-  ), /collection name or symbol format is invalid/);
+    addresses[2], code, { ...request, name: "" }, userSalt,
+  ), /collection name or symbol byte length is invalid/);
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
     addresses[2], code, {
       ...request,
@@ -164,6 +169,16 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
       feeWeightRanges: [{ endTokenId: 1n, feeWeight: 1_000_000_000_000_000_000_000_000_001n }],
     }, userSalt,
   ), /cannot exceed the distributor precision scale/);
+  assert.doesNotThrow(() => prepareYieldBankPublicCollectionCreation(
+    addresses[2], code, { ...request, timelockDelay: 31 * 24 * 60 * 60 }, userSalt,
+  ));
+  assert.throws(
+    () => prepareYieldBankPublicCollectionCreation(
+      addresses[2], code,
+      { ...request, timelockDelay: 281_474_976_710_656 }, userSalt,
+    ),
+    /fit uint48/,
+  );
 });
 
 test("Piggy Bank fee-weight commitment covers all 3333 NFTs", () => {
@@ -185,7 +200,7 @@ function manifest(): YieldBankReleaseManifest {
   const keys = [
     "registry", "factoryDeployer", "factory", "collection", "nft", "accountImplementation", "proceedsVault", "distributor",
     "revenueRouter", "timelock", "allocator", "deltaPoolController", "priceHub",
-    "strategyRegistry", "renderer", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
+    "strategyRegistry", "metadata", "coreSleeve", "marketMakingSleeve", "usdgSleeve",
     "rebalanceValueGuard",
   ] as const;
   const publicDrop = {
@@ -202,7 +217,7 @@ function manifest(): YieldBankReleaseManifest {
   const tokenGatedDrops = [] as const;
   const signedMintValidations = [] as const;
   const release: YieldBankReleaseManifest = {
-    schemaVersion: "1.2",
+    schemaVersion: "1.3",
     chainId: 4663,
     collectionId: keccak256(toBytes("collection")),
     factoryVersion: keccak256(toBytes("factory-v1")),
@@ -246,6 +261,7 @@ function manifest(): YieldBankReleaseManifest {
       core: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
       marketMaking: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
       usdg: { maximumStrategies: 1, maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
+      deltaPool: { maximumAdapterCapBps: 5000, maximumOperatorLossBps: 100 },
       deltaPoolFeed: {
         maximumHeartbeat: 86_400,
         maximumGracePeriod: 3_600,
@@ -530,12 +546,13 @@ test("Yield Banks manifest validates immutable economics and live code", async (
     results.filter((result) => !result.ok), null, 2,
   ));
 
-  release.economics.exitTaxBps = 501 as 500;
+  release.economics.exitTaxBps = 10_001;
   assert.throws(() => validateYieldBankManifest(release), /economics mismatch/);
 });
 
 test("Yield Bank token reads named allocation tuples in Viem's object shape", async () => {
   const release = manifest();
+  release.economics.exitTaxBps = 1_234;
   const target = {
     requester: addresses[2],
     deltaPool: "0x0000000000000000000000000000000000000000" as Address,
@@ -556,6 +573,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
       if (functionName === "liveSupply" || functionName === "mintedSupply") return 10n;
       if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
       if (functionName === "feeWeightOf") return 1n;
+      if (functionName === "exitTaxBps") return 1_234n;
       if (functionName === "accountOf") return addresses[1];
       if (functionName === "ownerOf") return addresses[2];
       if (functionName === "tokenURI") return "ipfs://yield-banks/42";
@@ -566,7 +584,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
         return "0x0000000000000000000000000000000000000000";
       }
       if (functionName === "balanceOf") return 100n;
-      if (functionName === "pending" || functionName === "cumulativeSettled") return 0n;
+      if (functionName === "pending" || functionName === "cumulativeDelivered") return 0n;
       if (functionName === "totalSupply") return 1_000n;
       if (functionName === "totalAssetsUsd18") return [1_000_000n, 1_700_000_000n];
       if (functionName === "activeStrategyCount") return 0n;
@@ -581,6 +599,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
   assert.equal(view.feeWeight, 1n);
   assert.equal(view.portfolioValueUsd18, 300_000n);
   assert.deepEqual(view.currentAllocationBps, [3_333, 3_333, 3_334]);
+  assert.deepEqual(view.sleeves.map((sleeve) => sleeve.exitTaxEstimate), [12n, 12n, 12n]);
 });
 
 test("Yield Bank token fails closed when the active Delta pool has no controller foundation", async () => {
@@ -592,6 +611,7 @@ test("Yield Bank token fails closed when the active Delta pool has no controller
       if (functionName === "liveSupply" || functionName === "mintedSupply") return 1n;
       if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
       if (functionName === "feeWeightOf") return 1n;
+      if (functionName === "exitTaxBps") return 500n;
       if (functionName === "accountOf" || functionName === "ownerOf") return addresses[1];
       if (functionName === "tokenURI") return "ipfs://yield-banks/1";
       if (functionName === "pendingBackingOf" || functionName === "primaryStateOf") return 0n;
@@ -744,10 +764,11 @@ test("OpenSea setup and ownership handoff calldata decodes to the exact NFT call
 
 test("Yield Banks wallet and operator calls match the OpenSea-first flow", () => {
   const collection = addresses[1];
-  const settle = prepareYieldBankSettle(collection, 42n);
+  const delivery = prepareYieldBankFeeDelivery(addresses[11], [42n]);
   const transfer = prepareYieldBankTransfer(addresses[2], addresses[3], addresses[4], 42n, 777n);
   const burn = prepareYieldBankBurn(collection, 42n);
-  const claim = prepareYieldBankClaim(collection, 42n);
+  const burnWithAssets = prepareYieldBankBurn(collection, 42n, "0x", [addresses[12]]);
+  const recovery = prepareYieldBankDirectAssetRecovery(addresses[13], addresses[12]);
   const guarded = { minimumOutput: 1n, minimumShares: 1n, routeData: "0x", sleeveData: "0x" } as const;
   const allocation = prepareYieldBankAllocation(addresses[4], 1n, 2n, [guarded, guarded, guarded]);
   const adapterDeposit = prepareYieldBankAdapterDeposit(addresses[4], addresses[5], addresses[6], 10n, 9n);
@@ -782,10 +803,11 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
     minimumWethRecovered: 1n,
     deadline: 1_800_000_000n,
   });
-  assert.equal(settle.value, 0n);
+  assert.equal(delivery.value, 0n);
   assert.equal(transfer.value, 0n);
   assert.equal(burn.value, 0n);
-  assert.equal(claim.value, 0n);
+  assert.equal(burnWithAssets.value, 0n);
+  assert.equal(recovery.value, 0n);
   assert.equal(allocation.value, 0n);
   assert.equal(adapterDeposit.value, 0n);
   assert.equal(adapterWithdrawal.value, 0n);
@@ -802,9 +824,15 @@ test("Yield Banks wallet and operator calls match the OpenSea-first flow", () =>
     ]),
     /positive minimum output/,
   );
-  assert.notEqual(settle.data, burn.data);
-  assert.throws(() => prepareYieldBankSettle(collection, 0n), /positive/);
+  assert.notEqual(delivery.data, burn.data);
+  assert.notEqual(burnWithAssets.data, burn.data);
+  assert.throws(() => prepareYieldBankFeeDelivery(addresses[11], []), /1\.\.20/);
+  assert.throws(() => prepareYieldBankFeeDelivery(addresses[11], [42n, 42n]), /unique/);
   assert.throws(() => prepareYieldBankBurn(collection, 0n), /positive/);
+  assert.throws(
+    () => prepareYieldBankBurn(collection, 42n, "0x", [addresses[12], addresses[12]]),
+    /unique/,
+  );
   assert.throws(
     () => prepareYieldBankTargetAllocation(
       addresses[11], 42n, [5_000, 5_000, 1],
