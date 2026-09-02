@@ -41,6 +41,7 @@ import {
   yieldBankPublicFactoryAbi,
   yieldBankStrategyRegistryAbi,
   yieldBankMintStagesHash,
+  yieldBankFeeWeightScheduleHash,
   type YieldBankManifestEntry,
   type YieldBankFeedBinding,
   type YieldBankReleaseManifest,
@@ -107,11 +108,16 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     "deltaPoolController", "collection",
   ].map((name) => [name, "0x6000"])) as unknown as YieldBankPublicFactoryCreationCode;
   const sleeve = {
-    name: "1", symbol: "1", maximumStrategies: 0,
+    maximumStrategies: 0,
     maximumAdapterCapBps: 0, maximumOperatorLossBps: 0,
   } as const;
   const request: YieldBankPublicFactoryCollectionRequest = {
-    name: "A", symbol: "A", maxSupply: 3n, secondaryRoyaltyBps: 500n,
+    name: "A", symbol: "A", maxSupply: 3n,
+    feeWeightRanges: [
+      { endTokenId: 1n, feeWeight: 2n },
+      { endTokenId: 3n, feeWeight: 5n },
+    ],
+    secondaryRoyaltyBps: 500n,
     primaryBackingBps: 8_000, primaryCreatorBps: 1_000, primarySinjohBps: 1_000,
     royaltyBackingBps: 7_000, royaltyCreatorBps: 2_000, royaltySinjohBps: 1_000,
     coreWeightBps: 4_000, marketMakingWeightBps: 3_000, usdgWeightBps: 3_000,
@@ -121,9 +127,9 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     redemptionTokenAmount: 0n, redemptionTokenCodeHash: `0x${"0".repeat(64)}`,
     eligibilityPolicy: "0x0000000000000000000000000000000000000000",
     eligibilityPolicyCodeHash: `0x${"0".repeat(64)}`,
-    coreSleeve: { ...sleeve, name: "B", symbol: "B", maximumStrategies: 8,
+    coreSleeve: { ...sleeve, maximumStrategies: 8,
       maximumAdapterCapBps: 10_000 },
-    marketMakingSleeve: { ...sleeve, name: "C", symbol: "C", maximumStrategies: 8,
+    marketMakingSleeve: { ...sleeve, maximumStrategies: 8,
       maximumAdapterCapBps: 10_000 },
     usdgSleeve: sleeve,
     deltaRisk: {
@@ -140,6 +146,39 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
   assert.equal(transaction.value, 0n);
   assert.equal(decoded.functionName, "createCollection");
   assert.equal(decoded.args?.[2], userSalt);
+  const decodedRequest = decoded.args?.[1];
+  assert.ok(decodedRequest && typeof decodedRequest === "object" && "feeWeightRanges" in decodedRequest);
+  assert.deepEqual(decodedRequest.feeWeightRanges, request.feeWeightRanges);
+
+  assert.throws(() => prepareYieldBankPublicCollectionCreation(
+    addresses[2], code, { ...request, feeWeightRanges: [{ endTokenId: 2n, feeWeight: 1n }] },
+    userSalt,
+  ), /final fee-weight range must end at maxSupply/);
+  assert.throws(() => prepareYieldBankPublicCollectionCreation(
+    addresses[2], code, { ...request, name: "<script>" }, userSalt,
+  ), /collection name or symbol format is invalid/);
+  assert.throws(() => prepareYieldBankPublicCollectionCreation(
+    addresses[2], code, {
+      ...request,
+      maxSupply: 1n,
+      feeWeightRanges: [{ endTokenId: 1n, feeWeight: 1_000_000_000_000_000_000_000_000_001n }],
+    }, userSalt,
+  ), /cannot exceed the distributor precision scale/);
+});
+
+test("Piggy Bank fee-weight commitment covers all 3333 NFTs", () => {
+  const ranges = [
+    { endTokenId: 3_000n, feeWeight: 2n },
+    { endTokenId: 3_300n, feeWeight: 5n },
+    { endTokenId: 3_330n, feeWeight: 15n },
+    { endTokenId: 3_333n, feeWeight: 60n },
+  ] as const;
+  assert.equal(
+    yieldBankFeeWeightScheduleHash(ranges),
+    "0x09e456a352ef04c1876c453e7d9ed7d9fd42c5d5d86aa2e2ddff15ddc65d22a2",
+  );
+  const totalWeight = 3_000n * 2n + 300n * 5n + 30n * 15n + 3n * 60n;
+  assert.equal(totalWeight, 8_130n);
 });
 
 function manifest(): YieldBankReleaseManifest {
@@ -163,7 +202,7 @@ function manifest(): YieldBankReleaseManifest {
   const tokenGatedDrops = [] as const;
   const signedMintValidations = [] as const;
   const release: YieldBankReleaseManifest = {
-    schemaVersion: "1.1",
+    schemaVersion: "1.2",
     chainId: 4663,
     collectionId: keccak256(toBytes("collection")),
     factoryVersion: keccak256(toBytes("factory-v1")),
@@ -184,7 +223,10 @@ function manifest(): YieldBankReleaseManifest {
       contractUriHash: keccak256(toBytes("ipfs://yield-banks/contract.json")),
     },
     economics: {
-      maxSupply: 777, secondaryRoyaltyBps: 650, primaryBackingBps: 7500, primaryCreatorBps: 1500,
+      maxSupply: 777, feeWeightRanges: [],
+      feeWeightScheduleHash: yieldBankFeeWeightScheduleHash([]),
+      maximumTotalFeeWeight: 777,
+      secondaryRoyaltyBps: 650, primaryBackingBps: 7500, primaryCreatorBps: 1500,
       primarySinjohBps: 1000, exitTaxBps: 500,
       royaltyBackingBps: 6000, royaltyCreatorBps: 2000,
       royaltySinjohBps: 2000,
@@ -366,6 +408,12 @@ test("Yield Banks manifest validates immutable economics and live code", async (
       ];
       if (functionName === "collectionId") return release.collectionId;
       if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "maximumTotalFeeWeight") {
+        return BigInt(release.economics.maximumTotalFeeWeight);
+      }
+      if (functionName === "feeWeightRangeCount") {
+        return BigInt(release.economics.feeWeightRanges.length);
+      }
       if (functionName === "nft") return release.contracts.nft.address;
       if (functionName === "distributor") return release.contracts.distributor.address;
       if (functionName === "proceedsVault") return release.contracts.proceedsVault.address;
@@ -507,6 +555,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
       if (functionName === "tokenState") return 2n;
       if (functionName === "liveSupply" || functionName === "mintedSupply") return 10n;
       if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "feeWeightOf") return 1n;
       if (functionName === "accountOf") return addresses[1];
       if (functionName === "ownerOf") return addresses[2];
       if (functionName === "tokenURI") return "ipfs://yield-banks/42";
@@ -529,6 +578,7 @@ test("Yield Bank token reads named allocation tuples in Viem's object shape", as
   } as never, release, 42n, { now: 1_700_000_100 });
 
   assert.deepEqual(view.allocationTarget, { ...target, pending: true });
+  assert.equal(view.feeWeight, 1n);
   assert.equal(view.portfolioValueUsd18, 300_000n);
   assert.deepEqual(view.currentAllocationBps, [3_333, 3_333, 3_334]);
 });
@@ -541,6 +591,7 @@ test("Yield Bank token fails closed when the active Delta pool has no controller
       if (functionName === "state" || functionName === "tokenState") return 1n;
       if (functionName === "liveSupply" || functionName === "mintedSupply") return 1n;
       if (functionName === "maxSupply") return BigInt(release.economics.maxSupply);
+      if (functionName === "feeWeightOf") return 1n;
       if (functionName === "accountOf" || functionName === "ownerOf") return addresses[1];
       if (functionName === "tokenURI") return "ipfs://yield-banks/1";
       if (functionName === "pendingBackingOf" || functionName === "primaryStateOf") return 0n;
