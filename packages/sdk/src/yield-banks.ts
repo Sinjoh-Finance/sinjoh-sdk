@@ -494,13 +494,23 @@ export const yieldBankPublicFactoryAbi = [
   { type: "function", name: "deploymentUsed", stateMutability: "view", inputs: [
     { name: "deploymentId", type: "bytes32" },
   ], outputs: [{ name: "used", type: "bool" }] },
+  { type: "function", name: "deploymentConfigurationHash", stateMutability: "view", inputs: [
+    { name: "deploymentId", type: "bytes32" },
+  ], outputs: [{ name: "configurationHash", type: "bytes32" }] },
+  { type: "function", name: "deploymentStage", stateMutability: "view", inputs: [
+    { name: "deploymentId", type: "bytes32" },
+  ], outputs: [{ name: "stage", type: "uint8" }] },
   { type: "function", name: "predictComponentAddresses", stateMutability: "view", inputs: [
     { name: "caller", type: "address" }, { name: "userSalt", type: "bytes32" },
   ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
-  { type: "function", name: "createCollection", stateMutability: "nonpayable", inputs: [
+  ...["beginCollection", "deployCollectionSleeves", "deployCollectionRouting", "finalizeCollection"].map((name) => ({
+    type: "function", name, stateMutability: "nonpayable", inputs: [
     { name: "request", type: "tuple", components: yieldBankPublicFactoryRequestComponents },
     { name: "userSalt", type: "bytes32" },
-  ], outputs: [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }] },
+    ], outputs: name === "finalizeCollection"
+      ? [{ name: "a", type: "tuple", components: yieldBankPublicFactorySystemAddressComponents }]
+      : [],
+  } as const)),
 ] as const;
 
 export const yieldBankProtocolRegistryAbi = [
@@ -2101,7 +2111,7 @@ export interface YieldBankRebalanceExecution {
   deadline: bigint;
 }
 
-/** Builds the permissionless public-factory transaction from an independently owned wallet. */
+/** Builds the four permissionless public-factory transactions in required execution order. */
 export function prepareYieldBankPublicCollectionCreation(
   factory: Address,
   request: YieldBankPublicFactoryCollectionRequest,
@@ -2210,15 +2220,21 @@ export function prepareYieldBankPublicCollectionCreation(
     redemptionToken,
     eligibilityPolicy,
   };
-  return {
-    to: getAddress(factory),
+  const to = getAddress(factory);
+  return ([
+    "beginCollection",
+    "deployCollectionSleeves",
+    "deployCollectionRouting",
+    "finalizeCollection",
+  ] as const).map((functionName) => ({
+    to,
     data: encodeFunctionData({
       abi: yieldBankPublicFactoryAbi,
-      functionName: "createCollection",
+      functionName,
       args: [normalizedRequest, userSalt],
     }),
     value: 0n,
-  } as const;
+  } as const));
 }
 
 /** Encodes the paid public stage that OpenSea Studio submits through the NFT contract. */

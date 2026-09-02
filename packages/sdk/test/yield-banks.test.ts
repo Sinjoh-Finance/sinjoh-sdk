@@ -136,16 +136,20 @@ test("prepares a permissionless public Yield Bank collection transaction", () =>
     },
   };
   const userSalt = keccak256(toBytes("1"));
-  const transaction = prepareYieldBankPublicCollectionCreation(addresses[2], request, userSalt);
-  const decoded = decodeFunctionData({ abi: yieldBankPublicFactoryAbi, data: transaction.data });
-  assert.equal(transaction.to, addresses[2]);
-  assert.equal(transaction.value, 0n);
-  assert.equal(decoded.functionName, "createCollection");
+  const transactions = prepareYieldBankPublicCollectionCreation(addresses[2], request, userSalt);
+  assert.equal(transactions.length, 4);
+  const decodedStages = transactions.map((transaction) =>
+    decodeFunctionData({ abi: yieldBankPublicFactoryAbi, data: transaction.data }));
+  assert.deepEqual(decodedStages.map(({ functionName }) => functionName), [
+    "beginCollection", "deployCollectionSleeves", "deployCollectionRouting", "finalizeCollection",
+  ]);
+  assert.ok(transactions.every(({ to, value }) => to === addresses[2] && value === 0n));
+  const decoded = decodedStages[0]!;
   assert.equal(decoded.args?.[1], userSalt);
   const decodedRequest = decoded.args?.[0];
   assert.ok(decodedRequest && typeof decodedRequest === "object" && "feeWeightRanges" in decodedRequest);
   assert.deepEqual(decodedRequest.feeWeightRanges, request.feeWeightRanges);
-  assert.ok(transaction.data.length < 10_000);
+  assert.ok(transactions.every(({ data }) => data.length < 10_000));
 
   assert.throws(() => prepareYieldBankPublicCollectionCreation(
     addresses[2], { ...request, feeWeightRanges: [{ endTokenId: 2n, feeWeight: 1n }] },
