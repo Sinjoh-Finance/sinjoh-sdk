@@ -110,6 +110,36 @@ The API client needs no RPC provider. Use it for discovery, aggregates, and
 history; use `createSinjohClient` for live contract reads, verification, planning,
 and prepared calls. See the [API reference](../../docs/api.md).
 
+## Yield Banks owner allocations
+
+`readYieldBankToken` returns the NFT owner, current per-sleeve USD18 value, current percentage mix,
+saved target, owner maximum adapter-withdrawal-loss limit, expiry, and target execution revision. A holder calls
+`prepareYieldBankTargetAllocation` with three integer basis-point weights totaling 10,000 and must
+also provide the maximum adapter withdrawal loss and expiry. That transaction records intent but does not
+move funds. Each revision is executable only once. The manual allocation operator uses
+`prepareYieldBankTargetExecution` with the expected revision, complete sleeve unwind data, reverse
+conversions, separate slippage floors, adapter loss limits, and a deadline no later than the owner&apos;s expiry. A new
+owner request is required for any later rebalance.
+Release verification also requires the manifest's exact WETH entry routes and reverse-to-WETH
+rebalance routes to match the allocator's live codehash-bound mappings.
+It also rejects an OpenSea-observed secondary royalty percentage or recipient that differs from the
+collection's immutable rate and revenue router.
+
+OpenSea setup calldata is available through the `prepareYieldBankSeaDrop*` helpers. They encode the
+NFT contract's exact public, token-gated, signed-mint, payout, fee-recipient, payer, and allowlist-
+clear calls. After setup, `prepareYieldBankNftOwnershipTransfer` creates the OpenSea-manager call
+that nominates the collection timelock; `prepareYieldBankNftOwnershipAcceptance` creates the target
+call the timelock must execute to accept ownership. Release verification fails until that handoff is
+complete and until every enumerable SeaDrop mint path matches the manifest.
+
+Every release manifest also declares the equity custody model, income behavior, and an HTTPS
+disclosure. The sleeve accepts only reviewed ERC-20 assets; the SDK does not infer that a token is a
+legal share or that it pays a separate cash dividend.
+
+`prepareYieldBankBurn` and `prepareYieldBankSleeveRedemption` both accept eligibility proof bytes.
+The same policy-approved holder can therefore receive restricted sleeve shares during an NFT burn
+and later redeem those shares without an empty-proof mismatch.
+
 ## Safety rules
 
 1. Call `verify()` before trusting packaged addresses and require every result to pass.
