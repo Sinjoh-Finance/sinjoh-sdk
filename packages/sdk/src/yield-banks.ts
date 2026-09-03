@@ -4,6 +4,7 @@ import {
 } from "viem";
 
 export const yieldBankCollectionAbi = [
+  { type: "function", name: "REDEMPTION_BURN_ADDRESS", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "collectionId", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
   { type: "function", name: "state", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
   { type: "function", name: "liveSupply", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
@@ -27,6 +28,9 @@ export const yieldBankCollectionAbi = [
   { type: "function", name: "portfolioAllocator", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "accountImplementation", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
   { type: "function", name: "eligibilityPolicy", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "redemptionToken", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "redemptionTokenAmount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "redemptionTokenCodeHash", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
   ...[
     "creator", "sinjohFeeRecipient", "revenueRouter",
     "collectionTimelock", "guardian",
