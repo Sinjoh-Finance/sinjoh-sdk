@@ -497,6 +497,7 @@ test("validate_config round-trips the raffle golden fixture offline", async () =
           asset: "0x0000000000000000000000000000000000c0de00",
           swapAdapter: "0x0000000000000000000000000000000000c0de01",
           priceGuard: "0x0000000000000000000000000000000000c0de02",
+          maxAmountInPerCall: "10000",
           routeData: "0x0000000000000000000000000000000000000000000000000000000000002710",
           guardData: "0x"
         }]
@@ -506,7 +507,7 @@ test("validate_config round-trips the raffle golden fixture offline", async () =
   assert.deepEqual(result.issues, []);
   assert.equal(
     result.configHash,
-    "0x265a277ee9569bf9d29a6a0c6f511e9025e82f8afe3c597ebd74ced30ec4fc49",
+    "0x473468aea92d313deab7839503bcb8e65db2d5f4dd527b71c5714fb0a1cbda50",
     "matches the Solidity-generated fixture hash"
   );
   await client.close();
