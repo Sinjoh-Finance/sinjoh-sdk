@@ -2,7 +2,7 @@
 // Harvested from Foundry build artifacts by tools/harvest-abis.mjs.
 // Regenerate with: forge build (per package), then npm run generate:abis.
 
-export { abiContractCounts, abiSourceCommit } from "./generated/meta.js";
+export { abiContractCounts, abiSourceCommit, abiProjectV2SourceCommit } from "./generated/meta.js";
 export * from "./generated/feeRouter.js";
 export * from "./generated/revenueCollector.js";
 export * from "./generated/airdropDistributor.js";

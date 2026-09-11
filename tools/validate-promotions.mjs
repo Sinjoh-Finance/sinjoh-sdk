@@ -9,9 +9,15 @@ const deploymentManifest = JSON.parse(
   readFileSync(resolve(repoRoot, "mainnet-deployments.json"), "utf8"),
 );
 const requireActive = process.argv.includes("--require-active");
-const abiSourceCommit = readFileSync(
+const abiMetadata = readFileSync(
   resolve(repoRoot, "packages/abis/src/generated/meta.ts"), "utf8",
-).match(/export const abiSourceCommit = "([0-9a-f]{40})";/)?.[1];
+);
+const abiSourceCommit = abiMetadata.match(/export const abiSourceCommit = "([0-9a-f]{40})";/)?.[1];
+const abiProjectV2SourceCommit = abiMetadata.match(/export const abiProjectV2SourceCommit = "([0-9a-f]{40})";/)?.[1];
+if (requireActive && (!abiProjectV2SourceCommit || abiProjectV2SourceCommit !==
+  deploymentManifest.currentInfrastructure?.projectV2?.sourceCommit)) {
+  throw new Error("Project V2 ABI source must match its deployed generation before publishing");
+}
 
 for (const channel of ["candidate", "active"]) {
   const file = resolve(repoRoot, `config/releases/${channel}.json`);

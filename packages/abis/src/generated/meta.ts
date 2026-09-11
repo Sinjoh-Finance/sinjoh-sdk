@@ -4,6 +4,8 @@
 
 /** The contracts repository commit the shipped ABIs were compiled from. */
 export const abiSourceCommit = "2e01b6e2e9ca08532fac2357420308df39552631";
+/** Source of the six deployed Project V2 launch/raffle ABIs; all others use abiSourceCommit. */
+export const abiProjectV2SourceCommit = "cb46aa8fc291f6d8ddabe2d7f315623e78611f2a";
 export const abiContractCounts = {
   "sinjoh-fee-router": 3,
   "sinjoh-revenue-collector": 1,

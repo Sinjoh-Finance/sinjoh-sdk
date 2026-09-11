@@ -16,6 +16,13 @@ const projectV2Root = process.env.SINJOH_PROJECT_V2_ROOT
   ? resolve(process.env.SINJOH_PROJECT_V2_ROOT)
   : null;
 const outDir = join(sdkRoot, "packages", "abis", "src", "generated");
+// These deployed contracts embed the original Project raffle tuple in their ABI.
+// Other contracts, including newer Yield Bank/Piggy Bank integrations, remain on
+// the primary release source and must not be rolled back with the launch ABI.
+const PROJECT_V2_DEPLOYED_ABIS = new Set([
+  "ProjectLaunchDeployerV2", "ProjectLaunchValidatorV2", "ProjectLauncherV2",
+  "ProjectRaffleV2", "SinjohPonsV2ProjectAdapter", "SinjohPoolsTradeInstantAdapter",
+]);
 
 const PACKAGES = [
   "sinjoh-fee-router",
@@ -45,9 +52,7 @@ const contracts = new Map();
 const conflicts = [];
 
 for (const pkg of PACKAGES) {
-  const packageRoot = projectV2Root && (
-    pkg === "sinjoh-launchpad-adapters" || pkg === "sinjoh-contracts-v2"
-  ) ? projectV2Root : contractsRoot;
+  const packageRoot = contractsRoot;
   const artifactRoot = join(packageRoot, pkg, "out");
   let sourceDirs;
   try {
@@ -60,11 +65,18 @@ for (const pkg of PACKAGES) {
     if (!dir.isDirectory() || !dir.name.endsWith(".sol")) continue;
     for (const file of readdirSync(join(artifactRoot, dir.name))) {
       if (!file.endsWith(".json")) continue;
-      const artifact = JSON.parse(readFileSync(join(artifactRoot, dir.name, file), "utf8"));
+      let artifact = JSON.parse(readFileSync(join(artifactRoot, dir.name, file), "utf8"));
       const target = artifact.metadata?.settings?.compilationTarget;
       if (!target) continue;
       const [sourcePath, contractName] = Object.entries(target)[0] ?? [];
       if (!sourcePath || !sourcePath.startsWith("src/")) continue;
+      if (projectV2Root && PROJECT_V2_DEPLOYED_ABIS.has(contractName)) {
+        artifact = JSON.parse(readFileSync(join(projectV2Root, pkg, "out", dir.name, file), "utf8"));
+        const legacyTarget = Object.entries(artifact.metadata?.settings?.compilationTarget ?? {})[0];
+        if (legacyTarget?.[0] !== sourcePath || legacyTarget?.[1] !== contractName) {
+          throw new Error(`Historical ABI target mismatch for ${contractName}`);
+        }
+      }
       if (!Array.isArray(artifact.abi) || artifact.abi.length === 0) continue;
       // Copied interfaces are deliberately narrow per package and legitimately diverge;
       // consumers get the full surface from the concrete contract ABIs instead. Internal
@@ -99,8 +111,9 @@ if (conflicts.length > 0) {
 }
 
 let sourceCommit = "unknown";
+let projectV2SourceCommit = "unknown";
 try {
-  const sourceRoot = projectV2Root ?? contractsRoot;
+  const sourceRoot = contractsRoot;
   const requestedCommit = process.env.SINJOH_ABI_SOURCE_COMMIT?.trim();
   if (requestedCommit) {
     sourceCommit = execFileSync("git", ["rev-parse", `${requestedCommit}^{commit}`], {
@@ -116,6 +129,13 @@ try {
       cwd: sourceRoot,
     }).toString().trim();
   }
+  projectV2SourceCommit = projectV2Root
+    ? execFileSync("git", ["rev-parse", "HEAD"], { cwd: projectV2Root }).toString().trim()
+    : sourceCommit;
+  execFileSync("git", ["diff", "--quiet", projectV2SourceCommit, "--",
+    "sinjoh-launchpad-adapters/src", "sinjoh-contracts-v2/src"], {
+    cwd: projectV2Root ?? contractsRoot,
+  });
 } catch {
   throw new Error("ABI source commit is unavailable or does not match the harvested source trees");
 }
@@ -155,11 +175,13 @@ for (const pkg of PACKAGES) {
 writeFileSync(join(outDir, "meta.ts"), `${banner}
 /** The contracts repository commit the shipped ABIs were compiled from. */
 export const abiSourceCommit = ${JSON.stringify(sourceCommit)};
+/** Source of the six deployed Project V2 launch/raffle ABIs; all others use abiSourceCommit. */
+export const abiProjectV2SourceCommit = ${JSON.stringify(projectV2SourceCommit)};
 export const abiContractCounts = ${JSON.stringify(summary, null, 2)} as const;
 `);
 
 writeFileSync(join(sdkRoot, "packages", "abis", "src", "index.ts"),
-  `${banner}\nexport { abiContractCounts, abiSourceCommit } from "./generated/meta.js";\n${
+  `${banner}\nexport { abiContractCounts, abiSourceCommit, abiProjectV2SourceCommit } from "./generated/meta.js";\n${
     indexExports.join("\n")}\n`);
 
 console.log(`harvested ${contracts.size} contracts:`);

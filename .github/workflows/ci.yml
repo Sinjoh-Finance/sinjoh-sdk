@@ -32,12 +32,21 @@ jobs:
           commit="$(sed -n 's/export const abiSourceCommit = "\([0-9a-f]*\)";/\1/p' packages/abis/src/generated/meta.ts)"
           test "${#commit}" -eq 40
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          project_commit="$(sed -n 's/export const abiProjectV2SourceCommit = "\([0-9a-f]*\)";/\1/p' packages/abis/src/generated/meta.ts)"
+          test "${#project_commit}" -eq 40
+          echo "project_commit=$project_commit" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Sinjoh-Finance/sinjoh-contracts
           ref: ${{ steps.abi-source.outputs.commit }}
           path: .abi-contracts
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Sinjoh-Finance/sinjoh-contracts
+          ref: ${{ steps.abi-source.outputs.project_commit }}
+          path: .abi-project-v2
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
@@ -49,7 +58,10 @@ jobs:
           while IFS= read -r manifest; do
             (cd "$(dirname "$manifest")" && forge build)
           done < <(find .abi-contracts -mindepth 2 -maxdepth 2 -name foundry.toml -print | sort)
-          SINJOH_CONTRACTS_ROOT="$PWD/.abi-contracts" npm run generate:abis
+          for package in sinjoh-contracts-v2 sinjoh-launchpad-adapters; do
+            (cd ".abi-project-v2/$package" && forge build)
+          done
+          SINJOH_CONTRACTS_ROOT="$PWD/.abi-contracts" SINJOH_PROJECT_V2_ROOT="$PWD/.abi-project-v2" npm run generate:abis
           git diff --exit-code -- packages/abis/src/generated packages/abis/src/index.ts
 
       - name: Check generated deployment manifest
