@@ -14,9 +14,10 @@ can require several transactions before final settlement.
 available pool. Up to 64 stock rewards are supported.
 
 Update all `@sinjoh/*` packages together to version 3. Regenerate deployment
-bindings from the finalized, attested successor release before publishing or
-using the new launch configuration in production. The source changes and version
-metadata alone do not activate a new mainnet factory. Existing immutable raffles
+bindings from the finalized, attested successor release when building a custom
+distribution. SDK 3.0.0 includes factory
+`0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5` and active release
+`raffle-successor-mainnet-20260911-2e01b6e`. Existing immutable raffles
 continue using their original configuration and ABI.
 
 Project V2 launches retain their deployed configuration and ABI. Their contracts

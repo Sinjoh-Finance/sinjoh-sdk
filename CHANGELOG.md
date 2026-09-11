@@ -3,6 +3,22 @@
 All notable changes to the Sinjoh SDK are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 3.0.0 - 2026-09-11
+
+- Standalone raffle stock rewards require `maxAmountInPerCall`, a positive
+  `uint128` conversion limit. Prizes are percentage-only (`maxPrize = 0`), with
+  up to 64 stock routes. This is a breaking configuration and codec change.
+- Launch planners reject incompatible factory hashes before preparing a call.
+- Canonical deployment bindings select the finalized successor factory
+  `0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5`; historical generations remain
+  available. The exact attested active release is included.
+- Existing Project V2 launch and raffle interfaces retain their deployed ABI
+  source. Both ABI source generations are rebuilt and verified in CI.
+- Agent tools accept the bounded stock-conversion configuration. LetsCash
+  support remains enabled with its current implementation binding.
+
+See [SDK 3 migration notes](docs/migration-v3.md).
+
 ## 2.2.5 - 2026-08-25
 
 ### Added
