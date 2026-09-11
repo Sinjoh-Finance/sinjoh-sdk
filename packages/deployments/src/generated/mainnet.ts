@@ -5,7 +5,7 @@
 export const mainnet = {
   chainId: 4663,
   status: "core-infrastructure-deployed",
-  releaseCandidate: false,
+  releaseCandidate: true,
   deployedAt: "2026-07-30",
   rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
   explorerUrl: "https://robinhoodchain.blockscout.com",
@@ -441,13 +441,30 @@ export const mainnet = {
       "purpose": "ECVRF randomness adapter for raffles. Immutable public key verified on-chain to hash to the prover account 0x8653117338aD8120FCC15A93452526e2695F8273; key held on the prover host, separate from the attestor."
     },
     "raffleFactory": {
+      "address": "0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5",
+      "deploymentBlock": 60018940,
+      "deploymentTransaction": "0x58a20a814d6a864a7846bbdb21c8edf582c3b5b2dafef92767a5251c7e7df284",
+      "runtimeCodeHash": "0xb3199e074aab138ecb2cf9845910dfce8eb3d7a42649421bdb54be3e66ab1955",
+      "purpose": "Percentage-only raffle prizes with bounded stock payout processing and a 64-route ceiling. New configuration tuple; historical immutable raffles remain on their original factories.",
+      "implementation": "0x8615ECBdeA194CADDcCBeF8D9275dC7e68575474",
+      "implementationRuntimeCodeHash": "0x9fb2126f3c1372804bcc708b6237d8ebc4baa42c18fd3c21412e7603efc5253c"
+    },
+    "raffleFactoryHistoricalGenerations.raffle-v1-max-16": {
       "address": "0xD030064fB83d14C97c22A6B63bF376552eBA7112",
       "deploymentBlock": 28821627,
       "deploymentTransaction": "0x515680dc28784964c518ed5e491d1a7d2da5224404a11220d09b9fc71ac4f9e1",
       "runtimeCodeHash": "0x35a31cf01b7c0f2ade47c6228f984e0d984f0fcb24214c031efebc38f92a4a5a",
-      "purpose": "SinjohRaffleRewardsFactory. Implementation initialization-locked; deploymentChainId 4663 verified on-chain.",
       "implementation": "0x982F8B6612146E0963DFd18D74e1ffe4E110b47D",
       "implementationRuntimeCodeHash": "0xde10e2dbff2714101c98b24ab7320e0b1038a370a72b96f84e63626ec156cf98"
+    },
+    "raffleFactoryHistoricalGenerations.raffle-v2-max-64-pre-tranches": {
+      "address": "0x9931324D98137b9D567B6ec32e1a10f148E6e9e3",
+      "deploymentBlock": 55412336,
+      "deploymentTransaction": "0x971945c8fd30fb0d1050d7e61f9987422b2270da2a703239b0fc308991e20fe3",
+      "runtimeCodeHash": "0x15194bfe6828174ba04ce5aab8742a607cecec777996b55ae92d4aaed2d4c2c8",
+      "purpose": "SinjohRaffleRewardsFactory generation with a 64-route stock-reward ceiling. Implementation initialization-locked; deploymentChainId 4663 verified on-chain.",
+      "implementation": "0x9FFF9412B4Bf8CcF1351739839a8B5836faa7cD3",
+      "implementationRuntimeCodeHash": "0xb73797b1f7b75c6f369d66aa658902589efac961491f2c56c86f2db5105e7679"
     },
     "raffleOperations.attestor": {
       "address": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
@@ -1265,24 +1282,30 @@ export const mainnet = {
     "letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
       "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-      "implementation": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
-      "implementationRuntimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
+      "implementation": "0x40250b4C73FC30f8F6ad077744B0124B3f111C28",
+      "implementationRuntimeCodeHash": "0x606a0bc3d6bac674f4aa28d4cf7b086fd73b84d1ddff69540c6af1128757b353",
       "implementationBinding": {
         "kind": "eip1967",
         "slot": "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
       }
     },
     "letscash.factoryImplementation": {
-      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
-      "deploymentBlock": 46051259,
-      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab",
-      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
+      "address": "0x40250b4C73FC30f8F6ad077744B0124B3f111C28",
+      "deploymentBlock": 48863220,
+      "deploymentTransaction": "0x12ded6362aeede695b33cb9c48f9defa41d2b149b7412b27897f813bcbf7fbb5",
+      "runtimeCodeHash": "0x606a0bc3d6bac674f4aa28d4cf7b086fd73b84d1ddff69540c6af1128757b353"
     },
     "letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260825": {
       "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
       "deploymentBlock": 28872652,
       "deploymentTransaction": "0xf0871106205ff3df6c8f3f11585be0508d813f5f0d3e5c1454c5464983766919",
       "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731"
+    },
+    "letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260829": {
+      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "deploymentBlock": 46051259,
+      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab",
+      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
     },
     "letscash.hook": {
       "address": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
