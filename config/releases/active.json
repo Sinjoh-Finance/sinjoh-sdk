@@ -1,18 +1,28 @@
 {
   "schemaVersion": 1,
-  "releaseId": "project-v2-public-pons-dual-funding-letscash-20260826-c184fad",
+  "releaseId": "raffle-successor-mainnet-20260911-2e01b6e",
   "channel": "active",
   "chainId": 4663,
   "network": "robinhood-mainnet",
   "source": {
     "repository": "Sinjoh-Finance/sinjoh-contracts",
-    "commit": "c184faddd881ddcabdc26c70364f825b79a142d0",
-    "releaseManifestSha256": "ac74c13368dc065417a08a8cbb3050ac53f8ba4c23a15f45364f50cf207f7a94",
+    "commit": "2e01b6e2e9ca08532fac2357420308df39552631",
+    "releaseManifestSha256": "01f711d56365e7263a66a76eecc738665ac6d8a289d967462dbf93bed0e612e1",
     "deploymentManifest": "mainnet-deployments.json",
-    "deploymentManifestSha256": "5be4748d0dc575ec14030e619a7da7ffc735bb63369a107aef7ea6d80ea30b2c"
+    "deploymentManifestSha256": "9839ae709abca280d7f10f5320d62711720066c3827c594129265ba013c748e0"
   },
-  "generatedAt": "2026-08-26T04:23:27.596Z",
+  "generatedAt": "2026-09-11T11:10:53.209Z",
   "contracts": {
+    "contracts.yieldBanks.registry": {
+      "address": "0x09e4542f9fEA13A00aAF400E81bDC10434af5278",
+      "runtimeCodeHash": "0x946ec7768669b7520fa5744c788a77b2f865c6482b094f759ef323d6a5ecfef0"
+    },
+    "contracts.yieldBanks.publicFactory": {
+      "address": "0x5Ef0056E4619a92CDeEa6139c29EDC76b19820c1",
+      "runtimeCodeHash": "0xc63a5edf6f11a0a49b11ab8dfd48502d5fcfef52aa4338d3a9631ccf19194dd9",
+      "deploymentBlock": 52917622,
+      "deploymentTransaction": "0xec15a893131cf834145d0e1ff23bbb0ffdd6f058987a52803babd8d80025f7b9"
+    },
     "contracts.launchStakingEngine": {
       "address": "0x1f20bF432206C133C08FCCaC4857B22e2327CE2b",
       "runtimeCodeHash": "0x4da43ef12471fdfefd88fdb3eebf47dbe13aee37ddb752bc7ab2a92f26876d34",
@@ -380,12 +390,28 @@
       "deploymentTransaction": "0x1a39cbfcf856ca85bc0f22e57f1d8ace57611063a615958e571c6c68789d5a03"
     },
     "contracts.raffleFactory": {
-      "address": "0xd030064fb83d14c97c22a6b63bf376552eba7112",
+      "address": "0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5",
+      "runtimeCodeHash": "0xb3199e074aab138ecb2cf9845910dfce8eb3d7a42649421bdb54be3e66ab1955",
+      "deploymentBlock": 60018940,
+      "deploymentTransaction": "0x58a20a814d6a864a7846bbdb21c8edf582c3b5b2dafef92767a5251c7e7df284",
+      "implementation": "0x8615ECBdeA194CADDcCBeF8D9275dC7e68575474",
+      "implementationRuntimeCodeHash": "0x9fb2126f3c1372804bcc708b6237d8ebc4baa42c18fd3c21412e7603efc5253c"
+    },
+    "contracts.raffleFactoryHistoricalGenerations.raffle-v1-max-16": {
+      "address": "0xD030064fB83d14C97c22A6B63bF376552eBA7112",
       "runtimeCodeHash": "0x35a31cf01b7c0f2ade47c6228f984e0d984f0fcb24214c031efebc38f92a4a5a",
       "deploymentBlock": 28821627,
       "deploymentTransaction": "0x515680dc28784964c518ed5e491d1a7d2da5224404a11220d09b9fc71ac4f9e1",
       "implementation": "0x982F8B6612146E0963DFd18D74e1ffe4E110b47D",
       "implementationRuntimeCodeHash": "0xde10e2dbff2714101c98b24ab7320e0b1038a370a72b96f84e63626ec156cf98"
+    },
+    "contracts.raffleFactoryHistoricalGenerations.raffle-v2-max-64-pre-tranches": {
+      "address": "0x9931324D98137b9D567B6ec32e1a10f148E6e9e3",
+      "runtimeCodeHash": "0x15194bfe6828174ba04ce5aab8742a607cecec777996b55ae92d4aaed2d4c2c8",
+      "deploymentBlock": 55412336,
+      "deploymentTransaction": "0x971945c8fd30fb0d1050d7e61f9987422b2270da2a703239b0fc308991e20fe3",
+      "implementation": "0x9FFF9412B4Bf8CcF1351739839a8B5836faa7cD3",
+      "implementationRuntimeCodeHash": "0xb73797b1f7b75c6f369d66aa658902589efac961491f2c56c86f2db5105e7679"
     },
     "contracts.rafflePriceGuards.guard500": {
       "address": "0xDad51edC925D4CCd46c1229763F40d1F32c7480C",
@@ -1691,20 +1717,26 @@
     "dependencies.letscash.factoryProxy": {
       "address": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
       "runtimeCodeHash": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-      "implementation": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
-      "implementationRuntimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603"
+      "implementation": "0x40250b4C73FC30f8F6ad077744B0124B3f111C28",
+      "implementationRuntimeCodeHash": "0x606a0bc3d6bac674f4aa28d4cf7b086fd73b84d1ddff69540c6af1128757b353"
     },
     "dependencies.letscash.factoryImplementation": {
-      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
-      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
-      "deploymentBlock": 46051259,
-      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab"
+      "address": "0x40250b4C73FC30f8F6ad077744B0124B3f111C28",
+      "runtimeCodeHash": "0x606a0bc3d6bac674f4aa28d4cf7b086fd73b84d1ddff69540c6af1128757b353",
+      "deploymentBlock": 48863220,
+      "deploymentTransaction": "0x12ded6362aeede695b33cb9c48f9defa41d2b149b7412b27897f813bcbf7fbb5"
     },
     "dependencies.letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260825": {
       "address": "0x3dFd73A63E15920aDd4B6c5C6a4b1b4B768b2c1A",
       "runtimeCodeHash": "0xef0219f515c49723f589e3aa4748b6f99caa8ef8a3f03e4c1a2b4d977d80f731",
       "deploymentBlock": 28872652,
       "deploymentTransaction": "0xf0871106205ff3df6c8f3f11585be0508d813f5f0d3e5c1454c5464983766919"
+    },
+    "dependencies.letscash.factoryHistoricalImplementations.cash-cat-factory-vnext-pre-20260829": {
+      "address": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
+      "runtimeCodeHash": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
+      "deploymentBlock": 46051259,
+      "deploymentTransaction": "0xa58e575486af020528b46aff993f2a549ca594423b8549a89ff91bd24e433bab"
     },
     "dependencies.letscash.hook": {
       "address": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
@@ -1888,6 +1920,14 @@
           "runtimeCodeHash": "0x5686b9e5166e3c34a0928b93153a4edead9e8ee95bdc8d31b0f71c6f03ad3789",
           "deploymentBlock": 23492375,
           "deploymentTransaction": "0x7ecb3a7dccb615e821f797689014fbbc9891a517a9ff27cb231759467502eb67"
+        },
+        "raffleFactory": {
+          "address": "0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5",
+          "runtimeCodeHash": "0xb3199e074aab138ecb2cf9845910dfce8eb3d7a42649421bdb54be3e66ab1955",
+          "deploymentBlock": 60018940,
+          "deploymentTransaction": "0x58a20a814d6a864a7846bbdb21c8edf582c3b5b2dafef92767a5251c7e7df284",
+          "implementation": "0x8615ECBdeA194CADDcCBeF8D9275dC7e68575474",
+          "implementationRuntimeCodeHash": "0x9fb2126f3c1372804bcc708b6237d8ebc4baa42c18fd3c21412e7603efc5253c"
         },
         "ponsAdapterFactory": {
           "address": "0x22f1755c85febcd486acff07fc5a3f5f60504950",
@@ -2081,6 +2121,11 @@
         "NEXT_PUBLIC_PROJECT_V2_PONS_APPROVAL_PROOF_3": "0x48dbe46d2b1502f8cd101d6732529b6ffd27980ba67f92aaa3823ca89c17e385",
         "NEXT_PUBLIC_PROJECT_V2_AIRDROP_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
         "NEXT_PUBLIC_PROJECT_V2_RAFFLE_ATTESTOR": "0xbd5323053ca81c4fD208874Db73e1484819214d7",
+        "NEXT_PUBLIC_RAFFLE_FACTORY": "0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5",
+        "NEXT_PUBLIC_RAFFLE_FACTORY_CODEHASH": "0xb3199e074aab138ecb2cf9845910dfce8eb3d7a42649421bdb54be3e66ab1955",
+        "NEXT_PUBLIC_RAFFLE_FACTORY_DEPLOYMENT_BLOCK": 60018940,
+        "NEXT_PUBLIC_RAFFLE_IMPLEMENTATION": "0x8615ECBdeA194CADDcCBeF8D9275dC7e68575474",
+        "NEXT_PUBLIC_RAFFLE_IMPLEMENTATION_CODEHASH": "0x9fb2126f3c1372804bcc708b6237d8ebc4baa42c18fd3c21412e7603efc5253c",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_FACTORY": "0x81f50D1695eeB6976b53f5dCc9E785Ff06C183DC",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_FACTORY_CODEHASH": "0xd5e2b73d1464ba5d8912ec7f999893e7369456a8b64f97160e9097969f02cac3",
         "NEXT_PUBLIC_LETSCASH_ADAPTER_IMPLEMENTATION": "0x0B825f7d00adB6bF03A7c7853F670F192D742cC4",
@@ -2161,7 +2206,7 @@
         "ENVIO_ROUTER_FACTORY": "0xfa51e67f799699a237d558f5fbe7b170f8c5584d",
         "ENVIO_AGNOSTIC_ROUTER_FACTORY": "0xA1F721a697Dd03a45f264F53bCBFd121212318eD",
         "ENVIO_PONS_ADAPTER_FACTORY": "0x22f1755c85febcd486acff07fc5a3f5f60504950",
-        "ENVIO_RAFFLE_FACTORY": "0xd030064fb83d14c97c22a6b63bf376552eba7112",
+        "ENVIO_RAFFLE_FACTORY": "0x1F3F41C97851F0bC9762Bc789eD0Ac82bff128F5",
         "ENVIO_FLAP_ADAPTER_FACTORY": "0x77748D07CAD323A7f6EFa54968aCF69de743be61",
         "ENVIO_PONS_V1_LAUNCH_FACTORY": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
         "ENVIO_PONS_V2_LAUNCH_FACTORY": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
@@ -2203,8 +2248,8 @@
         "SINJOH_LETSCASH_BUYBACK_GUARD": "0x1fE014FDa9B4054a5Da3b52Be5031393F83eeC8d",
         "SINJOH_LETSCASH_FACTORY": "0x5bd1Fbe78a78fe8236fa00CF48fbEBA74ae34661",
         "SINJOH_LETSCASH_FACTORY_CODEHASH": "0x51faa3f1aaa267eb4ffb4dd57f07a89edf3ffd618213bf35cf7f8254a07961e5",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x8E0Ee024c2B547AaE91E6B9b1D3940449B3404F4",
-        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0xf2e80731c9679b7869b99b8a3eb0428be9923d93abdce4c73de77e9b7fca0603",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION": "0x40250b4C73FC30f8F6ad077744B0124B3f111C28",
+        "SINJOH_LETSCASH_FACTORY_IMPLEMENTATION_CODEHASH": "0x606a0bc3d6bac674f4aa28d4cf7b086fd73b84d1ddff69540c6af1128757b353",
         "SINJOH_LETSCASH_HOOK": "0x75A54357D9C78a2Db19004a5FDc76c50F9242AEC",
         "SINJOH_LETSCASH_HOOK_CODEHASH": "0x5bbb7cb03abf34683d1f1e795e5e1a96573a0feee7c20c51f1cbf02139eb9003",
         "SINJOH_LETSCASH_POOL_MANAGER": "0x8366a39CC670B4001A1121B8F6A443A643e40951",

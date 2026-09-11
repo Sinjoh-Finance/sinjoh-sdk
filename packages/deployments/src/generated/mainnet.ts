@@ -5,7 +5,7 @@
 export const mainnet = {
   chainId: 4663,
   status: "core-infrastructure-deployed",
-  releaseCandidate: true,
+  releaseCandidate: false,
   deployedAt: "2026-07-30",
   rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
   explorerUrl: "https://robinhoodchain.blockscout.com",
