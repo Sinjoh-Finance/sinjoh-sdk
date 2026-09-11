@@ -48,10 +48,23 @@ export interface LaunchStepCall {
 export async function planRaffleDeploy(client: PublicClient, args: {
   factory: Address; salt: Hex; creator: Address; config: RaffleConfig; verifyExtra?: string;
 }): Promise<{ raffle: Address; step: LaunchStepCall }> {
+  const configHash = raffleConfigHash(args.config);
+  let factoryHash: Hex;
+  try {
+    factoryHash = await client.readContract({
+      address: args.factory, abi: sinjohRaffleRewardsFactoryAbi,
+      functionName: "hashConfig", args: [args.config]
+    });
+  } catch (cause) {
+    throw new Error("Raffle factory compatibility could not be verified; use the matching successor deployment.", { cause });
+  }
+  if (factoryHash !== configHash) {
+    throw new Error("Raffle factory configuration encoding does not match this SDK release.");
+  }
   const raffle = await client.readContract({
     address: args.factory, abi: sinjohRaffleRewardsFactoryAbi,
     functionName: "predictRaffle",
-    args: [args.creator, args.salt, raffleConfigHash(args.config)]
+    args: [args.creator, args.salt, configHash]
   });
   return {
     raffle,

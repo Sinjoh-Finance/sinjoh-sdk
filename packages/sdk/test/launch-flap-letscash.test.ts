@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { encodeFunctionData, type Address, type Hex, type PublicClient } from "viem";
 import { AssetKind, type RouterConfig } from "../src/codecs/router.js";
-import type { RaffleConfig } from "../src/codecs/raffle.js";
+import { raffleConfigHash, type RaffleConfig } from "../src/codecs/raffle.js";
 import {
   planFlapLaunch, predictUniswapV2Pair, raffleExclusionsForFlapLaunch,
   type FlapLaunchPlanInput
@@ -34,9 +34,10 @@ function stubClient(overrides: Record<string, unknown> = {}): PublicClient {
     ...overrides
   };
   return {
-    readContract: async (args: { address: Address; functionName: string }) => {
+    readContract: async (args: { address: Address; functionName: string; args?: readonly unknown[] }) => {
       const key = `${args.address}:${args.functionName}`;
       if (key in reads) return reads[key];
+      if (args.functionName === "hashConfig") return raffleConfigHash(args.args![0] as RaffleConfig);
       throw new Error(`unexpected read ${key}`);
     }
   } as unknown as PublicClient;
