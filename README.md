@@ -9,9 +9,11 @@ Chain. It provides deterministic planning and validation building blocks for app
 keepers, and agents, plus an explicit creator-authorized API upload for canonical token artwork.
 It never holds keys, signs, or submits blockchain transactions.
 
-> Release status: stable `2.2.5` source and package metadata, licensed under
+> Release status: `3.0.0` preparation; not yet published, licensed under
 > Apache-2.0. Tagged releases are published to npm through GitHub OIDC trusted
 > publishing, with build provenance, after all deterministic release gates pass.
+> Raffle launch support additionally requires the matching finalized contract
+> generation and its attested active promotion. See [migration notes](docs/migration-v3.md).
 
 ## Requirements
 

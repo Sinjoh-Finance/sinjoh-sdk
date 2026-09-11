@@ -16,6 +16,7 @@ export interface RaffleStockReward {
   asset: Address;
   swapAdapter: Address;
   priceGuard: Address;
+  maxAmountInPerCall: bigint;
   routeData: Hex;
   guardData: Hex;
 }
@@ -29,7 +30,7 @@ const UINT128_MAX = (1n << 128n) - 1n;
 const MAX_PAYOUT_TAX_BPS = 5_000;
 const MAX_WINNERS_PER_ROUND = 16;
 const MAX_EXCLUSIONS = 32;
-const MAX_STOCK_REWARDS = 16;
+const MAX_STOCK_REWARDS = 64;
 const MAX_ROUTE_DATA_LENGTH = 1_024;
 const MIN_ROUND_INTERVAL = 600;
 const MAX_ROUND_INTERVAL = 604_800;
@@ -96,6 +97,7 @@ const CONFIG_COMPONENTS = [
       { name: "asset", type: "address" },
       { name: "swapAdapter", type: "address" },
       { name: "priceGuard", type: "address" },
+      { name: "maxAmountInPerCall", type: "uint128" },
       { name: "routeData", type: "bytes" },
       { name: "guardData", type: "bytes" }
     ]
@@ -140,8 +142,8 @@ export function validateRaffleConfig(config: RaffleConfig): string[] {
   ] as const) checkUint128(value, label, issues);
   if (config.tokensPerTicket === 0n) issues.push("tokensPerTicket must be greater than zero");
   if (config.minPrize === 0n) issues.push("minPrize must be greater than zero");
-  if (config.maxPrize !== 0n && config.maxPrize < config.minPrize) {
-    issues.push("maxPrize must be zero or at least minPrize");
+  if (config.maxPrize !== 0n) {
+    issues.push("maxPrize must be zero; successor raffles use percentage-only prizes");
   }
 
   for (const [label, value, max] of [
@@ -219,6 +221,8 @@ export function validateRaffleConfig(config: RaffleConfig): string[] {
     }
     if (isZero(reward.swapAdapter)) issues.push(`${label}.swapAdapter must be nonzero`);
     if (isZero(reward.priceGuard)) issues.push(`${label}.priceGuard must be nonzero`);
+    checkUint128(reward.maxAmountInPerCall, `${label}.maxAmountInPerCall`, issues);
+    if (reward.maxAmountInPerCall === 0n) issues.push(`${label}.maxAmountInPerCall must be greater than zero`);
     if (byteLength(reward.routeData) > MAX_ROUTE_DATA_LENGTH) {
       issues.push(`${label}.routeData exceeds ${MAX_ROUTE_DATA_LENGTH} bytes`);
     }

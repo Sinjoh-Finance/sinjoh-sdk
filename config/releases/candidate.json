@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseId": "raffle-successor-mainnet-20260911-2e01b6e",
-  "channel": "active",
+  "channel": "candidate",
   "chainId": 4663,
   "network": "robinhood-mainnet",
   "source": {
@@ -9,9 +9,9 @@
     "commit": "2e01b6e2e9ca08532fac2357420308df39552631",
     "releaseManifestSha256": "01f711d56365e7263a66a76eecc738665ac6d8a289d967462dbf93bed0e612e1",
     "deploymentManifest": "mainnet-deployments.json",
-    "deploymentManifestSha256": "9839ae709abca280d7f10f5320d62711720066c3827c594129265ba013c748e0"
+    "deploymentManifestSha256": "6874e4862cf2f1d0a85ec556b1fbb59bb76592a06471b0c4ae92cbe200acf024"
   },
-  "generatedAt": "2026-09-11T11:10:53.209Z",
+  "generatedAt": "2026-09-11T06:24:41.718Z",
   "contracts": {
     "contracts.yieldBanks.registry": {
       "address": "0x09e4542f9fEA13A00aAF400E81bDC10434af5278",

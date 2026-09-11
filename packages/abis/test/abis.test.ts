@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
+import { toFunctionSelector } from "viem";
 import * as abis from "../src/index.js";
 
 type AbiItem = { type: string; name?: string };
@@ -12,9 +13,21 @@ function names(abi: readonly unknown[], type: string): string[] {
 
 test("meta records the source commit and a full harvest", () => {
   assert.match(abis.abiSourceCommit, /^[0-9a-f]{40}$/);
+  assert.match(abis.abiProjectV2SourceCommit, /^[0-9a-f]{40}$/);
   const total = Object.values(abis.abiContractCounts)
     .reduce((sum, count) => sum + count, 0);
   assert.ok(total >= 60, `only ${total} contracts harvested`);
+});
+
+test("standalone raffle successor does not change deployed Project V2 selectors", () => {
+  const project = abis.projectLauncherV2Abi.find((item) => item.type === "function" && item.name === "validateLaunchConfig");
+  const adapter = abis.sinjohPonsV2ProjectAdapterAbi.find((item) => item.type === "function" && item.name === "launch");
+  const raffle = abis.sinjohRaffleRewardsFactoryAbi.find((item) => item.type === "function" && item.name === "deployRaffle");
+  assert.ok(project && adapter && raffle);
+  // Read back from the deployed Project V2 dispatchers and the attested raffle successor.
+  assert.equal(toFunctionSelector(project), "0xc9379648");
+  assert.equal(toFunctionSelector(adapter), "0xe1b9ffe7");
+  assert.equal(toFunctionSelector(raffle), "0x4c13e47e");
 });
 
 test("core protocol surfaces expose their known entrypoints", () => {

@@ -1,2 +1,4 @@
 node_modules/
 dist/
+.abi-contracts/
+.abi-project-v2/

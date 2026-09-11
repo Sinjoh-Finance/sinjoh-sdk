@@ -112,6 +112,11 @@ export function raffleConfigFromWire(wire: Json): RaffleConfig {
   config.maxTicketsPerHolder = big(config.maxTicketsPerHolder, "maxTicketsPerHolder");
   config.minPrize = big(config.minPrize, "minPrize");
   config.maxPrize = big(config.maxPrize, "maxPrize");
+  for (const [i, reward] of (config.stockRewards ?? []).entries()) {
+    reward.maxAmountInPerCall = big(
+      reward.maxAmountInPerCall, `stockRewards[${i}].maxAmountInPerCall`,
+    );
+  }
   return config;
 }
 

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import type { PublicClient } from "viem";
+import { planRaffleDeploy } from "../src/launch/shared.js";
 import {
   encodeRaffleConfig, raffleConfigHash, validateRaffleConfig, type RaffleConfig
 } from "../src/codecs/raffle.js";
@@ -39,6 +41,7 @@ const FIXTURE_CONFIG: RaffleConfig = {
     asset: "0x0000000000000000000000000000000000c0de00",
     swapAdapter: "0x0000000000000000000000000000000000c0de01",
     priceGuard: "0x0000000000000000000000000000000000c0de02",
+    maxAmountInPerCall: 10_000n,
     routeData: "0x0000000000000000000000000000000000000000000000000000000000002710",
     guardData: "0x"
   }]
@@ -92,4 +95,37 @@ test("local validation mirrors the raffle initializer's hard limits", () => {
     }).join("; "),
     /differ from prizeAsset/
   );
+});
+
+test("successor raffles reject total prize caps and require a bounded conversion tranche", () => {
+  assert.match(validateRaffleConfig({ ...FIXTURE_CONFIG, maxPrize: 100n }).join("; "), /maxPrize must be zero/);
+  for (const maxAmountInPerCall of [0n, -1n, 1n << 128n]) {
+    assert.match(validateRaffleConfig({ ...FIXTURE_CONFIG, stockRewards: [{ ...FIXTURE_CONFIG.stockRewards[0]!, maxAmountInPerCall }] }).join("; "), /maxAmountInPerCall/);
+  }
+});
+
+test("successor raffles support 64 canonical stock routes", () => {
+  const stockRewards = Array.from({ length: 64 }, (_, i) => ({
+    ...FIXTURE_CONFIG.stockRewards[0]!,
+    asset: `0x${(BigInt(i) + 1n).toString(16).padStart(40, "0")}` as `0x${string}`,
+  }));
+  assert.deepEqual(validateRaffleConfig({ ...FIXTURE_CONFIG, stockRewards }), []);
+  assert.match(validateRaffleConfig({ ...FIXTURE_CONFIG, stockRewards: [...stockRewards, { ...stockRewards[0]!, asset: "0x0000000000000000000000000000000000000041" }] }).join("; "), /at most 64/);
+});
+
+test("launch planning refuses an incompatible factory before returning any deploy step", async () => {
+  for (const failure of ["revert", "wrong-hash"]) {
+    const calls: string[] = [];
+    const client = { readContract: async (request: { functionName: string }) => {
+      calls.push(request.functionName);
+      if (failure === "revert") throw new Error("execution reverted");
+      return `0x${"00".repeat(32)}`;
+    } } as unknown as PublicClient;
+    await assert.rejects(planRaffleDeploy(client, {
+      creator: FIXTURE_CONFIG.creator, config: FIXTURE_CONFIG,
+      factory: "0x000000000000000000000000000000000000ab07",
+      salt: `0x${"11".repeat(32)}`,
+    }), /compatibility|does not match/);
+    assert.deepEqual(calls, ["hashConfig"]);
+  }
 });

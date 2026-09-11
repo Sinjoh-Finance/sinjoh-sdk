@@ -9,6 +9,15 @@ const deploymentManifest = JSON.parse(
   readFileSync(resolve(repoRoot, "mainnet-deployments.json"), "utf8"),
 );
 const requireActive = process.argv.includes("--require-active");
+const abiMetadata = readFileSync(
+  resolve(repoRoot, "packages/abis/src/generated/meta.ts"), "utf8",
+);
+const abiSourceCommit = abiMetadata.match(/export const abiSourceCommit = "([0-9a-f]{40})";/)?.[1];
+const abiProjectV2SourceCommit = abiMetadata.match(/export const abiProjectV2SourceCommit = "([0-9a-f]{40})";/)?.[1];
+if (requireActive && (!abiProjectV2SourceCommit || abiProjectV2SourceCommit !==
+  deploymentManifest.currentInfrastructure?.projectV2?.sourceCommit)) {
+  throw new Error("Project V2 ABI source must match its deployed generation before publishing");
+}
 
 for (const channel of ["candidate", "active"]) {
   const file = resolve(repoRoot, `config/releases/${channel}.json`);
@@ -27,6 +36,9 @@ for (const channel of ["candidate", "active"]) {
   if (!promotion.consumers?.sdk?.contracts) throw new Error(`${channel} promotion lacks SDK bindings`);
   if (requireActive && channel === "active" && promotion.chainId !== 4663) {
     throw new Error("SDK releases require a Robinhood mainnet active promotion");
+  }
+  if (requireActive && channel === "active" && abiSourceCommit !== promotion.source.commit) {
+    throw new Error("SDK ABI source must match the active promotion source before publishing; regenerate ABIs from the promoted contracts commit");
   }
   if (promotion.chainId === 4663) {
     const localEntries = new Map();
