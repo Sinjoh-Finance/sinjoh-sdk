@@ -207,3 +207,15 @@ export {
   type YieldBankDeltaLiquidityAction, type YieldBankDeltaRung,
   type YieldBankDeltaWithdrawalData,
 } from "./yield-banks.js";
+
+export {
+  parseStockAmount, stockWeightBps, equalStockWeights, validateStockSelection,
+  allocateStockAmount, dividendReserveUnits, stockTokenValue, assertStockExecutionReady,
+  type StockMode, type StockWeight, type StockSelection, type StockCatalogAsset, type StockExecutionGate,
+} from "./stock-strategy.js";
+
+export * from "./stock-sleeve.js";
+export * from "./stock-bank.js";
+export * from "./stock-rebalance.js";
+
+export * from './stock-yield-bank.js';

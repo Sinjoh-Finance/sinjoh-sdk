@@ -152,3 +152,18 @@ and later redeem those shares without an empty-proof mismatch.
 
 See the [workspace README](https://github.com/Sinjoh-Finance/sinjoh-sdk) for generation,
 testing, MCP integration, and release status.
+
+## Stock strategy development primitives
+
+`parseStockAmount`, `stockWeightBps`, `equalStockWeights`, `validateStockSelection`,
+`allocateStockAmount`, `dividendReserveUnits`, `stockTokenValue`, and
+`assertStockExecutionReady` support the local dividend-only Stock strategy review.
+They do not implement custody, authenticate dividends, sign quotes or authorize execution.
+The reserve formula requires an independently authenticated cash-dividend transition and
+an eligible pre-event principal checkpoint. Raw-token oracle prices already include the multiplier.
+Never treat a price change or split as a dividend event.
+
+
+`verifyStockSleeveRelease` verifies pinned runtimes, routes and configuration. `readStockBankPosition` reads exact per-bank custody at one block. Use `readStockYieldBankToken` when reading a Stock-enabled bank: it splits Stock/LP product weights and clears the generic pro-rata adapter breakdown, which cannot represent differing bank baskets. Composite receipts use 36 decimals.
+
+`prepareStockOwnerRebalance` and the Stock codecs prepare the three owner-wallet calls for the existing allocator/router. They do not sign owner transactions or authenticate issuer events. The active application release supplies deployed addresses; catalog entries and browser input cannot enable admission. The platform exporter supplies independently verified activation evidence.
