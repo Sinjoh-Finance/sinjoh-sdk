@@ -1,6 +1,6 @@
 {
   "name": "@sinjoh/sdk",
-  "version": "3.1.0-stock.3",
+  "version": "3.2.0-airdrop.1",
   "description": "Core Sinjoh SDK: byte-exact configuration codecs, launch prediction, and custom-error decoding for the immutable Sinjoh protocols on Robinhood Chain.",
   "license": "Apache-2.0",
   "repository": {
