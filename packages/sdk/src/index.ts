@@ -227,3 +227,5 @@ export * from './airdrop-bank.js';
 export * from './airdrop-rebalance.js';
 
 export * from './airdrop-rewards.js';
+
+export * from './airdrop-prices.js';

@@ -53,13 +53,13 @@ export function assertAirdropExecutionReady(selection: AirdropSelection, catalog
   }
 }
 export const airdropCustodyAbi = parseAbi([
-  'function bank() view returns (uint256)', 'function subject() view returns (address)', 'function vault() view returns (address)',
-  'function beneficiary() view returns (address)', 'function principal() view returns (uint256)',
+  'function bank() view returns (uint256)', 'function hasHeld(address) view returns (bool)', 'function vault() view returns (address)',
+  'function beneficiary() view returns (address)', 'function principal(address) view returns (uint256)',
   'function available(address) view returns (uint256)', 'function totalPaid(address) view returns (uint256)',
-  'function collect(uint256 routeIndex,bytes proof)', 'function claim(address asset) returns (uint256)',
+  'function collect(address subject,uint256 routeIndex,bytes proof)', 'function claim(address asset) returns (uint256)',
   'event RewardPaid(uint256 indexed bank,address indexed asset,address indexed beneficiary,uint256 amount)',
 ]);
-export const airdropVaultAbi = parseAbi(['function custodyOf(uint256,address) view returns (address)', 'function principalOf(uint256,address) view returns (uint256)', 'function totalPrincipal(address) view returns (uint256)']);
+export const airdropVaultAbi = parseAbi(['function treasuryOf(uint256) view returns (address)', 'function custodyOf(uint256,address) view returns (address)', 'function principalOf(uint256,address) view returns (uint256)', 'function totalPrincipal(address) view returns (uint256)']);
 export const airdropCompositeAbi = parseAbi([
   'struct Basket { address[] assets; uint16[] weights; }',
   'struct TargetInput { uint16 lp; uint16 stock; uint16 airdrop; Basket stocks; Basket airdrops; uint48 validUntil; }',

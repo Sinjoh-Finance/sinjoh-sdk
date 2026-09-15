@@ -1,10 +1,11 @@
+import { airdropPriceAbi, type AirdropPriceRelease } from './airdrop-prices.js';
 import { getAddress, keccak256, parseAbi, type Address, type Hex, type PublicClient } from 'viem';
 import { stockCompositeSleeveAbi, stockCompositeLPAdapterAbi, stockDividendVaultAbi, stockCorporateActionRegistryAbi, stockDividendEscrowAbi } from './generated/stock-abis.js';
 import { airdropCompositeAbi, airdropVaultAbi } from './airdrop-strategy.js';
 import { verifyStockSleeveRelease, type StockSleeveRelease, type StockReleaseContract } from './stock-bank.js';
-export type AirdropSleeveRelease = StockSleeveRelease & {
- catalogHash: Hex; maximumLossBps: 50 | 100 | 200; airdropVault: StockReleaseContract; airdropRegistry: StockReleaseContract; targetBook: StockReleaseContract; executionLibrary: StockReleaseContract;
- airdrops: readonly { id:string; symbol:string; decimals:number; minimumHoldingUnits:string; token:StockReleaseContract; entryRoute:StockReleaseContract; exitRoute:StockReleaseContract; feed:StockReleaseContract; rewardAssets:readonly Address[]; claimAdapters:readonly StockReleaseContract[]; evidenceHash:Hex; enabled:boolean }[];
+export type AirdropSleeveRelease = StockSleeveRelease & { pricePreparation?: AirdropPriceRelease;
+ catalogHash: Hex; maximumLossBps: 50 | 100 | 200 | 300 | 500; airdropVault: StockReleaseContract; airdropRegistry: StockReleaseContract; targetBook: StockReleaseContract; executionLibrary: StockReleaseContract;
+ airdrops: readonly { id:string; symbol:string; decimals:number; minimumHoldingUnits:string; token:StockReleaseContract; entryRoute:StockReleaseContract; exitRoute:StockReleaseContract; feed:StockReleaseContract; oraclePolicy?:'observed-market-120s'|'v3-twap-underlier-1d'; rewardAssets:readonly Address[]; claimAdapters:readonly StockReleaseContract[]; evidenceHash:Hex; enabled:boolean }[];
 };
 const collectionAbi=parseAbi(['function accountOf(uint256) view returns(address)']);
 const nftAbi=parseAbi(['function ownerOf(uint256) view returns(address)']);
@@ -12,17 +13,31 @@ const priceAbi=parseAbi(['function quoteUsd18(address) view returns(uint256,uint
 const registryTuple=parseAbi(['function assets(address) view returns(uint256,uint64,uint48,bool,bytes32)']);
 const identityAbi=parseAbi(['function controller() view returns(address)','function collection() view returns(address)','function registry() view returns(address)','function owner() view returns(address)','function catalogHash() view returns(bytes32)','function sleeve() view returns(address)','function targetBook() view returns(address)','function airdropEntryRoute(address) view returns(address,bytes32)','function airdropExitRoute(address) view returns(address,bytes32)','function assets(address) view returns(bytes32,bytes32,uint8,bool)','function airdropVault() view returns(address)','function maximumOperatorLossBps() view returns(uint16)','function nft() view returns(address)','function minimumHoldingUnits(address) view returns(uint256)']);
 const feedAbi=parseAbi(['function feedDetails(address) view returns ((address feed,address referenceSource,uint32 heartbeat,uint32 gracePeriod,uint16 maxDeviationBps,uint8 decimals,bytes32 feedRuntimeCodeHash,bytes32 referenceRuntimeCodeHash,bytes32 feedDescriptionHash,bool supported,bool corporateActionPaused,bool weekdaysOnly,bool checkAssetOraclePause))']);
+const oraclePolicyAbi=parseAbi(['function pairedAsset() view returns(address)','function weth() view returns(address)','function wethUsdFeed() view returns(address)','function twapWindow() view returns(uint32)','function maxSpotDeviationBps() view returns(uint16)','function subject() view returns(address)','function MAX_AGE() view returns(uint48)','function WINDOW() view returns(uint48)']);
 const claimAbi=parseAbi(['function claimRouteCount(address) view returns(uint256)','function claimRoute(address,uint256) view returns((address adapter,bytes32 codeHash,address reward))','function subject() view returns(address)','function rewardAsset() view returns(address)']);
 const addressEqual=(a:string,b:string)=>getAddress(a)===getAddress(b);
-export async function verifyAirdropSleeveRelease(client:PublicClient,release:AirdropSleeveRelease,blockNumber:bigint) {
+export async function verifyAirdropSleeveRelease(client:PublicClient,release:AirdropSleeveRelease,blockNumber:bigint, options: {assetAddresses?:readonly Address[]} = {}) {
  await verifyStockSleeveRelease(client,release,blockNumber);
- if(![50,100,200].includes(release.maximumLossBps)||await client.readContract({address:release.sleeve.address,abi:identityAbi,functionName:'maximumOperatorLossBps',blockNumber})!==release.maximumLossBps)throw Error('Airdrop loss protection changed.');
+ if(![50,100,200,300,500].includes(release.maximumLossBps)||await client.readContract({address:release.sleeve.address,abi:identityAbi,functionName:'maximumOperatorLossBps',blockNumber})!==release.maximumLossBps)throw Error('Airdrop loss protection changed.');
  if(release.airdrops.length<1 || release.airdrops.length>100 || new Set(release.airdrops.map(a=>getAddress(a.token.address))).size!==release.airdrops.length)throw Error('Invalid Airdrop release inventory.');
- const contracts=[release.airdropVault,release.airdropRegistry,release.targetBook,release.executionLibrary,...release.airdrops.flatMap(a=>[a.token,a.entryRoute,a.exitRoute,a.feed,...a.claimAdapters])];
+ const scope=options.assetAddresses===undefined?undefined:new Set(options.assetAddresses.map(a=>getAddress(a)));
+ if(scope&&[...scope].some(address=>!release.airdrops.some(a=>addressEqual(a.token.address,address))))throw Error('Airdrop verification requested an unknown asset.');
+ const checkedAssets=release.airdrops.filter(a=>!scope||scope.has(getAddress(a.token.address)));
+ const contracts=[...(release.pricePreparation?[release.pricePreparation.publisher,release.pricePreparation.reader]:[]),release.airdropVault,release.airdropRegistry,release.targetBook,release.executionLibrary,...checkedAssets.flatMap(a=>[a.token,a.entryRoute,a.exitRoute,a.feed,...a.claimAdapters])];
  for(let i=0;i<contracts.length;i+=4)await Promise.all(contracts.slice(i,i+4).map(async c=>{
   const code=await client.getCode({address:c.address,blockNumber});
   if(!code || code==='0x' || keccak256(code).toLowerCase()!==c.runtimeCodeHash.toLowerCase())throw Error('Airdrop release code changed.');
  }));
+ if(release.pricePreparation){
+  const p=release.pricePreparation;
+  const feeds=release.airdrops.filter(a=>a.oraclePolicy==='observed-market-120s').map(a=>getAddress(a.feed.address)).sort();
+  if(p.feeds.length!==feeds.length||new Set(p.feeds.map(value => getAddress(value))).size!==feeds.length||p.feeds.map(value => getAddress(value)).sort().some((f,i)=>f!==feeds[i]))throw Error('Price preparation inventory changed.');
+  const [observer,publisher]=await Promise.all([
+   client.readContract({address:p.publisher.address,abi:airdropPriceAbi,functionName:'observer',blockNumber}),
+   client.readContract({address:p.reader.address,abi:airdropPriceAbi,functionName:'publisher',blockNumber}),
+  ]);
+  if(!addressEqual(observer,p.observer)||!addressEqual(publisher,p.publisher.address))throw Error('Price preparation binding changed.');
+ }
  const bindings=[
   [release.airdropVault.address,'controller',release.sleeve.address], [release.airdropVault.address,'collection',release.collection.address],
   [release.airdropVault.address,'registry',release.airdropRegistry.address], [release.airdropRegistry.address,'owner',release.governance],
@@ -30,12 +45,23 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
  ] as const;
  for(const [address,functionName,expected] of bindings){const actual=await client.readContract({address,abi:identityAbi,functionName,blockNumber});if(!addressEqual(actual,expected))throw Error('Airdrop release identity changed.');}
  if((await client.readContract({address:release.airdropRegistry.address,abi:identityAbi,functionName:'catalogHash',blockNumber})).toLowerCase()!==release.catalogHash.toLowerCase())throw Error('Airdrop catalog binding changed.');
- for(const asset of release.airdrops){
+ for(const asset of checkedAssets){
   if(!/^[1-9][0-9]*$/.test(asset.minimumHoldingUnits)||BigInt(asset.minimumHoldingUnits)>=(1n<<256n))throw Error('Invalid Airdrop holding threshold.');
   const minimum=await client.readContract({address:release.airdropRegistry.address,abi:identityAbi,functionName:'minimumHoldingUnits',args:[asset.token.address],blockNumber});
   if(minimum!==BigInt(asset.minimumHoldingUnits))throw Error('Airdrop holding eligibility changed.');
   const feed=await client.readContract({address:release.priceHub.address,abi:feedAbi,functionName:'feedDetails',args:[asset.token.address],blockNumber});
-  if(!addressEqual(feed.feed,asset.feed.address)||!feed.supported||feed.corporateActionPaused||feed.heartbeat===0||feed.heartbeat>3600||feed.gracePeriod!==0||feed.feedRuntimeCodeHash.toLowerCase()!==asset.feed.runtimeCodeHash.toLowerCase())throw Error('Airdrop oracle binding changed.');
+  const validHeartbeat=asset.oraclePolicy==='v3-twap-underlier-1d'?feed.heartbeat===86400:asset.oraclePolicy==='observed-market-120s'?feed.heartbeat===120:asset.oraclePolicy===undefined&&feed.heartbeat>0&&feed.heartbeat<=3600;
+  if(!addressEqual(feed.feed,asset.feed.address)||!feed.supported||feed.corporateActionPaused||!validHeartbeat||feed.gracePeriod!==0||feed.feedRuntimeCodeHash.toLowerCase()!==asset.feed.runtimeCodeHash.toLowerCase())throw Error('Airdrop oracle binding changed.');
+  if(asset.oraclePolicy){
+   if(feed.weekdaysOnly||feed.checkAssetOraclePause)throw Error('Airdrop subject uses an incompatible stock-market policy.');
+   const expected=asset.oraclePolicy==='v3-twap-underlier-1d'
+    ? {pairedAsset:asset.token.address,weth:'0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73',wethUsdFeed:'0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9',twapWindow:1800,maxSpotDeviationBps:300}
+    : {subject:asset.token.address,MAX_AGE:120,WINDOW:1800,maxSpotDeviationBps:300};
+   for(const [functionName,value] of Object.entries(expected)){
+    const actual=await client.readContract({address:asset.feed.address,abi:oraclePolicyAbi,functionName:functionName as 'subject',blockNumber});
+    if(String(actual).toLowerCase()!==String(value).toLowerCase())throw Error('Airdrop oracle source policy changed.');
+   }
+  }
   const count=await client.readContract({address:release.airdropRegistry.address,abi:claimAbi,functionName:'claimRouteCount',args:[asset.token.address],blockNumber});
   if(count!==BigInt(asset.claimAdapters.length)||count===0n||count>8n)throw Error('Airdrop claim routes changed.');
   for(const [i,adapter] of asset.claimAdapters.entries()){
@@ -56,11 +82,13 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
  }
 }
 
-export async function readAirdropBankPosition(client: PublicClient, release: AirdropSleeveRelease, bank: bigint, options: { blockNumber?: bigint } = {}) {
+export async function readAirdropBankPosition(client: PublicClient, release: AirdropSleeveRelease, bank: bigint, options: { blockNumber?: bigint; verifyAssets?: readonly Address[] } = {}) {
   if (bank <= 0n) throw new Error('Invalid Piggy Bank.');
   const block = await client.getBlock(options.blockNumber === undefined ? {} : { blockNumber: options.blockNumber });
   const blockNumber = block.number;
-  await verifyAirdropSleeveRelease(client, release, blockNumber);
+  const airdropAssets = await client.readContract({address:release.sleeve.address,abi:airdropCompositeAbi,functionName:'bankAirdrops',args:[bank],blockNumber});
+  if(airdropAssets.length>3)throw Error('Bank Airdrop basket exceeds the supported size.');
+  await verifyAirdropSleeveRelease(client, release, blockNumber,{assetAddresses:[...airdropAssets,...(options.verifyAssets??[])]});
   const [owner, account, assets, lpUnits, target, paused] = await Promise.all([
     client.readContract({ address: release.nft.address, abi: nftAbi, functionName: 'ownerOf', args: [bank], blockNumber }),
     client.readContract({ address: release.collection.address, abi: collectionAbi, functionName: 'accountOf', args: [bank], blockNumber }),
@@ -87,7 +115,6 @@ export async function readAirdropBankPosition(client: PublicClient, release: Air
   const receipt = await client.readContract({ address: release.sleeve.address, abi: stockCompositeSleeveAbi, functionName: 'balanceOf', args: [account], blockNumber });
   const stockValueUsd18 = holdings.reduce((sum, h) => sum + h.valueUsd18, 0n);
   const lpValueUsd18 = lpUnits * lpPrice[0] / 10n ** 18n;
-  const airdropAssets = await client.readContract({address:release.sleeve.address,abi:airdropCompositeAbi,functionName:'bankAirdrops',args:[bank],blockNumber});
   const airdropHoldings = await Promise.all(airdropAssets.map(async asset => {
     const admitted=release.airdrops.find(a=>addressEqual(a.token.address,asset));
     if(!admitted) throw Error('Bank holds an Airdrop token outside the release.');
