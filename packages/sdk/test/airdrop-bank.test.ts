@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {getAddress,keccak256,type Address,type PublicClient} from 'viem';
 import {readAirdropBankPosition,verifyAirdropSleeveRelease,type AirdropSleeveRelease} from '../src/airdrop-bank.js';
+import {verifyStockSleeveRelease} from '../src/stock-bank.js';
 const addr=(n:number)=>getAddress(`0x${(0xabcdef000000n+BigInt(n)).toString(16).padStart(40,'0')}`);
 const hash=keccak256('0x0102');
 const contract=(n:number)=>({address:addr(n),runtimeCodeHash:hash});
@@ -109,4 +110,32 @@ test('signed-price inventory handles mixed-case addresses and rejects omissions 
  f.release.pricePreparation.feeds=f.release.airdrops.map(a=>a.feed.address);
  authority=addr(203);
  await assert.rejects(verifyAirdropSleeveRelease(client,f.release,100n,{assetAddresses:[]}),/binding/);
+});
+
+test('additive Stock releases preserve earlier immutable admission evidence in Stock and Airdrop',async()=>{
+ const f=fixture(),original=f.release.manifestHash,newHash=keccak256('0x1234');
+ f.release.stocks[0]!.admissionManifestHash=original;
+ f.release.stocks=[...f.release.stocks,{symbol:'NEW',token:contract(80),entryRoute:contract(81),exitRoute:contract(82),dividendRoute:contract(83),feed:contract(84)}];
+ f.release.manifestHash=newHash;
+ const client={...f.client,readContract:async(p:{address:Address;functionName:string;args?:unknown[];blockNumber:bigint})=>{
+  const stock=f.release.stocks.find(s=>s.token.address===p.args?.[0]);
+  if(stock){
+   if(p.functionName==='assets'&&p.address===f.release.registry.address)return [1n,0n,10000,true,stock.symbol==='NEW'?newHash:original];
+   const route=p.functionName==='stockEntryRoute'?stock.entryRoute:p.functionName==='stockExitRoute'?stock.exitRoute:p.functionName==='dividendRoutes'?stock.dividendRoute:undefined;
+   if(route)return [route.address,route.runtimeCodeHash];
+   if(p.functionName==='feedDetails')return {feed:stock.feed.address,supported:true,heartbeat:86400,gracePeriod:0,feedRuntimeCodeHash:hash,checkAssetOraclePause:true,weekdaysOnly:true};
+  }
+  return f.client.readContract(p as never);
+ }} as unknown as PublicClient;
+ await verifyStockSleeveRelease(client,f.release,100n);
+ await verifyAirdropSleeveRelease(client,f.release,100n);
+ delete f.release.stocks[0]!.admissionManifestHash;
+ await assert.rejects(verifyStockSleeveRelease(client,f.release,100n),/admission/);
+ f.release.stocks[0]!.admissionManifestHash=newHash;
+ await assert.rejects(verifyAirdropSleeveRelease(client,f.release,100n),/admission/);
+ f.release.stocks[0]!.admissionManifestHash=original;
+ f.release.stocks[1]!.admissionManifestHash=original;
+ await assert.rejects(verifyStockSleeveRelease(client,f.release,100n),/admission/);
+ f.release.stocks[1]!.admissionManifestHash='0x'+'0'.repeat(64) as `0x${string}`;
+ await assert.rejects(verifyStockSleeveRelease(client,f.release,100n),/invalid admission/);
 });

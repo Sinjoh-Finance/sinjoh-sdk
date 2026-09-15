@@ -10,7 +10,10 @@ export type StockSleeveRelease = {
   registry: StockReleaseContract; escrow: StockReleaseContract; lpVault: StockReleaseContract;
   lpAdapter: StockReleaseContract; registrationPool: StockReleaseContract; lpPool: StockReleaseContract;
   priceHub: StockReleaseContract; payoutAsset: StockReleaseContract; governance: Address;
-  stocks: readonly { symbol: string; token: StockReleaseContract; entryRoute: StockReleaseContract; exitRoute: StockReleaseContract; dividendRoute: StockReleaseContract; feed: StockReleaseContract }[];
+  stocks: readonly { symbol: string; token: StockReleaseContract; entryRoute: StockReleaseContract; exitRoute: StockReleaseContract; dividendRoute: StockReleaseContract; feed: StockReleaseContract;
+    /** Existing assets retain their original immutable admission evidence when a release expands. */
+    admissionManifestHash?: Hex;
+  }[];
 };
 const collectionAbi = parseAbi(['function accountOf(uint256) view returns (address)', 'function nft() view returns (address)', 'function collectionTimelock() view returns (address)']);
 const nftAbi = parseAbi(['function ownerOf(uint256) view returns (address)']);
@@ -65,6 +68,8 @@ export async function verifyStockSleeveRelease(client: PublicClient, release: St
   for (const [actual, expected, name] of [[nft, release.nft.address, 'NFT'], [controller, release.sleeve.address, 'custody controller'], [vaultOwner, release.governance, 'vault owner'], [registryOwner, release.governance, 'corporate action owner'], [hub, release.priceHub.address, 'price hub'], [payoutNft, release.nft.address, 'payout NFT'], [settler, release.vault.address, 'cash settler']]) requireAddress(actual!, expected!, name!);
   const feedConfigAbi = parseAbi(['function feedDetails(address) view returns ((address feed,address referenceSource,uint32 heartbeat,uint32 gracePeriod,uint16 maxDeviationBps,uint8 decimals,bytes32 feedRuntimeCodeHash,bytes32 referenceRuntimeCodeHash,bytes32 feedDescriptionHash,bool supported,bool corporateActionPaused,bool weekdaysOnly,bool checkAssetOraclePause))']);
   for (const stock of release.stocks) {
+    const admissionHash = stock.admissionManifestHash ?? release.manifestHash;
+    if (!/^0x[0-9a-fA-F]{64}$/.test(admissionHash) || /^0x0+$/.test(admissionHash)) throw new Error(`${stock.symbol} has invalid admission evidence.`);
     const [entry, exit, dividend, state, feed] = await Promise.all([
       client.readContract({ address: release.sleeve.address, abi: stockCompositeSleeveAbi, functionName: 'stockEntryRoute', args: [stock.token.address], blockNumber }),
       client.readContract({ address: release.sleeve.address, abi: stockCompositeSleeveAbi, functionName: 'stockExitRoute', args: [stock.token.address], blockNumber }),
@@ -77,7 +82,7 @@ export async function verifyStockSleeveRelease(client: PublicClient, release: St
       if (binding[1].toLowerCase() !== expected.runtimeCodeHash.toLowerCase()) throw new Error(`${stock.symbol} route runtime binding changed.`);
     }
     requireAddress(feed.feed, stock.feed.address, `${stock.symbol} price feed`);
-    if (state[4].toLowerCase() !== release.manifestHash.toLowerCase() || !feed.supported || !feed.checkAssetOraclePause || !feed.weekdaysOnly || feed.heartbeat > 86400 || feed.gracePeriod !== 0 || feed.feedRuntimeCodeHash.toLowerCase() !== stock.feed.runtimeCodeHash.toLowerCase()) throw new Error(`${stock.symbol} admission or oracle configuration changed.`);
+    if (state[4].toLowerCase() !== admissionHash.toLowerCase() || !feed.supported || !feed.checkAssetOraclePause || !feed.weekdaysOnly || feed.heartbeat > 86400 || feed.gracePeriod !== 0 || feed.feedRuntimeCodeHash.toLowerCase() !== stock.feed.runtimeCodeHash.toLowerCase()) throw new Error(`${stock.symbol} admission or oracle configuration changed.`);
   }
 
 }
