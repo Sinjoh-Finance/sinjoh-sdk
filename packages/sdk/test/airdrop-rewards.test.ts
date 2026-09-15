@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { keccak256, zeroAddress, type Address, type PublicClient } from 'viem';
-import { readAirdropRewards } from '../src/airdrop-rewards.js';
+import { readAirdropRewardInventory, readAirdropRewards } from '../src/airdrop-rewards.js';
 import type { AirdropSleeveRelease } from '../src/airdrop-bank.js';
 const address=(n:number)=>`0x${n.toString(16).padStart(40,'0')}` as Address;
 const hash=keccak256('0x0102'),binding=(n:number)=>({address:address(n),runtimeCodeHash:hash});
@@ -46,5 +46,43 @@ test('absent treasury returns no rewards and a reorganized read is rejected',asy
 test('a failed token read is surfaced rather than reported as zero',async()=>{
  const f=fixture(),original=f.client.readContract;
  const client={...f.client,readContract:async(p:Parameters<typeof original>[0])=>{if(p.functionName==='available')throw Error('Token read failed');return original(p);}} as PublicClient;
- await assert.rejects(readAirdropRewards(client,f.release,334n),/Token read failed/);
+ await assert.rejects(readAirdropRewards(client,f.release,334n),/token read failed/);
+ const inventory=await readAirdropRewardInventory(client,f.release,334n);
+ assert.deepEqual(inventory.balances,[]);
+ assert.deepEqual(inventory.unavailableAssets.map(row=>row.asset),[zeroAddress,address(1),address(2),address(5)]);
+ assert.ok(inventory.unavailableAssets.every(row=>!('available' in row)&&!('paid' in row)));
+});
+for(const method of ['available','totalPaid'])test(`a failed ${method} read cannot hide independently verified rewards`,async()=>{
+ const f=fixture(),original=f.client.readContract;
+ const client={...f.client,readContract:async(p:Parameters<typeof original>[0])=>{
+  if(p.functionName===method&&p.args?.[0]===address(1))throw Error('One token is unavailable');
+  return original(p);
+ }} as PublicClient;
+ const inventory=await readAirdropRewardInventory(client,f.release,334n);
+ assert.deepEqual(inventory.balances.map(row=>row.asset),[zeroAddress,address(2),address(5)]);
+ assert.equal(inventory.balances.find(row=>row.asset===address(5))?.available,7n);
+ assert.equal(inventory.balances.find(row=>row.asset===address(5))?.paid,9n);
+ assert.deepEqual(inventory.unavailableAssets,[{custody:address(90),beneficiary:address(99),asset:address(1),blockNumber:100n}]);
+ await assert.rejects(readAirdropRewards(client,f.release,334n),/could not be verified/);
+});
+test('partial inventories still reject a reorganized snapshot',async()=>{
+ const f=fixture(),original=f.client.readContract;f.reorg();
+ const client={...f.client,readContract:async(p:Parameters<typeof original>[0])=>{
+  if(p.functionName==='available'&&p.args?.[0]===address(1))throw Error('Token failed');
+  return original(p);
+ }} as PublicClient;
+ await assert.rejects(readAirdropRewardInventory(client,f.release,334n),/reorganized/);
+});
+test('treasury identity and holding-history failures cannot produce a partial inventory',async()=>{
+ for(const method of ['bank','vault','collection','registry','hasHeld']){
+  const f=fixture(),original=f.client.readContract;
+  const client={...f.client,readContract:async(p:Parameters<typeof original>[0])=>{
+   if(p.address===address(90)&&p.functionName===method){
+    if(method==='hasHeld')throw Error('History unavailable');
+    return method==='bank'?335n:address(666);
+   }
+   return original(p);
+  }} as PublicClient;
+  await assert.rejects(readAirdropRewardInventory(client,f.release,334n),/identity changed|History unavailable/);
+ }
 });
