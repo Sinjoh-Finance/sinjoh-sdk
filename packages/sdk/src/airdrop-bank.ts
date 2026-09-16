@@ -44,7 +44,7 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
   [release.airdropVault.address,'registry',release.airdropRegistry.address], [release.airdropRegistry.address,'owner',release.governance],
   [release.sleeve.address,'airdropVault',release.airdropVault.address], [release.targetBook.address,'sleeve',release.sleeve.address], [release.sleeve.address,'targetBook',release.targetBook.address],
  ] as const;
- for(const [address,functionName,expected] of bindings){const actual=await client.readContract({address,abi:identityAbi,functionName,blockNumber});if(!addressEqual(actual,expected))throw Error('Airdrop release identity changed.');}
+ await Promise.all(bindings.map(async([address,functionName,expected])=>{const actual=await client.readContract({address,abi:identityAbi,functionName,blockNumber});if(!addressEqual(actual,expected))throw Error('Airdrop release identity changed.');}));
  if((await client.readContract({address:release.airdropRegistry.address,abi:identityAbi,functionName:'catalogHash',blockNumber})).toLowerCase()!==release.catalogHash.toLowerCase())throw Error('Airdrop catalog binding changed.');
  for(const asset of checkedAssets){
   if(!/^[1-9][0-9]*$/.test(asset.minimumHoldingUnits)||BigInt(asset.minimumHoldingUnits)>=(1n<<256n))throw Error('Invalid Airdrop holding threshold.');
@@ -63,10 +63,10 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
    const expected=asset.oraclePolicy==='v3-twap-underlier-1d'
     ? {pairedAsset:asset.token.address,weth:'0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73',wethUsdFeed:'0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9',twapWindow:1800,maxSpotDeviationBps:300}
     : {subject:asset.token.address,MAX_AGE:120,WINDOW:1800,maxSpotDeviationBps:300};
-   for(const [functionName,value] of Object.entries(expected)){
+   await Promise.all(Object.entries(expected).map(async([functionName,value])=>{
     const actual=await client.readContract({address:asset.feed.address,abi:oraclePolicyAbi,functionName:functionName as 'subject',blockNumber});
     if(String(actual).toLowerCase()!==String(value).toLowerCase())throw Error('Airdrop oracle source policy changed.');
-   }
+   }));
   }
   const count=await client.readContract({address:release.airdropRegistry.address,abi:claimAbi,functionName:'claimRouteCount',args:[asset.token.address],blockNumber});
   if(count!==BigInt(asset.claimAdapters.length)||count===0n||count>8n)throw Error('Airdrop claim routes changed.');
@@ -81,10 +81,10 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
   if(asset.id!==`eip155:4663/erc20:${asset.token.address.toLowerCase()}` || !Number.isInteger(asset.decimals) || asset.decimals<0 || asset.decimals>18)throw Error('Invalid Airdrop asset identity.');
   const state=await client.readContract({address:release.airdropRegistry.address,abi:identityAbi,functionName:'assets',args:[asset.token.address],blockNumber});
   if(state[0].toLowerCase()!==asset.token.runtimeCodeHash.toLowerCase() || state[1].toLowerCase()!==asset.evidenceHash.toLowerCase() || state[2]!==asset.decimals || state[3]!==asset.enabled)throw Error('Airdrop asset admission changed.');
-  for(const [functionName,expected] of [['airdropEntryRoute',asset.entryRoute],['airdropExitRoute',asset.exitRoute]] as const){
+  await Promise.all(([['airdropEntryRoute',asset.entryRoute],['airdropExitRoute',asset.exitRoute]] as const).map(async([functionName,expected])=>{
    const route=await client.readContract({address:release.sleeve.address,abi:identityAbi,functionName,args:[asset.token.address],blockNumber});
    if(!addressEqual(route[0],expected.address)||route[1].toLowerCase()!==expected.runtimeCodeHash.toLowerCase())throw Error('Airdrop trading route changed.');
-  }
+  }));
  }
 }
 
