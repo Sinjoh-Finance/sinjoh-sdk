@@ -223,6 +223,7 @@ export * from './stock-yield-bank.js';
 export * from './airdrop-strategy.js';
 
 export * from './airdrop-bank.js';
+export * from './airdrop-market-reference.js';
 
 export * from './airdrop-rebalance.js';
 

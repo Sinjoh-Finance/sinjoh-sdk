@@ -3,9 +3,10 @@ import { getAddress, keccak256, parseAbi, type Address, type Hex, type PublicCli
 import { stockCompositeSleeveAbi, stockCompositeLPAdapterAbi, stockDividendVaultAbi, stockCorporateActionRegistryAbi, stockDividendEscrowAbi } from './generated/stock-abis.js';
 import { airdropCompositeAbi, airdropVaultAbi } from './airdrop-strategy.js';
 import { verifyStockSleeveRelease, type StockSleeveRelease, type StockReleaseContract } from './stock-bank.js';
+import { verifyAirdropMarketReference, type AirdropMarketPolicy, type AirdropMarketReference } from './airdrop-market-reference.js';
 export type AirdropSleeveRelease = StockSleeveRelease & { pricePreparation?: AirdropPriceRelease;
  catalogHash: Hex; maximumLossBps: 50 | 100 | 200 | 300 | 500; airdropVault: StockReleaseContract; airdropRegistry: StockReleaseContract; targetBook: StockReleaseContract; executionLibrary: StockReleaseContract;
- airdrops: readonly { id:string; symbol:string; decimals:number; minimumHoldingUnits:string; token:StockReleaseContract; entryRoute:StockReleaseContract; exitRoute:StockReleaseContract; feed:StockReleaseContract; oraclePolicy?:'observed-market-120s'|'v3-twap-underlier-1d'; rewardAssets:readonly Address[]; claimAdapters:readonly StockReleaseContract[]; evidenceHash:Hex; enabled:boolean }[];
+ airdrops: readonly { id:string; symbol:string; decimals:number; minimumHoldingUnits:string; token:StockReleaseContract; entryRoute:StockReleaseContract; exitRoute:StockReleaseContract; feed:StockReleaseContract; oraclePolicy?:'observed-market-120s'|'v3-twap-underlier-1d'|AirdropMarketPolicy; marketReference?:AirdropMarketReference; rewardAssets:readonly Address[]; claimAdapters:readonly StockReleaseContract[]; evidenceHash:Hex; enabled:boolean }[];
 };
 const collectionAbi=parseAbi(['function accountOf(uint256) view returns(address)']);
 const nftAbi=parseAbi(['function ownerOf(uint256) view returns(address)']);
@@ -50,9 +51,14 @@ export async function verifyAirdropSleeveRelease(client:PublicClient,release:Air
   const minimum=await client.readContract({address:release.airdropRegistry.address,abi:identityAbi,functionName:'minimumHoldingUnits',args:[asset.token.address],blockNumber});
   if(minimum!==BigInt(asset.minimumHoldingUnits))throw Error('Airdrop holding eligibility changed.');
   const feed=await client.readContract({address:release.priceHub.address,abi:feedAbi,functionName:'feedDetails',args:[asset.token.address],blockNumber});
-  const validHeartbeat=asset.oraclePolicy==='v3-twap-underlier-1d'?feed.heartbeat===86400:asset.oraclePolicy==='observed-market-120s'?feed.heartbeat===120:asset.oraclePolicy===undefined&&feed.heartbeat>0&&feed.heartbeat<=3600;
+  const marketPolicy=asset.oraclePolicy==='execution-market-v3'||asset.oraclePolicy==='execution-market-v4';
+  if(asset.marketReference&&!marketPolicy)throw Error('Airdrop market reference needs an explicit source policy.');
+  const validHeartbeat=marketPolicy?feed.heartbeat===300:asset.oraclePolicy==='v3-twap-underlier-1d'?feed.heartbeat===86400:asset.oraclePolicy==='observed-market-120s'?feed.heartbeat===120:asset.oraclePolicy===undefined&&feed.heartbeat>0&&feed.heartbeat<=3600;
   if(!addressEqual(feed.feed,asset.feed.address)||!feed.supported||feed.corporateActionPaused||!validHeartbeat||feed.gracePeriod!==0||feed.feedRuntimeCodeHash.toLowerCase()!==asset.feed.runtimeCodeHash.toLowerCase())throw Error('Airdrop oracle binding changed.');
-  if(asset.oraclePolicy){
+  if(marketPolicy){
+   if(!asset.marketReference||feed.weekdaysOnly||feed.checkAssetOraclePause||feed.decimals!==18||feed.maxDeviationBps!==0||!/^0x0{40}$/i.test(feed.referenceSource))throw Error('Airdrop market reference configuration changed.');
+   await verifyAirdropMarketReference(client,{policy:asset.oraclePolicy as AirdropMarketPolicy,reference:asset.marketReference,token:asset.token,feed:asset.feed,priceHub:release.priceHub,decimals:asset.decimals},blockNumber);
+  }else if(asset.oraclePolicy){
    if(feed.weekdaysOnly||feed.checkAssetOraclePause)throw Error('Airdrop subject uses an incompatible stock-market policy.');
    const expected=asset.oraclePolicy==='v3-twap-underlier-1d'
     ? {pairedAsset:asset.token.address,weth:'0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73',wethUsdFeed:'0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9',twapWindow:1800,maxSpotDeviationBps:300}

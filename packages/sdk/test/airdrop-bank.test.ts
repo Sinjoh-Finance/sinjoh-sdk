@@ -55,6 +55,20 @@ test('scoped verification checks all core identities but isolates an unrelated u
 test('unknown scope cannot silently skip admission checks',async()=>{
  const f=fixture();await assert.rejects(verifyAirdropSleeveRelease(f.client,f.release,100n,{assetAddresses:[addr(999)]}),/unknown asset/);
 });
+test('market policy cannot omit its source metadata or use the legacy heartbeat',async()=>{
+ const f=fixture(),asset=f.release.airdrops[0]!;asset.oraclePolicy='execution-market-v3';
+ await assert.rejects(verifyAirdropSleeveRelease(f.client,f.release,100n,{assetAddresses:[asset.token.address]}),/oracle binding/);
+ const client={...f.client,readContract:async(p:{functionName:string;args?:unknown[]})=>{
+  const value=await f.client.readContract(p as never);
+  return p.functionName==='feedDetails'&&p.args?.[0]===asset.token.address?{...value as object,heartbeat:300}:value;
+ }} as unknown as PublicClient;
+ await assert.rejects(verifyAirdropSleeveRelease(client,f.release,100n,{assetAddresses:[asset.token.address]}),/market reference configuration/);
+});
+test('market metadata without an explicit market policy cannot enter the legacy fallback',async()=>{
+ const f=fixture(),asset=f.release.airdrops[0]!;
+ asset.marketReference={kind:'v3',quoteToken:contract(91),minimumLiquidity:'1',pool:contract(92),factory:contract(93),fee:3000};
+ await assert.rejects(verifyAirdropSleeveRelease(f.client,f.release,100n,{assetAddresses:[asset.token.address]}),/explicit source policy/);
+});
 test('position reads verify the union of held and newly selected tokens',async()=>{
  const f=fixture();f.hold([addr(2)]);const position=await readAirdropBankPosition(f.client,f.release,334n,{blockNumber:100n,verifyAssets:[addr(3)]});
  assert.equal(position.airdropValueUsd18,2n*10n**18n);
