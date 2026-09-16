@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { decodeFunctionData, encodeFunctionResult, getAddress, keccak256, parseAbi, type Address, type PublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { airdropPriceAbi, airdropPriceTypedData, parseAirdropPricePreparation, verifyAirdropPricePreparation, withAirdropPreparedReads, type AirdropPricePreparation } from '../src/airdrop-prices.js';
+import { airdropPriceAbi, airdropPriceTypedData, parseAirdropPricePreparation, verifyAirdropPricePreparation, withAirdropPreparedReads, fetchAirdropPreparedClient, type AirdropPricePreparation } from '../src/airdrop-prices.js';
 const address=(n:number)=>getAddress(`0x${n.toString(16).padStart(40,'0')}`);
 const hash=keccak256('0x01');
 // Public unfunded fixture used solely for local cryptographic tests.
@@ -42,4 +42,37 @@ test('prepared portfolio reads use eth_call and static read calldata, never send
  assert.equal(await prepared.readContract({address:address(20),abi,functionName:'balanceOf',args:[address(99)],blockNumber:100n}),42n);
  await assert.rejects(prepared.readContract({address:address(20),abi,functionName:'balanceOf',args:[address(99)],blockNumber:101n}),/same explicit block/);
  assert.equal(called,1);
+});
+
+test('concurrent bank preparations retry busy responses without changing the requested snapshot',async()=>{
+ const f=await fixture();const bodies:string[]=[];
+ const fetcher=(async(_url:unknown,init:RequestInit)=>{
+  bodies.push(String(init.body));
+  if(bodies.length<3)return new Response(null,{status:429,headers:{'retry-after':'0'}});
+  return Response.json({blockNumber:'100',blockHash:hash,preparation:null});
+ }) as typeof fetch;
+ const result=await fetchAirdropPreparedClient(f.client,{...f.release,endpoint:'https://prices.example/prepare'},100n,[address(20)],fetcher);
+ assert.equal(bodies.length,3);assert.equal(new Set(bodies).size,1);
+ assert.deepEqual(JSON.parse(bodies[0]!),{blockNumber:'100',subjects:[address(20)]});
+ assert.equal(result.preparation,null);assert.equal(result.client,f.client);
+});
+test('temporary service errors have bounded retries and never turn unavailable prices into a success',async()=>{
+ const f=await fixture();let calls=0;
+ const fetcher=(async()=>{calls++;return new Response(null,{status:503,headers:{'retry-after':'0'}});}) as typeof fetch;
+ await assert.rejects(fetchAirdropPreparedClient(f.client,{...f.release,endpoint:'https://prices.example/prepare'},100n,[],fetcher),/could not be prepared/);
+ assert.equal(calls,3);
+});
+test('busy recovery still rejects changed canonical snapshots and does not retry forbidden requests',async()=>{
+ const f=await fixture();let calls=0;
+ const fetcher=(async()=>{calls++;return calls===1?new Response(null,{status:429,headers:{'retry-after':'0'}}):Response.json({blockNumber:'100',blockHash:keccak256('0xff'),preparation:null});}) as typeof fetch;
+ await assert.rejects(fetchAirdropPreparedClient(f.client,{...f.release,endpoint:'https://prices.example/prepare'},100n,[],fetcher),/snapshot changed/);
+ calls=0;const forbidden=(async()=>{calls++;return new Response(null,{status:403});}) as typeof fetch;
+ await assert.rejects(fetchAirdropPreparedClient(f.client,{...f.release,endpoint:'https://prices.example/prepare'},100n,[],forbidden),/could not be prepared/);
+ assert.equal(calls,1);
+});
+test('a busy service cannot cause unbounded immediate retries',async()=>{
+ const f=await fixture();let calls=0;
+ const fetcher=(async()=>{calls++;return new Response(null,{status:429,headers:{'retry-after':'0'}});}) as typeof fetch;
+ await assert.rejects(fetchAirdropPreparedClient(f.client,{...f.release,endpoint:'https://prices.example/prepare'},100n,[],fetcher),/could not be prepared/);
+ assert.equal(calls,24);
 });

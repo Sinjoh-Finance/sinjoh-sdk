@@ -86,7 +86,26 @@ export async function fetchAirdropPreparedClient(client: PublicClient, release: 
  if (!release.endpoint || subjects.length > 3) throw Error('Price preparation service unavailable.');
  const url = new URL(release.endpoint);
  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname))) throw Error('Invalid price preparation endpoint.');
- const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ blockNumber: String(blockNumber), subjects }), signal: AbortSignal.timeout(45000), redirect: 'error' });
+ const deadline = Date.now() + 45000;
+ let unavailableRetries = 0;
+ let attempts = 0;
+ let response: Response;
+ for (;;) {
+  const remaining = deadline - Date.now();
+  if (remaining <= 0 || attempts++ >= 24) throw Error('Current market prices could not be prepared. Retry shortly.');
+  response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ blockNumber: String(blockNumber), subjects }), signal: AbortSignal.timeout(remaining), redirect: 'error' });
+  // Another bank may be preparing observations. Wait within the original request
+  // budget, retaining this exact block and all signature/canonicality checks.
+  const busy = response.status === 429;
+  const retryUnavailable = response.status === 503 && unavailableRetries++ < 2;
+  if (!busy && !retryUnavailable) break;
+  const retryAfter = response.headers.get('retry-after');
+  const requestedDelay = retryAfter !== null && /^\d+$/.test(retryAfter) ? Number(retryAfter) * 1000 : busy ? 2000 : 500;
+  const delay = Math.min(2000, requestedDelay);
+  await response.body?.cancel();
+  if (Date.now() + delay >= deadline) throw Error('Current market prices could not be prepared. Retry shortly.');
+  await new Promise(resolve => setTimeout(resolve, delay));
+ }
  if (!response.ok) throw Error('Current market prices could not be prepared. Retry shortly.');
  const reader = response.body?.getReader();
  if (!reader) throw Error('Empty price preparation response.');
